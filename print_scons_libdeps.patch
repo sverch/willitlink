@@ -1,0 +1,48 @@
+diff --git a/site_scons/libdeps.py b/site_scons/libdeps.py
+index e17a4fa..8b7b524 100644
+--- a/site_scons/libdeps.py
++++ b/site_scons/libdeps.py
+@@ -56,6 +56,8 @@ import SCons.Errors
+ import SCons.Scanner
+ import SCons.Util
+ 
++import json
++
+ libdeps_env_var = 'LIBDEPS'
+ syslibdeps_env_var = 'SYSLIBDEPS'
+ missing_syslibdep = 'MISSING_LIBDEP_'
+@@ -100,6 +102,7 @@ def __compute_libdeps(node):
+ 
+     env = node.get_env()
+     deps = set()
++    topleveldeps = set()
+     node.attributes.libdeps_exploring = True
+     try:
+         try:
+@@ -113,9 +116,26 @@ def __compute_libdeps(node):
+             if len(e.cycle_nodes) == 1 or e.cycle_nodes[0] != e.cycle_nodes[-1]:
+                 e.cycle_nodes.append(node)
+                 raise
++
++        try:
++            for child in env.Flatten(getattr(node.attributes, 'libdeps_direct', [])):
++                if not child:
++                    continue
++                topleveldeps.add(child)
++
++        except DependencyCycleError, e:
++            if len(e.cycle_nodes) == 1 or e.cycle_nodes[0] != e.cycle_nodes[-1]:
++                e.cycle_nodes.append(node)
++                raise
+     finally:
+         node.attributes.libdeps_exploring = False
+ 
++    outputobj = {}
++    outputobj['_id'] = str(node)
++    outputobj['type'] = 'special'
++    outputobj['libdeps'] = [ str(dep) for dep in topleveldeps ]
++    #print json.dumps(outputobj, indent=4, separators=(',', ': '))
++    print json.dumps(outputobj)
+     return deps
+ 
+ def __get_syslibdeps(node):
