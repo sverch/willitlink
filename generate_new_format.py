@@ -41,13 +41,19 @@ client = pymongo.MongoClient()
 #         ],
 #         ...
 #    }
-#    "file_children" : {
+#    "children" : {
 #         "file_that_uses_shutdown.o" : [
 #             "shutdown.o",
 #         ],
 #         ...
 #    }
-#    "file_parents" : {
+#    "members" : {
+#         "file_that_uses_shutdown.o" : [
+#             "shutdown.o",
+#         ],
+#         ...
+#    }
+#    "parents" : {
 #         "shutdown.o" : [
 #             "file_that_uses_shutdown.o",
 #         ],
@@ -62,8 +68,9 @@ def generateEdges():
     edgesObject["symbol_dependents"] = {}
     edgesObject["symbols_provided"] = {}
     edgesObject["symbols_needed"] = {}
-    edgesObject["file_children"] = {}
-    edgesObject["file_parents"] = {}
+    edgesObject["children"] = {}
+    edgesObject["members"] = {}
+    edgesObject["parents"] = {}
 
     # Track how many nodes we've processed so far
     count = 0
@@ -131,18 +138,18 @@ def generateEdges():
                     edgesObject["files"].add(libdep)
 
                     # Ensure we have an entry for this file
-                    if buildObject['_id'] not in edgesObject["file_children"]:
-                        edgesObject["file_children"][buildObject['_id']] = set()
+                    if buildObject['_id'] not in edgesObject["children"]:
+                        edgesObject["children"][buildObject['_id']] = set()
 
                     # Add an edge to indicate that this file provides this symbol
-                    edgesObject["file_children"][buildObject['_id']].add(libdep)
+                    edgesObject["children"][buildObject['_id']].add(libdep)
 
                     # Ensure we have an entry for this symbol
-                    if libdep not in edgesObject["file_parents"]:
-                        edgesObject["file_parents"][libdep] = set()
+                    if libdep not in edgesObject["parents"]:
+                        edgesObject["parents"][libdep] = set()
 
                     # Add an edge to indicate that this symbol is provided by this file
-                    edgesObject["file_parents"][libdep].add(buildObject['_id'])
+                    edgesObject["parents"][libdep].add(buildObject['_id'])
 
             # TODO: I believe we want to distinguish between objects and archives, but this treats
             # them all the same.
@@ -154,18 +161,18 @@ def generateEdges():
                     edgesObject["files"].add(objdep)
 
                     # Ensure we have an entry for this file
-                    if buildObject['_id'] not in edgesObject["file_children"]:
-                        edgesObject["file_children"][buildObject['_id']] = set()
+                    if buildObject['_id'] not in edgesObject["members"]:
+                        edgesObject["members"][buildObject['_id']] = set()
 
                     # Add an edge to indicate that this file provides this symbol
-                    edgesObject["file_children"][buildObject['_id']].add(objdep)
+                    edgesObject["members"][buildObject['_id']].add(objdep)
 
                     # Ensure we have an entry for this symbol
-                    if objdep not in edgesObject["file_parents"]:
-                        edgesObject["file_parents"][objdep] = set()
+                    if objdep not in edgesObject["parents"]:
+                        edgesObject["parents"][objdep] = set()
 
                     # Add an edge to indicate that this symbol is provided by this file
-                    edgesObject["file_parents"][objdep].add(buildObject['_id'])
+                    edgesObject["parents"][objdep].add(buildObject['_id'])
 
     edgesObject["symbols"] = list(edgesObject["symbols"])
     edgesObject["files"] = list(edgesObject["files"])
@@ -177,10 +184,12 @@ def generateEdges():
         edgesObject["symbols_provided"][k] = list(v)
     for k,v in edgesObject["symbols_needed"].iteritems():
         edgesObject["symbols_needed"][k] = list(v)
-    for k,v in edgesObject["file_children"].iteritems():
-        edgesObject["file_children"][k] = list(v)
-    for k,v in edgesObject["file_parents"].iteritems():
-        edgesObject["file_parents"][k] = list(v)
+    for k,v in edgesObject["children"].iteritems():
+        edgesObject["children"][k] = list(v)
+    for k,v in edgesObject["members"].iteritems():
+        edgesObject["members"][k] = list(v)
+    for k,v in edgesObject["parents"].iteritems():
+        edgesObject["parents"][k] = list(v)
 
     f = open('new_format_deps.json', 'w')
     f.write(json.dumps(edgesObject))
