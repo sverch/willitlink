@@ -96,7 +96,7 @@ class MultiGraph(object):
 
             return True
 
-    def dedupe_lists(self):
+    def uniquify_lists(self):
         if self.has_lists is False:
             return False
         else:

@@ -67,7 +67,7 @@ import dep_graph
 #    }
 # }
 
-def generateEdges(build_objects):
+def generate_edges(build_objects):
     relationships = [
                       'symbol_to_file_sources', 'symbol_to_file_sources',
                       'file_to_symbol_definitions', 'file_to_symbol_dependencies',
@@ -80,89 +80,91 @@ def generateEdges(build_objects):
     # Track how many nodes we've processed so far
     count = 0
 
-    for buildObject in build_objects:
+    for build_object in build_objects:
         count += 1
 
+        build_object_name = build_object['_id']
+
         # Add this file
-        g.files.append(buildObject['_id'])
+        g.files.append(build_object_name)
 
         # Add the symbol dependency information for this file
-        if buildObject['type'] == 'object':
+        if build_object['type'] == 'object':
 
             # Iterate the symbol dependencies of this object, if applicable
-            if 'symdeps' in buildObject:
-                for symdep in buildObject['symdeps']:
+            if 'symdeps' in build_object:
+                for symdep in build_object['symdeps']:
 
                     # Add this symbol to the set of all symbols
                     g.symbols.append(symdep)
 
                     # Add an edge to indicate that a file depends on these symbols
                     g.add(relationship='files_to_symbol_dependencies',
-                          item=buildObject['_id'],
+                          item=build_object_name,
                           deps=symdep)
 
                     # Add an edge to indicate that this symbol is needed by this file
                     g.add(relationship='symbol_to_file_dependencies',
                           item=symdep,
-                          deps=buildObject['_id'])
+                          deps=build_object_name)
 
-            if 'symdefs' in buildObject:
-                for symdef in buildObject['symdefs']:
+            if 'symdefs' in build_object:
+                for symdef in build_object['symdefs']:
 
                     # Add this symbol to the set of all symbols
                     g.symbols.append(symdef)
 
                     # Add an edge to indicate that this file provides this symbol
                     g.add(relationship='file_to_symbol_definitions',
-                          item=buildObject['_id'],
+                          item=build_object_name,
                           deps=symdef)
 
                     # Add an edge to indicate that this symbol is provided by this file
                     g.add(relationship='symbol_to_file_sources',
                           item=symdef,
-                          deps=buildObject['_id'])
+                          deps=build_object_name)
 
         # Add the file dependency information for this file
         else:
             # Iterate the library dependencies of this build object, if applicable
-            if 'deps' in buildObject:
-                for libdep in buildObject['deps']:
+            if 'deps' in build_object:
+                for libdep in build_object['deps']:
 
                     # Add this symbol to the set of all files
                     g.files.append(lidep)
 
                     # Add an edge to indicate that this file provides this symbol
                     g.add(relationship='target_to_dependencies',
-                          item=buildObject['_id'],
+                          item=build_object_name,
                           deps=libdep)
 
                     # Add an edge to indicate that this symbol is provided by this file
                     g.add(relationship='dependency_to_targets',
                           item=libdep,
-                          deps=buildObject['_id'])
+                          deps=build_object_name)
 
             # TODO: I believe we want to distinguish between objects and archives, but this treats
             # them all the same.
             # Iterate the object dependencies of this build object, if applicable
-            if 'objects' in buildObject:
-                for objdep in buildObject['objects']:
+            if 'objects' in build_object:
+                for objdep in build_object['objects']:
 
                     # Add this symbol to the set of all files
                     g.files.append(objdep)
 
                     # Add an edge to indicate that this file provides this symbol
                     g.add(relationship='archives_to_components',
-                          item=buildObject['_id'],
+                          item=build_object_name,
                           deps=objdep)
 
                     # Add an edge to indicate that this symbol is provided by this file
                     g.add(relationship='dependency_to_targets',
                           item=objdep,
-                          deps=buildObject['_id'])
+                          deps=build_object_name)
 
         print(count)
 
-    g.dedupe_lists()
+    g.uniquify_lists()
 
     return g
 
@@ -174,7 +176,7 @@ def main():
     except IndexError:
         out_fn = 'new_format_deps.json'
 
-    graph = generateEdges(client['test'].deps.find())
+    graph = generate_edges(client['test'].deps.find())
 
     graph.export(out_fn)
 
