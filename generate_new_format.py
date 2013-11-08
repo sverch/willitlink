@@ -83,9 +83,7 @@ def generateEdges(build_objects):
     count = 0
 
     for buildObject in build_objects:
-
-        print count
-        count = count + 1
+        count += 1
 
         # Add this file
         edgesObject["files"].add(buildObject['_id'])
@@ -180,6 +178,8 @@ def generateEdges(build_objects):
 
                     # Add an edge to indicate that this symbol is provided by this file
                     edgesObject["parents"][objdep].add(buildObject['_id'])
+
+        print(count)
 
     edgesObject["symbols"] = list(edgesObject["symbols"])
     edgesObject["files"] = list(edgesObject["files"])
