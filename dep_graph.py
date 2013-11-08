@@ -33,7 +33,7 @@ Use:
 
      g.resolve('bessie')
 
-- To return a DependencyGraph object that contains *only* the relationships for
+- To return a MultiGraph object that contains *only* the relationships for
   ``bessie``:
 
      g.narrow('bessie')
@@ -126,7 +126,7 @@ class MultiGraph(object):
         return o
 
     def narrow(self, item)
-        graph = DependencyGraph()
+        graph = MultiGraph()
         grap.subset = True
 
         for i in self.relationships:
