@@ -5,6 +5,8 @@ import json
 import pymongo
 import subprocess
 import sys
+import dep_graph
+
 client = pymongo.MongoClient()
 
 # Strucutre of new format
@@ -17,45 +19,51 @@ client = pymongo.MongoClient()
 #        "src/mongo/db/shutdown.o",
 #        ...
 #    ],
-#    "symbol_sources" : {
+#    "symbol_sources" : { // symbol2file_sources
 #         "mongo::inShutdown()" : [
 #             "shutdown.o",
 #         ],
 #         ...
 #    }
-#    "symbol_dependents" : {
+#    "symbol_dependents" : {  // symbol2file_dependencies
 #         "mongo::inShutdown()" : [
 #             "file_that_uses_shutdown.o",
 #         ],
 #         ...
 #    }
-#    "symbols_provided" : {
+#    "symbols_provided" : { // file2symbol_definitions
 #         "shutdown.o" : [
 #             "mongo::inShutdown()",
 #         ],
 #         ...
 #    }
-#    "symbols_needed" : {
+#    "symbols_needed" : { // files2symbol_dependencies
 #         "file_that_uses_shutdown.o" : [
 #             "mongo::inShutdown()",
 #         ],
 #         ...
 #    }
-#    "children" : {
-#         "file_that_uses_shutdown.o" : [
+#    "children" : { // target2dependencies
+#         "libshutdown.a" : [
+#             "libstringutils.a",
+#         ],
+#         "all" : [
+#             "alltools",
+#         ],
+#         ...
+#    }
+#    "members" : { // archives2components
+#         "libshutdown.a" : [
 #             "shutdown.o",
 #         ],
 #         ...
 #    }
-#    "members" : {
-#         "file_that_uses_shutdown.o" : [
-#             "shutdown.o",
-#         ],
-#         ...
-#    }
-#    "parents" : {
+#    "parents" : { // dependency2targets
 #         "shutdown.o" : [
-#             "file_that_uses_shutdown.o",
+#             "libshutdown.a",
+#         ],
+#         "libstringutils.a" : [
+#             "libshutdown.a"
 #         ],
 #         ...
 #    }
@@ -191,10 +199,18 @@ def generateEdges():
     for k,v in edgesObject["parents"].iteritems():
         edgesObject["parents"][k] = list(v)
 
-    f = open('new_format_deps.json', 'w')
-    f.write(json.dumps(edgesObject))
+    return edgesObject
 
 def main():
-    generateEdges()
+    try: 
+        out_fn = sys.argv[0]
+    except IndexError: 
+        out_fn = 'new_format_deps.json'
 
-main()
+    edgesObject = generateEdges()
+
+    with open(out_fn, 'w') as f: 
+        f.write(json.dumps(edgesObject))
+
+if __name__ == '__main__':
+    main()
