@@ -7,8 +7,6 @@ import subprocess
 import sys
 import dep_graph
 
-client = pymongo.MongoClient()
-
 # Strucutre of new format
 # {
 #    "symbols" : [
@@ -68,7 +66,8 @@ client = pymongo.MongoClient()
 #         ...
 #    }
 # }
-def generateEdges():
+
+def generateEdges(build_objects):
     edgesObject = {}
     edgesObject["symbols"] = set()
     edgesObject["files"] = set()
@@ -83,7 +82,7 @@ def generateEdges():
     # Track how many nodes we've processed so far
     count = 0
 
-    for buildObject in client['test'].deps.find():
+    for buildObject in build_objects:
 
         print count
         count = count + 1
@@ -202,12 +201,14 @@ def generateEdges():
     return edgesObject
 
 def main():
+    client = pymongo.MongoClient()
+
     try: 
         out_fn = sys.argv[0]
     except IndexError: 
         out_fn = 'new_format_deps.json'
 
-    edgesObject = generateEdges()
+    edgesObject = generateEdges(client['test'].deps.find())
 
     with open(out_fn, 'w') as f: 
         f.write(json.dumps(edgesObject))
