@@ -79,22 +79,14 @@ class MultiGraph(object):
         self.relationships = relationships
         self.graphs = self.new_graph()
         self.subset = False
-        self.has_lists = False
+        self.lists = lists
 
     def make_lists(self, lists):
-        if self.has_lists:
-            return False
-        else:
-            self.lists = lists
-            for l in lists:
-                if hasattr(self, l):
-                    raise Exception
-                else:
-                    setattr(self, l, list())
+        self.lists.extend(lists)
 
-            self.has_lists = True
-
-            return True
+        for l in lists:
+            if not hasattr(self, l):
+                setattr(self, l, list())
 
     def uniquify_lists(self):
         if self.has_lists is False:
