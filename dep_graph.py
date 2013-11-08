@@ -8,7 +8,7 @@ Use:
 
      tracked_relationships = [ 'files2cows', 'cows2people' ]
 
-     g = DependencyGraph(tracked_relationships)
+     g = MultiGraph(tracked_relationships)
 
      g.add('files2cows', 'a.out', ['bessie', 'hef'])
      g.add('files2cows', 'a.out', 'elsa')
@@ -21,7 +21,7 @@ Use:
 - To create an equivalent ``g`` object from the ``file2people.json``
   dump to recover a previous state:
 
-     g = DependencyGraph().load('files2people.json')
+     g = MultiGraph().load('files2people.json')
 
 - To return a standard directed graph for a single relationship, for integration
   with external graph analysis libraries:
@@ -67,16 +67,48 @@ class Graph(object):
     def get(item):
         return list(self.graph[item])
 
-    def fetch():
-        return self.graph
+    def fetch(self):
+        r = dict()
+        for k in self.graph.keys():
+            r[k] = self.get(k)
 
-class DependencyGraph(object):
+        return k
+
+class MultiGraph(object):
     def __init__(self, relationships):
         self.relationships = relationships
         self.graphs = self.new_graph()
         self.subset = False
+        self.has_lists = False
+
+    def make_lists(self, lists):
+        if self.has_lists:
+            return False
+        else:
+            self.lists = lists
+            for l in lists:
+                if hasattr(self, l):
+                    raise Exception
+                else:
+                    setattr(self, l, list())
+
+            self.has_lists = True
+
+            return True
+
+    def dedupe_lists(self):
+        if self.has_lists is False:
+            return False
+        else:
+            for l in self.lists:
+                nl = set(getattr(self, l))
+                setattr(self, l, list(nl))
+
+            return True
 
     def new_graph(self):
+        graph = dict()
+
         for i in self.relationships:
             graph[i] = Graph()
 
@@ -132,7 +164,7 @@ class DependencyGraph(object):
 
             return c
 
-    def export(self, fn='.depgraph.json'):
+    def fetch(self):
         o = {
             'timestamp': datetime.datetime.utcnow().strftime("%s"),
             'path' os.getcwd(),
@@ -142,7 +174,12 @@ class DependencyGraph(object):
             }
 
         for i in self.relationships:
-            o['graphs'][i] = self.graphs[i]
+            o['graphs'][i] = self.graphs[i].fetch()
+
+        return o
+
+    def export(self, fn='.depgraph.json'):
+        o = self.fetch()
 
         with open(fn, 'w') as f:
             json.dump(o, f)
