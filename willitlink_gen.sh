@@ -13,11 +13,11 @@ rm -f $DIR/deps.json
 # hard code what kind of build I'm doing.  Building with SSL now to detect more dependencies.
 
 # Build to make sure we have all our .o files for willitlink.py
-sc_ssl
+scons $@ all
 
 # Prints out a "tree" of dependencies to the given file
 rm -f $DIR/dependency_tree.txt
-sc_ssl --tree=all,prune all >> $DIR/dependency_tree.txt
+scons $@ --tree=all,prune all >> $DIR/dependency_tree.txt
 
 # Script to parse the tree and insert json 
 # TODO: don't hard code the mongo port and collection in the script
@@ -27,7 +27,7 @@ python $DIR/parse_scons_dependency_tree.py $DIR/dependency_tree.txt
 # custom thing that handles LIBDEPS specially in site_scons/libdeps.py
 git checkout site_scons/libdeps.py
 git apply $DIR/print_scons_libdeps.patch
-sc_ssl | grep -e "^{" >> $DIR/deps.json
+scons $@ all | grep -e "^{" >> $DIR/deps.json
 
 # Finally, the script that actually imports the json files
 # TODO: don't hard code the mongo port and collection in the script
