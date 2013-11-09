@@ -179,4 +179,5 @@ def main():
     #for buildElement in parseTree(filename):
         #print json.dumps(buildElement)
 
-main()
+if __name__ == '__main__':
+    main()
