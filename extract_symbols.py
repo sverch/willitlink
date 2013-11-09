@@ -22,8 +22,7 @@ def get_symbols_used(object_file):
         p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
         uses = p.communicate()[0]
     else:
-        uses = subprocess.check_call("nm -u " + object_file + " | c++filt", shell=True)
-
+        uses = subprocess.check_output("nm -u " + object_file + " | c++filt", shell=True)
     return [ use for use in uses.split('\n') if use != "" ]
 
 def get_symbols_defined(object_file):
