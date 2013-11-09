@@ -18,24 +18,24 @@ import subprocess
 def get_symbols_used(object_file):
     uses = ""
     if sys.platform == 'linux2':
-        uses = subprocess.Popen("nm " + object_file +
-                " | grep -e \"^.\\{9\\}U\" | c++filt | sed 's/^.\\{11\}\\(.*\\)/\\1/'",
-                shell=True).stdout
+        cmd = r"nm " + object_file + r' | grep -e "^.\{9\}U" | c++filt | sed "s/^.\{11\}\(.*\)/\1/"'
+        p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
+        uses = p.communicate()[0]
     else:
         uses = subprocess.check_call("nm -u " + object_file + " | c++filt", shell=True)
-    uses = [ use for use in uses.split('\n') if use != "" ]
-    return uses
+
+    return [ use for use in uses.split('\n') if use != "" ]
 
 def get_symbols_defined(object_file):
     definitions = ""
     if sys.platform == 'linux2':
-        definitions = subprocess.Popen("nm " + object_file +
-                " | grep -v -e \"^.\\{9\\}U\" | c++filt | sed 's/^.\\{11\}\\(.*\\)/\\1/'",
-                shell=True).stdout
+        cmd = r"nm " + object_file + r' | grep -v -e "^.\{9\}U" | c++filt | sed "s/^.\{11\}\(.*\)/\1/"'
+        p = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True)
+        definitions = p.communicate()[0]
     else:
         definitions = subprocess.check_output("nm -jU " + object_file + " | c++filt", shell=True)
-    definitions = [ definition for definition in definitions.split('\n') if definition != "" ]
-    return definitions
+
+    return [ definition for definition in definitions.split('\n') if definition != "" ]
 
 def usage():
     print("Usage: " + sys.argv[0] + " file [defined/used (default=defined)]")

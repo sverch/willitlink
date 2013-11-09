@@ -170,8 +170,6 @@ def generate_edges(build_objects):
                           item=objdep,
                           deps=build_object_name)
 
-        print(count)
-
     g.uniquify_lists()
 
     return g

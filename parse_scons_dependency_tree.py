@@ -2,11 +2,11 @@
 
 import re
 import json
-import pymongo
+from pymongo import MongoClient
+from pymongo.errors import DuplicateKeyError
 import subprocess
 import sys
 import extract_symbols
-client = pymongo.MongoClient()
 
 # Phase 1: Parsing the --tree=all output of scons
 #
@@ -17,30 +17,35 @@ client = pymongo.MongoClient()
 # TODO: Remove /bin/ar and /bin/ranlib from the file dependencies for the archives
 
 symbol_set = set()
-def insertBuildElement(buildElement):
+def persist_node(buildElement, results):
     if buildElement['_id'] not in symbol_set:
         symbol_set.add(buildElement['_id'])
-        #print json.dumps(buildElement)
-        try:
-            client['test'].deps.insert(buildElement)
-        except pymongo.errors.DuplicateKeyError:
-            print("Duplicate Key!")
 
-def detectType(line):
-    if re.search(".*\.h", line):
+        if isinstance(results, MongoClient):
+            try:
+                results['test'].deps.insert(buildElement)
+            except DuplicateKeyError:
+                print("Duplicate Key!")
+        elif isinstance(results, list):
+            results.append(buildElement)
+        else:
+            print('not persisting {0}'.format(buildElement['_id']))
+
+def detect_type(line):
+    if line.endswith('.h'):
         return "header"
 
-    if re.search(".*\.o", line):
+    if line.endswith('.o'):
         return "object"
 
-    if re.search(".*\.a", line):
+    if line.endswith('.a'):
         return "archive"
 
-    if re.search(".*\.js", line):
+    if line.endswith('.js'):
         return "javascript"
 
     # Assume it's a system file if it starts with a '/'
-    if re.search("^\/", line):
+    if line.startswith('/'):
         return "system"
 
     return "target"
@@ -56,44 +61,53 @@ def detectType(line):
 #
 # Prints:
 # The current object with deps
-def parseTreeRecursive(fileHandle, depth, name, typeName, results):
+
+class RegexLib(object):
+    def __init__(self, depth):
+
+        prefix = depth * '.'
+
+        self.one = re.compile("\+-[ ]*$")
+        self.two = re.compile("\+-")
+        self.three = re.compile("^" + prefix + "\+-")
+        self.four = re.compile(prefix + "..\+-(.+)")
+        self.five = re.compile(prefix + "..\+-\[(.+)\]")
+        self.six = re.compile(prefix + "..\+-(.+)")
+        self.seven = re.compile("^" + prefix + "..\+-")
+
+def recursive_parse_tree(fileHandle, depth, name, typeName, results):
     currentBuildElement = {}
     currentBuildElement['_id'] = name
     currentBuildElement['type'] = typeName
 
-    prefix = ""
-
-    for i in range(0, depth):
-        prefix += "."
+    r = RegexLib(depth)
 
     for line in fileHandle:
-
         # TODO: handle that weird case here (with the code inline)
         # Weeeeird......
-        if re.search("\+-[ ]*$", line) != None:
+        if r.one.search(line) is not None:
             # This is pretty awful
             inlineCodeString = ""
             for line in fileHandle:
-                if re.search("\+-", line) != None:
+                if r.two.search(line) is not None:
                     break
                 inlineCodeString = inlineCodeString + line
             currentBuildElement['inlineCode'] = inlineCodeString
 
         # If we see something at our prefix, we know we've reached the end of this section
-        if re.search("^" + prefix + "\+-", line) != None:
-            #results += [ currentBuildElement ]
-            insertBuildElement(currentBuildElement)
+        if r.three.search(line) is not None:
+            persist_node(currentBuildElement, results)
             return line
 
         # If we see something below our prefix, we have an element to add (and maybe a section)
-        elif re.search(prefix + "..\+-(.+)", line) != None:
-            m = re.search(prefix + "..\+-\[(.+)\]", line)
+        elif r.four.search(line) is not None:
+            m = r.five.search(line)
             if m == None:
-                m = re.search(prefix + "..\+-(.+)", line)
+                m = r.four.search(line)
+
             nextSection = m.group(1)
 
             while nextSection is not None:
-
                 nextSectionTypeName = "target"
 
                 # Based the type of file that we are currently parsing the dependencies for, name
@@ -125,59 +139,66 @@ def parseTreeRecursive(fileHandle, depth, name, typeName, results):
                     if 'deps' not in currentBuildElement:
                         currentBuildElement['deps'] = []
                     currentBuildElement['deps'] = currentBuildElement['deps'] + [ nextSection ]
-                    nextSectionTypeName = detectType(nextSection)
+                    nextSectionTypeName = detect_type(nextSection)
 
                 # Parse any lines that are a level deeper than where we are now (may be none, which
                 # would correspond to an object with no dependencies)
-                lineAfterSection = parseTreeRecursive(fileHandle, depth + 2, nextSection, nextSectionTypeName, results)
+                lineAfterSection = recursive_parse_tree(fileHandle, depth + 2, nextSection, nextSectionTypeName, results)
 
                 # Figure out why we exited.  Either it's because we are still in the same section,
                 # or we are done with THIS section too and should exit.
-                if lineAfterSection == None:
+                if lineAfterSection is None:
                     # EOF
-                    #results += [ currentBuildElement ]
-                    insertBuildElement(currentBuildElement)
+                    persist_node(currentBuildElement, results)
                     return lineAfterSection
-                elif re.search("^" + prefix + "..\+-", lineAfterSection) != None:
-                    m = re.search(prefix + "..\+-\[(.+)\]", lineAfterSection)
+                elif r.seven.search(lineAfterSection) is not None:
+                    m = r.five.search(lineAfterSection)
                     if m == None:
-                        m = re.search(prefix + "..\+-(.+)", lineAfterSection)
+                        m = r.six.search(lineAfterSection)
                     nextSection = m.group(1)
                 else:
-                    #results += [ currentBuildElement ]
-                    insertBuildElement(currentBuildElement)
+                    persist_node(currentBuildElement, results)
                     return lineAfterSection
         else:
-            #results += [ currentBuildElement ]
-            insertBuildElement(currentBuildElement)
+            persist_node(currentBuildElement, results)
             return line
 
-def parseTree(filename):
-    treeFile = open(filename, 'r')
+def parse_tree(filename, results):
+    """
+    Pass a filename of SCons tree output to parse.
 
-    # First skip all our garbage lines not related to the tree output
-    for line in treeFile:
-        if re.search("^\+-all$", line) != None:
-            break
+    The results argument is either a list that parse_tree will return, or a
+    pymongo.MongoClient object.
+    """
 
-    m = re.search("^\+-(.*)$", line)
-    baseSection = m.group(1)
+    all_re = re.compile("^\+-all$")
 
-    # Start parsing our tree, starting with the base group
-    results = []
-    parseTreeRecursive(treeFile, 0, baseSection, "target", results)
-    return results
+    with open(filename, 'r') as treeFile:
+        # First skip all our garbage lines not related to the tree output
+        for line in treeFile:
+            if all_re.search(line) is not None:
+                break
+
+        m = re.search("^\+-(.*)$", line)
+        baseSection = m.group(1)
+
+        # Start parsing our tree, starting with the base group
+        recursive_parse_tree(treeFile, 0, baseSection, "target", results)
+
+    if isinstance(results, list):
+        return results
+    elif isinstance(results, MongoClient):
+        return True
+    else:
+        return None
 
 def main():
     if len(sys.argv) != 2:
         print("Usage: " + sys.argv[0] + " <depsfile>")
         sys.exit(1)
 
-    filename = sys.argv[1]
-    #if re.search(".*\.h", buildElement['_id']) is None:
-    parseTree(filename)
-    #for buildElement in parseTree(filename):
-        #print json.dumps(buildElement)
+    parse_tree(filename=sys.argv[1],
+               results=MongoClient())
 
 if __name__ == '__main__':
     main()
