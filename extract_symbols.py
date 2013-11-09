@@ -38,7 +38,7 @@ def get_symbols_defined(object_file):
     return definitions
 
 def usage():
-    print "Usage: " + sys.argv[0] + " file [defined/used (default=defined)]"
+    print("Usage: " + sys.argv[0] + " file [defined/used (default=defined)]")
 
 def main():
 
@@ -60,16 +60,16 @@ def main():
     # TODO: The file could still be deleted after this point, but we are using an external command
     # to get the symbols so we need to check here.
     if not os.path.exists(object_file):
-        print "Error: \"" + object_file + "\" does not exist"
+        print("Error: \"" + object_file + "\" does not exist")
         usage()
         sys.exit(-1)
 
     if extraction_type == "defined":
         for symbol in get_symbols_defined(object_file):
-            print symbol
+            print(symbol)
     else:
         for symbol in get_symbols_used(object_file):
-            print symbol
+            print(symbol)
 
 if __name__ == '__main__':
     main()

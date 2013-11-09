@@ -15,7 +15,7 @@ def insertCleanedBuildObject(buildObject):
     try:
         client['test'].deps_cleaned.insert(buildObject)
     except pymongo.errors.DuplicateKeyError:
-        print "Duplicate Key!"
+        print("Duplicate Key!")
 
 symbol_dependency_set = set()
 def insertSymbolDependency(symbol):
@@ -24,7 +24,7 @@ def insertSymbolDependency(symbol):
         try:
             client['test'].symbol_dependency.insert({ "name" : symbol })
         except pymongo.errors.DuplicateKeyError:
-            print "Duplicate Key!"
+            print("Duplicate Key!")
 
 symbol_definition_set = set()
 def insertSymbolDefinition(symbol):
@@ -33,7 +33,7 @@ def insertSymbolDefinition(symbol):
         try:
             client['test'].symbol_definition.insert({ "name" : symbol })
         except pymongo.errors.DuplicateKeyError:
-            print "Duplicate Key!"
+            print("Duplicate Key!")
 
 
 symbol_dependency_extra_set = set()
@@ -42,7 +42,7 @@ def insertSymbolDependencyExtra(symbol):
     try:
         client['test'].symbol_dependency_extra.insert({ "name" : symbol })
     except pymongo.errors.DuplicateKeyError:
-        print "Duplicate Key!"
+        print("Duplicate Key!")
 
 symbol_definition_extra_set = set()
 def insertSymbolDefinitionExtra(symbol):
@@ -50,7 +50,7 @@ def insertSymbolDefinitionExtra(symbol):
     try:
         client['test'].symbol_definition_extra.insert({ "name" : symbol })
     except pymongo.errors.DuplicateKeyError:
-        print "Duplicate Key!"
+        print("Duplicate Key!")
 
 symbol_dependency_core_set = set()
 def insertSymbolDependencyCore(symbol):
@@ -58,7 +58,7 @@ def insertSymbolDependencyCore(symbol):
     try:
         client['test'].symbol_dependency_core.insert({ "name" : symbol })
     except pymongo.errors.DuplicateKeyError:
-        print "Duplicate Key!"
+        print("Duplicate Key!")
 
 symbol_definition_core_set = set()
 def insertSymbolDefinitionCore(symbol):
@@ -66,7 +66,7 @@ def insertSymbolDefinitionCore(symbol):
     try:
         client['test'].symbol_definition_core.insert({ "name" : symbol })
     except pymongo.errors.DuplicateKeyError:
-        print "Duplicate Key!"
+        print("Duplicate Key!")
 
 def extractSymDeps():
     for buildObject in client['test'].deps.find():

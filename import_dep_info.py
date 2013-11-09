@@ -6,7 +6,7 @@ import pymongo
 client = pymongo.MongoClient()
 
 def usage ():
-    print "Usage: %s <json file>" % sys.argv[0]
+    print("Usage: %s <json file>" % sys.argv[0])
 
 def main():
     if len(sys.argv) != 2:
@@ -17,7 +17,7 @@ def main():
     f = open(filename)
     for line in f:
         buildElement = json.loads(line)
-        print buildElement
+        print(buildElement)
 
         try:
             client['test'].deps.insert(buildElement)
@@ -28,8 +28,8 @@ def main():
                 if 'libdeps' in buildElement:
                     client['test'].deps.update({ "_id" : buildElement["_id"] }, { "$set" : { "deps" : buildElement["libdeps"] } })
                 else:
-                    print "Dude, we have an special without libdeps, you screwed up"
+                    print("Dude, we have an special without libdeps, you screwed up")
                     sys.exit(-1)
-            print "Duplicate Key!"
+            print("Duplicate Key!")
 
 main()

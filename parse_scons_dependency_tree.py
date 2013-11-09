@@ -24,7 +24,7 @@ def insertBuildElement(buildElement):
         try:
             client['test'].deps.insert(buildElement)
         except pymongo.errors.DuplicateKeyError:
-            print "Duplicate Key!"
+            print("Duplicate Key!")
 
 def detectType(line):
     if re.search(".*\.h", line):
@@ -170,7 +170,7 @@ def parseTree(filename):
 
 def main():
     if len(sys.argv) != 2:
-        print "Usage: " + sys.argv[0] + " <depsfile>"
+        print("Usage: " + sys.argv[0] + " <depsfile>")
         sys.exit(1)
 
     filename = sys.argv[1]
