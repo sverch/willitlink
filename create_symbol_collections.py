@@ -105,14 +105,14 @@ def removeExtraSymDeps():
                     # Only add it if it is defined somewhere in the project
                     for project_dep in symbol_dependency_core_set:
                         if symdep == project_dep:
-                            new_symdeps += [ symdep ]
+                            new_symdeps.append(symdep)
 
             if 'symdefs' in buildObject:
                 for symdef in buildObject['symdefs']:
                     # Only add it if it is used somewhere in the project
                     for project_def in symbol_definition_core_set:
                         if symdef == project_def:
-                            new_symdefs += [ symdef ]
+                            new_symdefs.append(symdef)
 
             buildObject["symdeps"] = new_symdeps
             buildObject["symdefs"] = new_symdefs
@@ -125,4 +125,5 @@ def main():
     extractExtraSymDeps()
     removeExtraSymDeps()
 
-main()
+if __name__ == '__main__':
+    main()

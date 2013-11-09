@@ -19,7 +19,7 @@ scons $@ all
 rm -f $DIR/dependency_tree.txt
 scons $@ --tree=all,prune all >> $DIR/dependency_tree.txt
 
-# Script to parse the tree and insert json 
+# Script to parse the tree and insert json
 # TODO: don't hard code the mongo port and collection in the script
 python $DIR/parse_scons_dependency_tree.py $DIR/dependency_tree.txt
 
@@ -32,6 +32,9 @@ scons $@ all | grep -e "^{" >> $DIR/deps.json
 # Finally, the script that actually imports the json files
 # TODO: don't hard code the mongo port and collection in the script
 python $DIR/import_dep_info.py $DIR/deps.json
+
+echo "you can optionally run the following: "
+echo python $DIR/new_ingestion.py $DIR/dependency_tree.txt $DIR/deps.json
 
 # Now, do the work to clean up our symbols.  This eliminates symbols that aren't defined anywhere in
 # our project, as they are not useful to know about and just cause noise (e.g. std::string and

@@ -2,6 +2,7 @@ import argparse
 
 from generate_new_format import generate_edges
 from parse_scons_dependency_tree import parse_tree
+from import_dep_info import ingeset_deps
 from dev_tools import Timer
 
 def main():
@@ -9,6 +10,7 @@ def main():
 
     parser.add_argument('--timers', '-t', default=False, action='store_true')
     parser.add_argument('input_tree')
+    parser.add_argument('dep_info')
     parser.add_argument('output_deps')
 
     args = parser.parse_args()
@@ -16,6 +18,9 @@ def main():
     with Timer('parsing', args.timers):
         results = parse_tree(args.input_tree,
                              list())
+
+    with Timer('importing dep info', arg.timers):
+        ingest_deps(args.dep_inf, results)
 
     with Timer('generating graph', args.timers):
         g = generate_edges(results)
