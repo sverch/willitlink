@@ -2,7 +2,7 @@ import argparse
 
 from generate_new_format import generate_edges
 from parse_scons_dependency_tree import parse_tree
-from import_dep_info import ingeset_deps
+from import_dep_info import ingest_deps
 from dev_tools import Timer
 
 def main():
