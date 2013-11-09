@@ -5,6 +5,7 @@ import json
 import pymongo
 import subprocess
 import sys
+import extract_symbols
 client = pymongo.MongoClient()
 
 # Phase 1: Parsing the --tree=all output of scons
@@ -43,16 +44,6 @@ def detectType(line):
         return "system"
 
     return "target"
-
-def getSymUses(objfile):
-    uses = subprocess.check_output("nm -u " + objfile + " | c++filt", shell=True)
-    uses = uses.split('\n')
-    return uses
-
-def getSymDefinitions(objfile):
-    definitions = subprocess.check_output("nm -jU " + objfile + " | c++filt", shell=True)
-    definitions = definitions.split('\n')
-    return definitions
 
 # Arguments:
 # fileHandle - File we are iterating
@@ -122,9 +113,9 @@ def parseTreeRecursive(fileHandle, depth, name, typeName, results):
 
                     # Add our symbols!
                     if 'symdeps' not in currentBuildElement:
-                        currentBuildElement['symdeps'] = getSymUses(name)
+                        currentBuildElement['symdeps'] = extract_symbols.get_symbols_used(name)
                     if 'symdefs' not in currentBuildElement:
-                        currentBuildElement['symdefs'] = getSymDefinitions(name)
+                        currentBuildElement['symdefs'] = extract_symbols.get_symbols_defined(name)
                 elif typeName == "archive":
                     if 'objects' not in currentBuildElement:
                         currentBuildElement['objects'] = []
