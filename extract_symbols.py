@@ -16,12 +16,24 @@ import subprocess
 
 # TODO: Use the python library to read elf files, so we know the file exists at this point
 def get_symbols_used(object_file):
-    uses = subprocess.check_output("nm -u " + object_file + " | c++filt", shell=True)
+    uses = ""
+    if sys.platform == 'linux2':
+        uses = subprocess.Popen("nm " + object_file +
+                " | grep -e \"^.\\{9\\}U\" | c++filt | sed 's/^.\\{11\}\\(.*\\)/\\1/'",
+                shell=True).stdout
+    else:
+        uses = subprocess.check_call("nm -u " + object_file + " | c++filt", shell=True)
     uses = [ use for use in uses.split('\n') if use != "" ]
     return uses
 
 def get_symbols_defined(object_file):
-    definitions = subprocess.check_output("nm -jU " + object_file + " | c++filt", shell=True)
+    definitions = ""
+    if sys.platform == 'linux2':
+        definitions = subprocess.Popen("nm " + object_file +
+                " | grep -v -e \"^.\\{9\\}U\" | c++filt | sed 's/^.\\{11\}\\(.*\\)/\\1/'",
+                shell=True).stdout
+    else:
+        definitions = subprocess.check_output("nm -jU " + object_file + " | c++filt", shell=True)
     definitions = [ definition for definition in definitions.split('\n') if definition != "" ]
     return definitions
 
