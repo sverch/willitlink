@@ -54,7 +54,7 @@ class Graph(object):
     def __init__(self):
         self.graph = dict()
 
-    def add(item, deps):
+    def add(self, item, deps):
         if item not in self.graph:
             self.graph[item] = set()
 
@@ -62,9 +62,9 @@ class Graph(object):
             for dep in deps:
                 self.graph[item].add(dep)
         else:
-            self.graph[item].add(dep)
+            self.graph[item].add(deps)
 
-    def get(item):
+    def get(self, item):
         return list(self.graph[item])
 
     def fetch(self):
@@ -72,14 +72,15 @@ class Graph(object):
         for k in self.graph.keys():
             r[k] = self.get(k)
 
-        return k
+        return r
 
 class MultiGraph(object):
     def __init__(self, relationships):
         self.relationships = relationships
         self.graphs = self.new_graph()
         self.subset = False
-        self.lists = lists
+        self.has_lists = False
+        self.lists = []
 
     def make_lists(self, lists):
         self.lists.extend(lists)
@@ -87,6 +88,8 @@ class MultiGraph(object):
         for l in lists:
             if not hasattr(self, l):
                 setattr(self, l, list())
+
+        self.has_lists = True
 
     def uniquify_lists(self):
         if self.has_lists is False:
@@ -125,7 +128,7 @@ class MultiGraph(object):
 
         return o
 
-    def narrow(self, item)
+    def narrow(self, item):
         graph = MultiGraph()
         grap.subset = True
 
@@ -159,8 +162,8 @@ class MultiGraph(object):
     def fetch(self):
         o = {
             'timestamp': datetime.datetime.utcnow().strftime("%s"),
-            'path' os.getcwd(),
-            'relationships': self.relationships
+            'path': os.getcwd(),
+            'relationships': self.relationships,
             'graphs': {},
             'subset': self.subset
             }

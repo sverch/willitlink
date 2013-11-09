@@ -35,7 +35,7 @@ import dep_graph
 #         ],
 #         ...
 #    }
-#    "symbols_needed" : { // files_to_symbol_dependencies
+#    "symbols_needed" : { // file_to_symbol_dependencies
 #         "file_that_uses_shutdown.o" : [
 #             "mongo::inShutdown()",
 #         ],
@@ -95,11 +95,15 @@ def generate_edges(build_objects):
             if 'symdeps' in build_object:
                 for symdep in build_object['symdeps']:
 
+                    # Skip this symbol if it's the empty string
+                    if symdep == "":
+                        continue
+
                     # Add this symbol to the set of all symbols
                     g.symbols.append(symdep)
 
                     # Add an edge to indicate that a file depends on these symbols
-                    g.add(relationship='files_to_symbol_dependencies',
+                    g.add(relationship='file_to_symbol_dependencies',
                           item=build_object_name,
                           deps=symdep)
 
@@ -110,6 +114,10 @@ def generate_edges(build_objects):
 
             if 'symdefs' in build_object:
                 for symdef in build_object['symdefs']:
+
+                    # Skip this symbol if it's the empty string
+                    if symdef == "":
+                        continue
 
                     # Add this symbol to the set of all symbols
                     g.symbols.append(symdef)
@@ -131,7 +139,7 @@ def generate_edges(build_objects):
                 for libdep in build_object['deps']:
 
                     # Add this symbol to the set of all files
-                    g.files.append(lidep)
+                    g.files.append(libdep)
 
                     # Add an edge to indicate that this file provides this symbol
                     g.add(relationship='target_to_dependencies',
@@ -172,7 +180,7 @@ def main():
     client = pymongo.MongoClient()
 
     try:
-        out_fn = sys.argv[0]
+        out_fn = sys.argv[1]
     except IndexError:
         out_fn = 'new_format_deps.json'
 
