@@ -1,3 +1,4 @@
+import os.path
 import argparse
 
 from generate_new_format import generate_edges
@@ -9,9 +10,9 @@ def main():
     parser = argparse.ArgumentParser("willitlink Ingestion.")
 
     parser.add_argument('--timers', '-t', default=False, action='store_true')
-    parser.add_argument('input_tree')
-    parser.add_argument('dep_info')
-    parser.add_argument('output_deps')
+    parser.add_argument('input_tree', default=os.path.join(os.path.dirname(__file__), "dependency_tree.txt"))
+    parser.add_argument('dep_info', default=os.path.join(os.path.dirname(__file__), "deps.json"))
+    parser.add_argument('output_deps', default=os.path.join(os.path.dirname(__file__), "dep_graph.json"))
 
     args = parser.parse_args()
 
@@ -19,8 +20,8 @@ def main():
         results = parse_tree(args.input_tree,
                              list())
 
-    with Timer('importing dep info', arg.timers):
-        ingest_deps(args.dep_inf, results)
+    with Timer('importing dep info', args.timers):
+        ingest_deps(args.dep_info, results)
 
     with Timer('generating graph', args.timers):
         g = generate_edges(results)

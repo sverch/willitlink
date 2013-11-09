@@ -19,7 +19,7 @@ index e17a4fa..8b7b524 100644
      node.attributes.libdeps_exploring = True
      try:
          try:
-@@ -113,9 +116,26 @@ def __compute_libdeps(node):
+@@ -113,9 +116,24 @@ def __compute_libdeps(node):
              if len(e.cycle_nodes) == 1 or e.cycle_nodes[0] != e.cycle_nodes[-1]:
                  e.cycle_nodes.append(node)
                  raise
@@ -37,12 +37,10 @@ index e17a4fa..8b7b524 100644
      finally:
          node.attributes.libdeps_exploring = False
  
-+    outputobj = {}
-+    outputobj['_id'] = str(node)
-+    outputobj['type'] = 'special'
-+    outputobj['libdeps'] = [ str(dep) for dep in topleveldeps ]
++    outputobj_name = str(node)
++    outputobj = { '_id': outputobj_name, 'type': 'special', 'libdeps': [ str(dep) for dep in topleveldeps ] }
 +    #print json.dumps(outputobj, indent=4, separators=(',', ': '))
-+    print json.dumps(outputobj)
++    print('[wil] [scons]: captured object for {0}'.format(outputobj_name))
      return deps
  
  def __get_syslibdeps(node):

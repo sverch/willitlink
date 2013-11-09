@@ -76,9 +76,10 @@ class RegexLib(object):
         self.seven = re.compile("^" + prefix + "..\+-")
 
 def recursive_parse_tree(fileHandle, depth, name, typeName, results):
-    currentBuildElement = {}
-    currentBuildElement['_id'] = name
-    currentBuildElement['type'] = typeName
+    currentBuildElement = {
+        '_id': name,
+        'type': typeName
+    }
 
     r = RegexLib(depth)
 
@@ -87,12 +88,12 @@ def recursive_parse_tree(fileHandle, depth, name, typeName, results):
         # Weeeeird......
         if r.one.search(line) is not None:
             # This is pretty awful
-            inlineCodeString = ""
+            inline_code_string_parts = []
             for line in fileHandle:
                 if r.two.search(line) is not None:
                     break
-                inlineCodeString = inlineCodeString + line
-            currentBuildElement['inlineCode'] = inlineCodeString
+                inline_code_string_parts.append(line)
+            currentBuildElement['inlineCode'] = ''.join(inline_code_string_parts)
 
         # If we see something at our prefix, we know we've reached the end of this section
         if r.three.search(line) is not None:
@@ -153,7 +154,7 @@ def recursive_parse_tree(fileHandle, depth, name, typeName, results):
                     return lineAfterSection
                 elif r.seven.search(lineAfterSection) is not None:
                     m = r.five.search(lineAfterSection)
-                    if m == None:
+                    if m is None:
                         m = r.six.search(lineAfterSection)
                     nextSection = m.group(1)
                 else:

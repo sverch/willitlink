@@ -16,25 +16,25 @@ import subprocess
 
 # TODO: Use the python library to read elf files, so we know the file exists at this point
 def get_symbols_used(object_file):
-    uses = ""
-    if sys.platform == 'linux2':
-        cmd = r"nm " + object_file + r' | grep -e "^.\{9\}U" | c++filt | sed "s/^.\{11\}\(.*\)/\1/"'
+    if sys.platform.startswith('linux'):
+        cmd = r'nm "' + object_file + r'" | grep -e "^.\{9\}U" | c++filt | sed "s/^.\{11\}\(.*\)/\1/"'
+
         p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
         uses = p.communicate()[0]
     else:
-        uses = subprocess.check_output("nm -u " + object_file + " | c++filt", shell=True)
-    return [ use for use in uses.split('\n') if use != "" ]
+        uses = subprocess.check_call("nm -u " + object_file + " | c++filt", shell=True)
+
+    return [ use for use in str(uses).split('\n') ]
 
 def get_symbols_defined(object_file):
-    definitions = ""
-    if sys.platform == 'linux2':
-        cmd = r"nm " + object_file + r' | grep -v -e "^.\{9\}U" | c++filt | sed "s/^.\{11\}\(.*\)/\1/"'
+    if sys.platform.startswith('linux'):
+        cmd = r'nm "' + object_file + r'" | grep -v -e "^.\{9\}U" | c++filt | sed "s/^.\{11\}\(.*\)/\1/"'
         p = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True)
         definitions = p.communicate()[0]
     else:
-        definitions = subprocess.check_output("nm -jU " + object_file + " | c++filt", shell=True)
+        definitions = subprocess.check_output("nm -U " + object_file + " | c++filt", shell=True)
 
-    return [ definition for definition in definitions.split('\n') if definition != "" ]
+    return [ definition for definition in str(definitions).split('\n') ]
 
 def usage():
     print("Usage: " + sys.argv[0] + " file [defined/used (default=defined)]")
