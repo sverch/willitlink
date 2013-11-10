@@ -51,10 +51,17 @@ import json
 logger = logging.getLogger(__name__)
 
 class Graph(object):
-    def __init__(self):
-        self.graph = dict()
+    def __init__(self, base=None):
+        if base is None:
+            self.graph = dict()
+        else:
+            self.graph = base
 
     def add(self, item, deps):
+        if isinstance(item, list):
+            print item
+            return
+
         if item not in self.graph:
             self.graph[item] = set()
 
@@ -75,8 +82,12 @@ class Graph(object):
         return r
 
 class MultiGraph(object):
-    def __init__(self, relationships):
-        self.relationships = relationships
+    def __init__(self, relationships=None):
+        if relationships is None:
+            self.relationships = []
+        else:
+            self.relationships = relationships
+
         self.graphs = self.new_graph()
         self.subset = False
         self.has_lists = False
@@ -117,7 +128,7 @@ class MultiGraph(object):
 
     def get(self, relationship, item):
         if relationship in self.relationships:
-            self.graphs[relationship].get(item)
+            return self.graphs[relationship].get(item)
         else:
             logger.debug('cannot fetch non-extant relationship type ' + relationship)
 
@@ -130,7 +141,7 @@ class MultiGraph(object):
 
     def narrow(self, item):
         graph = MultiGraph()
-        grap.subset = True
+        graph.subset = True
 
         for i in self.relationships:
             graph.add(i, item, self.graphs[i].get(item))
@@ -151,11 +162,10 @@ class MultiGraph(object):
 
             rels = data['relationships']
 
-            c = cls(rels)
-            c.subset = data['subset']
+            c = MultiGraph(rels)
 
             for relationship, graph in data['graphs'].items():
-                c[relationship] = graph
+                c.graphs[relationship] = Graph(graph)
 
             return c
 

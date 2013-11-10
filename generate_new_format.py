@@ -69,7 +69,7 @@ import dep_graph
 
 def generate_edges(build_objects):
     relationships = [
-                      'symbol_to_file_sources', 'symbol_to_file_sources',
+                      'symbol_to_file_sources', 'symbol_to_file_dependencies',
                       'file_to_symbol_definitions', 'file_to_symbol_dependencies',
                       'target_to_dependencies', 'archives_to_components', 'dependency_to_targets'
                     ]

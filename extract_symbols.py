@@ -14,27 +14,46 @@ import os
 import sys
 import subprocess
 
+def list_process(items):
+    r = []
+    for l in items:
+        if isinstance(l, list):
+            for i in l:
+                if i.startswith('.L'):
+                    continue
+                else:
+                    r.append(str(i))
+        else:
+            if l.startswith('.L'):
+                continue
+            else:
+                r.append(str(l))
+    return r
+
 # TODO: Use the python library to read elf files, so we know the file exists at this point
 def get_symbols_used(object_file):
     if sys.platform.startswith('linux'):
-        cmd = r'nm "' + object_file + r'" | grep -e "^.\{9\}U" | c++filt | sed "s/^.\{11\}\(.*\)/\1/"'
-
+        cmd = r'nm "' + object_file + r'" | grep -e "U " | c++filt'
         p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
-        uses = p.communicate()[0]
+        uses = p.communicate()[0].decode()
     else:
         uses = subprocess.check_call("nm -u " + object_file + " | c++filt", shell=True)
 
-    return [ use for use in str(uses).split('\n') ]
+    return list_process([ use.strip()[2:]
+                          for use in uses.split('\n')
+                          if use != '' ])
 
 def get_symbols_defined(object_file):
     if sys.platform.startswith('linux'):
-        cmd = r'nm "' + object_file + r'" | grep -v -e "^.\{9\}U" | c++filt | sed "s/^.\{11\}\(.*\)/\1/"'
+        cmd = r'nm "' + object_file + r'" | grep -v -e "U " | c++filt'
         p = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True)
-        definitions = p.communicate()[0]
+        definitions = p.communicate()[0].decode()
     else:
         definitions = subprocess.check_output("nm -U " + object_file + " | c++filt", shell=True)
 
-    return [ definition for definition in str(definitions).split('\n') ]
+    return list_process([ definition.strip().split(' ', 2)[2:]
+                          for definition in definitions.split('\n')
+                          if definition != '' ])
 
 def usage():
     print("Usage: " + sys.argv[0] + " file [defined/used (default=defined)]")

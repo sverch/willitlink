@@ -27,4 +27,5 @@ def main():
     symbol = sys.argv[1]
     locate_symbol_dependency(symbol)
 
-main()
+if __name__ == '__main__':
+    main()
