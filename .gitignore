@@ -3,3 +3,4 @@ dependency_tree.txt
 deps.json
 *.pyc
 dep_graph.json
+*.json
