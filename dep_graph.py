@@ -74,11 +74,31 @@ class Graph(object):
     def get(self, item):
         return list(self.graph[item])
 
+    def get_startswith(self, name):
+        r = dict()
+        for i in self.graph.keys():
+            if i.startswith(name):
+                r[i] = self.get(i)
+        return r
+
+    def get_endswith(self, name):
+        r = dict()
+        for i in self.graph.keys():
+            if i.endswith(name):
+                r[i] = self.get(i)
+        return r
+
+    def holds(self, name):
+        r = dict()
+        for k, v in self.graph.items():
+            if name in v:
+                r[k] = v
+        return r
+
     def fetch(self):
         r = dict()
         for k in self.graph.keys():
             r[k] = self.get(k)
-
         return r
 
 class MultiGraph(object):
@@ -130,7 +150,25 @@ class MultiGraph(object):
         if relationship in self.relationships:
             return self.graphs[relationship].get(item)
         else:
-            logger.debug('cannot fetch non-extant relationship type ' + relationship)
+            logger.debug('cannot fetch from non-extant relationship type ' + relationship)
+
+    def get_startswith(self, relationship, name):
+        if relationship in self.relationships:
+            return self.graphs[relationship].get_startswith(name)
+        else:
+            logger.debug('cannot fetch from non-extant relationship type ' + relationship)
+
+    def get_endswith(self, relationship, name):
+        if relationship in self.relationships:
+            return self.graphs[relationship].get_endswith(name)
+        else:
+            logger.debug('cannot fetch from non-extant relationship type ' + relationship)
+
+    def get_holds(self, relationship, name):
+        if relationship in self.relationships:
+            return self.graphs[relationship].get_holds(name)
+        else:
+            logger.debug('cannot fetch from non-extant relationship type ' + relationship)
 
     def resolve(self, item):
         o = dict()
