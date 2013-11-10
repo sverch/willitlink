@@ -15,7 +15,7 @@ rm -f $DIR/deps.json $DIR/dep_graph.json $DIR/dependency_tree.txt
 # hard code what kind of build I'm doing. Building with SSL now to detect more dependencies.
 
 # Build to make sure we have all our .o files for willitlink.py
-scons --ssl $@ all
+scons -Q --silent --ssl $@ all
 
 # Prints out a "tree" of dependencies to the given file
 scons --ssl $@ --tree=all,prune all >> $DIR/dependency_tree.txt
