@@ -1,3 +1,21 @@
+diff --git a/SConstruct b/SConstruct
+index 9a1c888..0091fb5 100644
+--- a/SConstruct
++++ b/SConstruct
+@@ -343,13 +343,6 @@ if GetOption('help'):
+ 
+ variantDir = get_variant_dir()
+ 
+-def printLocalInfo():
+-    import sys, SCons
+-    print( "scons version: " + SCons.__version__ )
+-    print( "python version: " + " ".join( [ `i` for i in sys.version_info ] ) )
+-
+-printLocalInfo()
+-
+ boostLibs = [ "thread" , "filesystem" , "program_options", "system" ]
+ 
+ onlyServer = len( COMMAND_LINE_TARGETS ) == 0 or ( len( COMMAND_LINE_TARGETS ) == 1 and str( COMMAND_LINE_TARGETS[0] ) in [ "mongod" , "mongos" , "test" ] )
 diff --git a/site_scons/libdeps.py b/site_scons/libdeps.py
 index e17a4fa..3cbaaa5 100644
 --- a/site_scons/libdeps.py
