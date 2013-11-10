@@ -25,6 +25,7 @@ scons --ssl $@ --tree=all,prune all >> $DIR/dependency_tree.txt
 git checkout site_scons/libdeps.py
 git apply $DIR/print_scons_libdeps.patch
 scons --ssl $@ all | grep -e "^{" >> $DIR/deps.json
+git checkout site_scons/libdeps.py
 
 echo "[wil]: completed data generation, moving to ingestion phase."
 python $DIR/new_ingestion.py -t $DIR/dependency_tree.txt $DIR/deps.json $DIR/dep_graph.json

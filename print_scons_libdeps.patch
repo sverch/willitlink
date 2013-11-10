@@ -1,5 +1,5 @@
 diff --git a/site_scons/libdeps.py b/site_scons/libdeps.py
-index e17a4fa..8b7b524 100644
+index e17a4fa..3cbaaa5 100644
 --- a/site_scons/libdeps.py
 +++ b/site_scons/libdeps.py
 @@ -56,6 +56,8 @@ import SCons.Errors
@@ -19,7 +19,7 @@ index e17a4fa..8b7b524 100644
      node.attributes.libdeps_exploring = True
      try:
          try:
-@@ -113,9 +116,24 @@ def __compute_libdeps(node):
+@@ -113,9 +116,22 @@ def __compute_libdeps(node):
              if len(e.cycle_nodes) == 1 or e.cycle_nodes[0] != e.cycle_nodes[-1]:
                  e.cycle_nodes.append(node)
                  raise
@@ -37,10 +37,17 @@ index e17a4fa..8b7b524 100644
      finally:
          node.attributes.libdeps_exploring = False
  
-+    outputobj_name = str(node)
-+    outputobj = { '_id': outputobj_name, 'type': 'special', 'libdeps': [ str(dep) for dep in topleveldeps ] }
-+    #print json.dumps(outputobj, indent=4, separators=(',', ': '))
-+    print('[wil] [scons]: captured object for {0}'.format(outputobj_name))
++    print({ '_id': str(node), 'type': 'special', 'libdeps': [ str(dep) for dep in topleveldeps ] })
++
      return deps
  
  def __get_syslibdeps(node):
+@@ -256,7 +272,7 @@ def setup_environment(env):
+         env['_LIBDEPS'] = '$_LIBDEPS_LIBS'
+ 
+     # TODO: remove this
+-    # this is a horrible horrible hack for 
++    # this is a horrible horrible hack for
+     # for 32-bit solaris
+     if "uname" in dir(os) and os.uname()[1] == "sun32b":
+         env['_LIBDEPS_LIBS'] = get_libdeps_special_sun
