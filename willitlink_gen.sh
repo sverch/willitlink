@@ -18,13 +18,13 @@ rm -f $DIR/deps.json $DIR/dep_graph.json $DIR/dependency_tree.txt
 scons -Q --silent --ssl $@ all
 
 # Prints out a "tree" of dependencies to the given file
-scons --ssl $@ --tree=all,prune all >> $DIR/dependency_tree.txt
+scons --ssl $@ --tree=all,prune all >| $DIR/dependency_tree.txt
 
 # Code to extract the dependencies between "*.a" files.  We need to do this because we have our own
 # custom thing that handles LIBDEPS specially in site_scons/libdeps.py
 git checkout site_scons/libdeps.py
 git apply $DIR/print_scons_libdeps.patch
-scons --ssl $@ all | grep -e "^{" >> $DIR/deps.json
+scons --ssl $@ all | grep -e "^{" >| $DIR/deps.json
 git checkout site_scons/libdeps.py
 
 echo "[wil]: completed data generation, moving to ingestion phase."
