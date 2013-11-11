@@ -8,7 +8,7 @@ import new_ingestion
 import dep_graph
 
 def render_data_for_cli(g, name, rel):
-    return json.dumps( { rel: { name: g.get(rel, name)}}, indent=3)
+    return json.dumps( { rel: { name: g.get_endswith(rel, name)}}, indent=3)
 
 def get_relationship_node(args):
     g = dep_graph.MultiGraph().load(args.data)

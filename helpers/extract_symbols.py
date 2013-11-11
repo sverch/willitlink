@@ -39,7 +39,7 @@ def get_symbols_used(object_file):
     else:
         uses = subprocess.check_output("nm -u " + object_file + " | c++filt", shell=True)
 
-    return list_process([ use.strip()[2:]
+    return list_process([ use.strip()
                           for use in uses.split('\n')
                           if use != '' ])
 
@@ -49,9 +49,9 @@ def get_symbols_defined(object_file):
         p = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True)
         definitions = p.communicate()[0].decode()
     else:
-        definitions = subprocess.check_output("nm -U " + object_file + " | c++filt", shell=True)
+        definitions = subprocess.check_output("nm -jU " + object_file + " | c++filt", shell=True)
 
-    return list_process([ definition.strip().split(' ', 2)[2:]
+    return list_process([ definition.strip()
                           for definition in definitions.split('\n')
                           if definition != '' ])
 
