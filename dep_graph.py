@@ -122,6 +122,13 @@ class MultiGraph(object):
 
         self.has_lists = True
 
+    def extend_list(self, list_name, content):
+        if list_name in self.lists:
+            current = getattr(self, list_name)
+            joined_list = current.extend(content)
+
+            setattr(self, list_name, joined_list)
+
     def uniquify_lists(self):
         if self.has_lists is False:
             return False
@@ -205,6 +212,11 @@ class MultiGraph(object):
             for relationship, graph in data['graphs'].items():
                 c.graphs[relationship] = Graph(graph)
 
+            c.make_lists(data['lists'])
+
+            for lst in data['lists']:
+                c.extend_list(lst, data['list_contents'][lst])
+
             return c
 
     def fetch(self):
@@ -213,11 +225,16 @@ class MultiGraph(object):
             'path': os.getcwd(),
             'relationships': self.relationships,
             'graphs': {},
-            'subset': self.subset
+            'subset': self.subset,
+            'lists': self.lists,
+            'lists_contents': { }
             }
 
         for i in self.relationships:
             o['graphs'][i] = self.graphs[i].fetch()
+
+        for i in self.lists:
+            o['list_contents'][i] = getattr(self, i)
 
         return o
 
