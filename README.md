@@ -15,5 +15,5 @@ My normal debug build:
     bash ~/projects/willitlink/willitlink\_gen.sh --dd --mute -j 8
 
 This should populate the ~/projects/willitlink directory with a file called dep\_graph.json.  This
-is a file in a format that is readable by the graph library in dep\_graph.py.  See wil.py for
-examples of how to use this library.
+is a file in a format that is readable by the graph library in dep\_graph.py.  See find\_leaks.py
+for an example of how to use this library.
