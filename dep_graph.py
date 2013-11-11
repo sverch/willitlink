@@ -50,6 +50,9 @@ import json
 
 logger = logging.getLogger(__name__)
 
+class GraphError(Exception):
+    pass
+
 class Graph(object):
     def __init__(self, base=None):
         if base is None:
@@ -59,15 +62,14 @@ class Graph(object):
 
     def add(self, item, deps):
         if isinstance(item, list):
-            print item
+            print(item)
             return
 
         if item not in self.graph:
             self.graph[item] = set()
 
         if isinstance(deps, list):
-            for dep in deps:
-                self.graph[item].add(dep)
+            self.graph[item].update(dep)
         else:
             self.graph[item].add(deps)
 
@@ -218,6 +220,23 @@ class MultiGraph(object):
                 c.extend_list(lst, data['list_contents'][lst])
 
             return c
+
+    def merge(self, g):
+        for item in g.relationships:
+            if item not in self.relationships:
+                logger.warning('cannot merge dissimilar graphs: {0} is not in target graph'.format(item))
+                raise GraphError
+
+        self.make_lists(g.lists)
+
+        for lst in g.lists:
+            self.extend_list(lst, getattr(g, lst))
+
+        self.uniquify_lists()
+
+        for rel in g.relationship():
+            for k,v in g.graphs[rel].items():
+                self.graphs[rel].add(k, v)
 
     def fetch(self):
         o = {
