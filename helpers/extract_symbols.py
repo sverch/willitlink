@@ -36,24 +36,34 @@ def get_symbols_used(object_file):
         cmd = r'nm "' + object_file + r'" | grep -e "U " | c++filt'
         p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
         uses = p.communicate()[0].decode()
+
+        # Linux prints some extra information at the beginning of each symbol line, so we need to
+        # strip that out here
+        return list_process([ use[11:]
+                              for use in uses.split('\n')
+                              if use != '' ])
     else:
         uses = subprocess.check_output("nm -u " + object_file + " | c++filt", shell=True)
-
-    return list_process([ use.strip()
-                          for use in uses.split('\n')
-                          if use != '' ])
+        return list_process([ use.strip()
+                              for use in uses.split('\n')
+                              if use != '' ])
 
 def get_symbols_defined(object_file):
     if sys.platform.startswith('linux'):
         cmd = r'nm "' + object_file + r'" | grep -v -e "U " | c++filt'
         p = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True)
         definitions = p.communicate()[0].decode()
+
+        # Linux prints some extra information at the beginning of each symbol line, so we need to
+        # strip that out here
+        return list_process([ definition[11:]
+                              for definition in definitions.split('\n')
+                              if definition != '' ])
     else:
         definitions = subprocess.check_output("nm -jU " + object_file + " | c++filt", shell=True)
-
-    return list_process([ definition.strip()
-                          for definition in definitions.split('\n')
-                          if definition != '' ])
+        return list_process([ definition.strip()
+                              for definition in definitions.split('\n')
+                              if definition != '' ])
 
 def usage():
     print("Usage: " + sys.argv[0] + " file [defined/used (default=defined)]")
