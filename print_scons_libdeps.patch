@@ -55,7 +55,7 @@ index e17a4fa..3cbaaa5 100644
      finally:
          node.attributes.libdeps_exploring = False
  
-+    print({ '_id': str(node), 'type': 'special', 'libdeps': [ str(dep) for dep in topleveldeps ] })
++    print(json.dumps({ '_id': str(node), 'type': 'special', 'libdeps': [ str(dep) for dep in topleveldeps ] }))
 +
      return deps
  

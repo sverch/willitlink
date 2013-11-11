@@ -12,7 +12,12 @@ def usage ():
     print("Usage: %s <json file>" % sys.argv[0])
 
 def process_dep(line, results):
-    buildElement = json.loads(line)
+    try:
+        buildElement = json.loads(line)
+    except ValueError, e:
+        print "Failed to parse line as JSON: " + e
+        print line
+        sys.exit(-1)
 
     if isinstance(results, MongoClient):
         try:
