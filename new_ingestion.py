@@ -1,10 +1,10 @@
 import os.path
 import argparse
 
-from generate_new_format import generate_edges
-from parse_scons_dependency_tree import parse_tree
-from import_dep_info import ingest_deps
-from dev_tools import Timer
+from helpers.generate_new_format import generate_edges
+from helpers.parse_scons_dependency_tree import parse_tree
+from helpers.import_dep_info import ingest_deps
+from helpers.dev_tools import Timer
 
 def ingestion_worker(input_tree, dep_info, output_dep_file, timer=False):
     with Timer('parsing', timer):
