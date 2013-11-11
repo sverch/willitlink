@@ -75,17 +75,17 @@ class Graph(object):
         return list(self.graph[item])
 
     def get_startswith(self, name):
-        r = dict()
+        r = list()
         for i in self.graph.keys():
             if i.startswith(name):
-                r[i] = self.get(i)
+                r = self.get(i)
         return r
 
     def get_endswith(self, name):
-        r = dict()
+        r = list()
         for i in self.graph.keys():
             if i.endswith(name):
-                r[i] = self.get(i)
+                r = self.get(i)
         return r
 
     def holds(self, name):
