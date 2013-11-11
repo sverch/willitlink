@@ -12,6 +12,9 @@ def usage ():
     print("Usage: %s <json file>" % sys.argv[0])
 
 def process_dep(line, results):
+
+    buildElement = {}
+
     try:
         buildElement = json.loads(line)
     except ValueError, e:
@@ -34,16 +37,13 @@ def process_dep(line, results):
                     sys.exit(-1)
             print("Duplicate Key!")
     elif isinstance(results, list):
-        if buildElement in results:
-            if 'libdeps' in buildElement:
-                idx = results.index(buildElement)
-                buildElement['deps'] = buildElement["libdeps"]
-                results[idx] = buildElement
-            else:
-                print("Dude, we have an special without libdeps, you screwed up")
-                sys.exit(-1)
-        else:
-            results.append(results)
+        for result in results:
+            if result['_id'] == buildElement['_id']:
+                if 'libdeps' in buildElement:
+                    result['deps'] = buildElement["libdeps"]
+                else:
+                    print("Dude, we have an special without libdeps, you screwed up")
+                    sys.exit(-1)
 
 def ingest_deps(filename, results):
     with open(filename, 'r') as f:
