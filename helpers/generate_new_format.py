@@ -83,7 +83,14 @@ def generate_edges(build_objects):
     for build_object in build_objects:
         count += 1
 
-        build_object_name = build_object['_id']
+        build_object_name = ""
+        try:
+            build_object_name = build_object['_id']
+        except TypeError, e:
+            print "Failed to get name of build object: " + str(e)
+            # This prints something huge, so maybe it's not what we are expecting
+            #print build_object
+            sys.exit(-1)
 
         # Add this file
         g.files.append(build_object_name)
