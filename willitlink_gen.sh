@@ -16,6 +16,7 @@ rm -f $DIR/deps.json $DIR/dep_graph.json $DIR/dependency_tree.txt
 # We need to do this because we have our own
 # custom thing that handles LIBDEPS specially in site_scons/libdeps.py
 
+git checkout SConstruct
 git checkout site_scons/libdeps.py
 git apply $DIR/print_scons_libdeps.patch
 scons --ssl $@ all | grep -e "^{" >| $DIR/deps.json
