@@ -246,11 +246,12 @@ class MultiGraph(object):
             'graphs': {},
             'subset': self.subset,
             'lists': self.lists,
-            'lists_contents': { }
+            'list_contents': { }
             }
 
         for i in self.relationships:
             o['graphs'][i] = self.graphs[i].fetch()
+
 
         for i in self.lists:
             o['list_contents'][i] = getattr(self, i)
