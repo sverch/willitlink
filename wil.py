@@ -6,12 +6,14 @@ import json
 
 import new_ingestion
 import dep_graph
+from helpers.dev_tools import Timer
 
 def render_data_for_cli(g, name, rel):
     return json.dumps( { rel: { name: g.get_endswith(rel, name)}}, indent=3)
 
 def get_relationship_node(args):
-    g = dep_graph.MultiGraph().load(args.data)
+    with Timer('loading graph {0}'.format(args.data), args.timers):
+        g = dep_graph.MultiGraph(timers=args.timers).load(args.data)
 
     try:
         print(render_data_for_cli(g, args.name, args.relationship))
@@ -19,7 +21,7 @@ def get_relationship_node(args):
         print('[wil]: there is no {0} named {1}'.format(args.thing, args.name))
 
 def main():
-    default_data_file = os.path.join(os.path.dirname(__file__), "dep_graph.json")
+    default_data_file = os.path.join(os.path.dirname(__file__), "dep_graph.pickle")
 
     relationships = { 'symdep':('symbol_to_file_sources', 'symbol'),
                       'symsrc':('symbol_to_file_dependencies', 'symbol'),
@@ -31,6 +33,7 @@ def main():
                     }
 
     parser = argparse.ArgumentParser()
+    parser.add_argument('--timers', '-t', default=False, action='store_true')
     subparsers = parser.add_subparsers(dest='command')
 
     ingest_parser = subparsers.add_parser('ingest')
@@ -55,7 +58,8 @@ def main():
         'deptarget': get_relationship_node,
     }
 
-    operations[args.command](args)
+    with Timer('complete operation time', args.timers):
+        operations[args.command](args)
 
 if __name__ == '__main__':
     main()

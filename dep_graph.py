@@ -47,7 +47,13 @@ import os
 import datetime
 import logging
 import json
-import pickle
+
+try:
+    import cPickle as pickle
+except ImportError:
+    import pickle
+
+from helpers.dev_tools import Timer
 
 logger = logging.getLogger(__name__)
 
@@ -104,8 +110,11 @@ class Graph(object):
             r[k] = self.get(k)
         return r
 
+    def get_nodes(self):
+        return list(self.graph.keys())
+
 class MultiGraph(object):
-    def __init__(self, relationships=None):
+    def __init__(self, relationships=None, timers=False):
         if relationships is None:
             self.relationships = []
         else:
@@ -115,6 +124,7 @@ class MultiGraph(object):
         self.subset = False
         self.has_lists = False
         self.lists = []
+        self.timer = timers
 
     def make_lists(self, lists):
         self.lists.extend(lists)
@@ -180,6 +190,9 @@ class MultiGraph(object):
         else:
             logger.debug('cannot fetch from non-extant relationship type ' + relationship)
 
+    def get_nodes(self, relationship):
+        return self.graphs[relationship].get_nodes()
+
     def resolve(self, item):
         o = dict()
         for i in self.relationships:
@@ -205,30 +218,17 @@ class MultiGraph(object):
             logger.debug('cannot load from non existing file {0} please rebuild'.format(fn))
             return False
 
+        if fn.endswith('pickle') or fn.endswith('pkl'):
+            loader = pickle.load
+        elif fn.endswith('json') or fn.endswith('jsn'):
+            loader = json.load
+        elif fn.endsiwth('bson') or fn.endswith('bsn'):
+            from bson import BSON
+            b = BSON()
+            loader = b.decode
+
         with open(fn, 'r') as f:
-            data = json.load(f)
-
-            rels = data['relationships']
-
-            c = MultiGraph(rels)
-
-            for relationship, graph in data['graphs'].items():
-                c.graphs[relationship] = Graph(graph)
-
-            c.make_lists(data['lists'])
-
-            for lst in data['lists']:
-                c.extend_list(lst, data['list_contents'][lst])
-
-            return c
-
-    def load_pickle(cls, fn):
-        if not os.path.exists(fn):
-            logger.debug('cannot load from non existing file {0} please rebuild'.format(fn))
-            return False
-
-        with open(fn, 'rb') as f:
-            data = pickle.load(f)
+            data = loader(f)
 
             rels = data['relationships']
 
@@ -275,20 +275,30 @@ class MultiGraph(object):
         for i in self.relationships:
             o['graphs'][i] = self.graphs[i].fetch()
 
-
         for i in self.lists:
             o['list_contents'][i] = getattr(self, i)
 
         return o
 
     def export(self, fn='.depgraph.json'):
-        o = self.fetch()
+        is_bson = False
+        if fn.endswith('pickle') or fn.endswith('pkl'):
+            exporter = pickle.dump
+        elif fn.endswith('json') or fn.endswith('jsn'):
+            exporter = json.dump
+        elif fn.endsiwth('bson') or fn.endswith('bsn'):
+            from bson import BSON
+            b = BSON()
+            exporter = b.encode
+            is_bson = True
 
-        with open(fn, 'w') as f:
-            json.dump(o, f)
+        with Timer('constructing object for export', self.timer):
+            o = self.fetch()
 
-    def export_pickle(self, fn='.depgraph.pkl'):
-        o = self.fetch()
-
-        with open(fn, 'wb') as f:
-            pickle.dump(o, f)
+        if is_bson:
+            with open(fn, 'wb') as f:
+                bson_out = exporter(o)
+                f.write(bson_out)
+        else:
+            with open(fn, 'w') as f:
+                exporter(o, f)

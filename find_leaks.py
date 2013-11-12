@@ -5,6 +5,7 @@ import sys
 import json
 
 import dep_graph
+from helpers.dev_tools import Timer
 
 # Find all symbols defined in this archive and in all archives that this archive lists as
 # dependencies in scons
@@ -76,28 +77,21 @@ def find_direct_leaks(g, archive_name):
 
 def main():
     data_file = os.path.join(os.path.dirname(__file__), "dep_graph.json")
-    pkl_file = os.path.join(os.path.dirname(__file__), "dep_graph.pkl")
-
-    g = dep_graph.MultiGraph()
+    pkl_file = os.path.join(os.path.dirname(__file__), "dep_graph.pickle")
 
     if len(sys.argv) != 2:
-        print "Usage: " + sys.argv[0] + " <archive name>"
+        print("Usage: " + sys.argv[0] + " <archive name>")
         exit(1)
 
     if os.path.exists(pkl_file):
-        print "pickle!"
-        g.load_pickle(pkl_file)
-        print "pickle done!"
-    else:
-        print "json!"
-        g.load(data_file)
-        print "json done!"
+        data_file = pkl_file
+        print('[wil]: using pickle rather than json')
 
-    g.export_pickle(pkl_file)
+    with Timer('loading data file', True):
+        g = dep_graph.MultiGraph().load(data_file)
 
-    g = dep_graph.MultiGraph().load(data_file)
-
-    find_direct_leaks(g, sys.argv[1])
+    with Timer('leak detection query operation', True):
+        find_direct_leaks(g, sys.argv[1])
 
 if __name__ == '__main__':
     main()
