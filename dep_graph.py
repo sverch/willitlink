@@ -237,6 +237,11 @@ class MultiGraph(object):
             for relationship, graph in data['graphs'].items():
                 c.graphs[relationship] = Graph(graph)
 
+            c.make_lists(data['lists'])
+
+            for lst in data['lists']:
+                c.extend_list(lst, data['list_contents'][lst])
+
             return c
 
     def merge(self, g):
