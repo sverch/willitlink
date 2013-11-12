@@ -5,3 +5,6 @@ deps.json
 dep_graph.json
 dep_graph.pkl
 *.json
+#*#
+.#*
+*.pickle
