@@ -26,4 +26,4 @@ git checkout site_scons/libdeps.py
 scons $@ --tree=all,prune all >| $DIR/dependency_tree.txt
 
 echo "[wil]: completed data generation, moving to ingestion phase."
-python $DIR/new_ingestion.py -t $DIR/dependency_tree.txt $DIR/deps.json $DIR/dep_graph.json
+python $DIR/wil.py ingest -t $DIR/dependency_tree.txt $DIR/deps.json $DIR/dep_graph.json

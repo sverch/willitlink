@@ -4,7 +4,7 @@ import argparse
 import os
 import json
 
-import new_ingestion
+import helpers.ingestion as ingestion
 import dep_graph
 
 from find_leaks import find_direct_leaks
@@ -35,11 +35,13 @@ def get_list(args):
 def get_leaks(args):
     g = get_graph(args)
 
-    print(json.dumps( { 'archive': args.name, 'leaks': find_direct_leaks(g, args.name) }, indent=3))
+    with Timer('leaks query', args.timers):
+        leaks = find_direct_leaks(g, args.name)
+
+    print(json.dumps( { 'archive': args.name, 'leaks': leaks }, indent=3))
 
 def main():
     default_data_file = os.path.join(os.path.dirname(__file__), "dep_graph.json")
-
     relationships = { 'symdep':('symbol_to_file_sources', 'symbol'),
                       'symsrc':('symbol_to_file_dependencies', 'symbol'),
                       'filedef':('file_to_symbol_definitions', 'file'),
@@ -54,7 +56,7 @@ def main():
     subparsers = parser.add_subparsers(dest='command')
 
     ingest_parser = subparsers.add_parser('ingest')
-    ingest_parser = new_ingestion.ingestion_argparser(ingest_parser)
+    ingest_parser = ingestion.argparser(ingest_parser)
 
     for k,v in relationships.items():
         sp = subparsers.add_parser(k)
@@ -73,7 +75,7 @@ def main():
     args = parser.parse_args()
 
     operations = {
-        'ingest': new_ingestion.ingestion_command,
+        'ingest': ingestion.command,
         'symdep': get_relationship_node,
         'symsrc': get_relationship_node,
         'filedef': get_relationship_node,

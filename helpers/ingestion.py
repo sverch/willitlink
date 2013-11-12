@@ -6,7 +6,7 @@ from helpers.parse_scons_dependency_tree import parse_tree
 from helpers.import_dep_info import ingest_deps
 from helpers.dev_tools import Timer
 
-def ingestion_worker(input_tree, dep_info, output_dep_file, timer=False):
+def worker(input_tree, dep_info, output_dep_file, timer=False):
     with Timer('parsing', timer):
         results = parse_tree(input_tree, list())
 
@@ -19,23 +19,25 @@ def ingestion_worker(input_tree, dep_info, output_dep_file, timer=False):
     with Timer('writing output file', timer):
         g.export(output_dep_file)
 
-def ingestion_command(args):
-    ingestion_worker(args.input_tree, args.dep_info, args.output_deps, args.timers)
-
-def ingestion_argparser(parser):
+def argparser(parser):
     parser.add_argument('--timers', '-t', default=False, action='store_true')
+    parser.add_argument('--format', '-f', default='json', action='store', choices=['json', 'pickle', 'pkl', 'jsn'])
     parser.add_argument('input_tree', default=os.path.join(os.path.dirname(__file__), "dependency_tree.txt"))
     parser.add_argument('dep_info', default=os.path.join(os.path.dirname(__file__), "deps.json"))
-    parser.add_argument('output_deps', default=os.path.join(os.path.dirname(__file__), "dep_graph.json"))
+    parser.add_argument('output_dep_name', default=os.path.join(os.path.dirname(__file__), "dep_graph"))
 
     return parser
 
+def command(args):
+    output_fn = args.output_dep_name + '.' + args.format
+
+    worker(args.input_tree, args.dep_info, outpu_fn, args.timers)
+
 def main():
-    parser = ingestion_argparser(argparse.ArgumentParser("[wil]: willitlink ingestion"))
+    parser = argparser(argparse.ArgumentParser("[wil]: willitlink ingestion"))
     args = parser.parse_args()
 
-    ingestion_command(args)
-
+    command(args)
     print('[wil]: generated dependency MultiGraph at {0}'.format(args.output_deps))
 
 if __name__ == '__main__':
