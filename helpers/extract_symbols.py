@@ -16,6 +16,7 @@ import subprocess
 
 def list_process(items):
     r = []
+
     for l in items:
         if isinstance(l, list):
             for i in l:
@@ -28,6 +29,7 @@ def list_process(items):
                 continue
             else:
                 r.append(str(l))
+
     return r
 
 # TODO: Use the python library to read elf files, so we know the file exists at this point
@@ -39,7 +41,7 @@ def get_symbols_used(object_file):
 
         # Linux prints some extra information at the beginning of each symbol line, so we need to
         # strip that out here
-        return list_process([ use[11:]
+        return list_process([ use[19:]
                               for use in uses.split('\n')
                               if use != '' ])
     else:
@@ -56,7 +58,7 @@ def get_symbols_defined(object_file):
 
         # Linux prints some extra information at the beginning of each symbol line, so we need to
         # strip that out here
-        return list_process([ definition[11:]
+        return list_process([ definition[19:]
                               for definition in definitions.split('\n')
                               if definition != '' ])
     else:
