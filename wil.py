@@ -6,6 +6,8 @@ import json
 
 import new_ingestion
 import dep_graph
+
+from find_leaks import find_direct_leaks
 from helpers.dev_tools import Timer
 
 def get_graph(args):
@@ -29,6 +31,11 @@ def get_list(args):
     g = get_graph(args)
 
     print(json.dumps(getattr(g, args.name)))
+
+def get_leaks(args):
+    g = get_graph(args)
+
+    print(json.dumps( { 'archive': args.name, 'leaks': find_direct_leaks(g, args.name) }, indent=3))
 
 def main():
     default_data_file = os.path.join(os.path.dirname(__file__), "dep_graph.json")
@@ -59,6 +66,10 @@ def main():
     get_list_parser.add_argument('name', choices=['symbols', 'files'])
     get_list_parser.add_argument('--data', '-d', default=default_data_file)
 
+    get_leaks_parser = subparsers.add_parser('leaks')
+    get_leaks_parser.add_argument('name')
+    get_leaks_parser.add_argument('--data', '-d', default=default_data_file)
+
     args = parser.parse_args()
 
     operations = {
@@ -70,7 +81,8 @@ def main():
         'targetdep': get_relationship_node,
         'arc': get_relationship_node,
         'deptarget': get_relationship_node,
-        'list': get_list
+        'list': get_list,
+        'leaks': get_leaks,
     }
 
     with Timer('complete operation time', args.timers):

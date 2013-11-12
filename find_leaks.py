@@ -73,9 +73,6 @@ def find_direct_leaks(g, archive_name):
     full_archive_names = get_full_filenames(g, archive_name)
 
     for full_archive_name in full_archive_names:
-
-        print full_archive_name
-
         # Get all symbols needed by this archive
         symbols_needed = find_symbol_dependencies(g, full_archive_name)
 
@@ -88,13 +85,15 @@ def find_direct_leaks(g, archive_name):
             if symbol_needed not in symbols_found:
                 leaks.add(symbol_needed)
 
-        # Iterate and print all leaks, but _only_ if they are defined somewhere in our project
+        o = []
         for leak in leaks:
             try:
                 if (len(g.get('symbol_to_file_sources', leak)) > 0):
-                    print leak
+                    o.append(leak)
             except KeyError:
                 pass
+
+    return o
 
 def main():
     if len(sys.argv) != 2:
@@ -114,7 +113,7 @@ def main():
         g = dep_graph.MultiGraph().load(data_file)
 
     with Timer('leak detection query operation', True):
-        find_direct_leaks(g, sys.argv[1])
+        print(json.dumps(find_direct_leaks(g, sys.argv[1]), indent=3))
 
 if __name__ == '__main__':
     main()
