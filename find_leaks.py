@@ -76,10 +76,24 @@ def find_direct_leaks(g, archive_name):
 
 def main():
     data_file = os.path.join(os.path.dirname(__file__), "dep_graph.json")
+    pkl_file = os.path.join(os.path.dirname(__file__), "dep_graph.pkl")
+
+    g = dep_graph.MultiGraph()
 
     if len(sys.argv) != 2:
         print "Usage: " + sys.argv[0] + " <archive name>"
         exit(1)
+
+    if os.path.exists(pkl_file):
+        print "pickle!"
+        g.load_pickle(pkl_file)
+        print "pickle done!"
+    else:
+        print "json!"
+        g.load(data_file)
+        print "json done!"
+
+    g.export_pickle(pkl_file)
 
     g = dep_graph.MultiGraph().load(data_file)
 

@@ -47,6 +47,7 @@ import os
 import datetime
 import logging
 import json
+import pickle
 
 logger = logging.getLogger(__name__)
 
@@ -221,6 +222,23 @@ class MultiGraph(object):
 
             return c
 
+    def load_pickle(cls, fn):
+        if not os.path.exists(fn):
+            logger.debug('cannot load from non existing file {0} please rebuild'.format(fn))
+            return False
+
+        with open(fn, 'rb') as f:
+            data = pickle.load(f)
+
+            rels = data['relationships']
+
+            c = MultiGraph(rels)
+
+            for relationship, graph in data['graphs'].items():
+                c.graphs[relationship] = Graph(graph)
+
+            return c
+
     def merge(self, g):
         for item in g.relationships:
             if item not in self.relationships:
@@ -263,3 +281,9 @@ class MultiGraph(object):
 
         with open(fn, 'w') as f:
             json.dump(o, f)
+
+    def export_pickle(self, fn='.depgraph.pkl'):
+        o = self.fetch()
+
+        with open(fn, 'wb') as f:
+            pickle.dump(o, f)
