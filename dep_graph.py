@@ -138,9 +138,7 @@ class MultiGraph(object):
     def extend_list(self, list_name, content):
         if list_name in self.lists:
             current = getattr(self, list_name)
-            joined_list = current.extend(content)
-
-            setattr(self, list_name, joined_list)
+            current.extend(content)
 
     def uniquify_lists(self):
         if self.has_lists is False:
