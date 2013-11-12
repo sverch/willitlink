@@ -77,10 +77,11 @@ def find_direct_leaks(g, archive_name):
 def main():
     data_file = os.path.join(os.path.dirname(__file__), "dep_graph.json")
 
-    g = dep_graph.MultiGraph().load(data_file)
-
-    if (len(sys.argv) != 2):
+    if len(sys.argv) != 2:
         print "Usage: " + sys.argv[0] + " <archive name>"
+        exit(1)
+
+    g = dep_graph.MultiGraph().load(data_file)
 
     find_direct_leaks(g, sys.argv[1])
 
