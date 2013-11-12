@@ -5,7 +5,8 @@ import json
 import pymongo
 import subprocess
 import sys
-import dep_graph
+
+from willitlink.graph import MultiGraph
 
 # Strucutre of new format
 # {
@@ -74,7 +75,7 @@ def generate_edges(build_objects):
                       'target_to_dependencies', 'archives_to_components', 'dependency_to_targets'
                     ]
 
-    g = dep_graph.MultiGraph(relationships)
+    g = MultiGraph(relationships)
     g.make_lists(['symbols', 'files'])
 
     # Track how many nodes we've processed so far

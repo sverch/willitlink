@@ -6,7 +6,7 @@ import sys
 from pymongo import MongoClient
 from pymongo.errors import DuplicateKeyError
 
-from dep_graph import MultiGraph
+from willitlink.graph import MultiGraph
 
 def usage ():
     print("Usage: %s <json file>" % sys.argv[0])

@@ -1,10 +1,10 @@
 #!/usr/bin/python
 
-import os
-import sys
 import json
+import os.path
+import sys
 
-import dep_graph
+from willitlink.graph import MultiGraph
 
 def locate_symbol(g, symbol_name):
 
@@ -18,7 +18,7 @@ def main():
     data_file = os.path.join(os.path.dirname(__file__), "dep_graph.json")
     pkl_file = os.path.join(os.path.dirname(__file__), "dep_graph.pkl")
 
-    g = dep_graph.MultiGraph()
+    g = MultiGraph()
 
     if len(sys.argv) != 2:
         print "Usage: " + sys.argv[0] + " <symbol name>"
@@ -35,7 +35,7 @@ def main():
 
     g.export_pickle(pkl_file)
 
-    g = dep_graph.MultiGraph().load(data_file)
+    g = MultiGraph().load(data_file)
 
     locate_symbol(g, sys.argv[1])
 

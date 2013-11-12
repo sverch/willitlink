@@ -4,15 +4,15 @@ import argparse
 import os
 import json
 
-import helpers.ingestion as ingestion
-import dep_graph
+import willitlink.ingestion as ingestion
+from willitlink.graph import MultiGraph
+from willitlink.dev_tools import Timer
 
 from find_leaks import find_direct_leaks
-from helpers.dev_tools import Timer
 
 def get_graph(args):
     with Timer('loading graph {0}'.format(args.data), args.timers):
-        g = dep_graph.MultiGraph(timers=args.timers).load(args.data)
+        g = MultiGraph(timers=args.timers).load(args.data)
 
     return g
 

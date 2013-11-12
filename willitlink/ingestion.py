@@ -1,10 +1,10 @@
 import os.path
 import argparse
 
-from helpers.generate_new_format import generate_edges
-from helpers.parse_scons_dependency_tree import parse_tree
-from helpers.import_dep_info import ingest_deps
-from helpers.dev_tools import Timer
+from willitlink.generate_new_format import generate_edges
+from willitlink.parse_scons_dependency_tree import parse_tree
+from willitlink.import_dep_info import ingest_deps
+from willitlink.dev_tools import Timer
 
 def worker(input_tree, dep_info, output_dep_file, timer=False):
     with Timer('parsing', timer):
@@ -31,7 +31,7 @@ def argparser(parser):
 def command(args):
     output_fn = args.output_dep_name + '.' + args.format
 
-    worker(args.input_tree, args.dep_info, outpu_fn, args.timers)
+    worker(args.input_tree, args.dep_info, output_fn, args.timers)
 
 def main():
     parser = argparser(argparse.ArgumentParser("[wil]: willitlink ingestion"))
