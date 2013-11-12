@@ -86,7 +86,7 @@ def generate_edges(build_objects):
         build_object_name = ""
         try:
             build_object_name = build_object['_id']
-        except TypeError, e:
+        except TypeError as e:
             print "Failed to get name of build object: " + str(e)
             # This prints something huge, so maybe it's not what we are expecting
             #print build_object
