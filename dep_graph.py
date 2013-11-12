@@ -215,17 +215,14 @@ class MultiGraph(object):
     @classmethod
     def load(cls, fn):
         if not os.path.exists(fn):
-            logger.debug('cannot load from non existing file {0} please rebuild'.format(fn))
-            return False
+            msg = 'cannot load from non existing file {0} please rebuild'.format(fn)
+            logger.debug(msg)
+            raise Exception(msg)
 
         if fn.endswith('pickle') or fn.endswith('pkl'):
             loader = pickle.load
         elif fn.endswith('json') or fn.endswith('jsn'):
             loader = json.load
-        elif fn.endsiwth('bson') or fn.endswith('bsn'):
-            from bson import BSON
-            b = BSON()
-            loader = b.decode
 
         with open(fn, 'r') as f:
             data = loader(f)
@@ -242,7 +239,7 @@ class MultiGraph(object):
             for lst in data['lists']:
                 c.extend_list(lst, data['list_contents'][lst])
 
-            return c
+        return c
 
     def merge(self, g):
         for item in g.relationships:
@@ -286,19 +283,9 @@ class MultiGraph(object):
             exporter = pickle.dump
         elif fn.endswith('json') or fn.endswith('jsn'):
             exporter = json.dump
-        elif fn.endsiwth('bson') or fn.endswith('bsn'):
-            from bson import BSON
-            b = BSON()
-            exporter = b.encode
-            is_bson = True
 
         with Timer('constructing object for export', self.timer):
             o = self.fetch()
 
-        if is_bson:
-            with open(fn, 'wb') as f:
-                bson_out = exporter(o)
-                f.write(bson_out)
-        else:
-            with open(fn, 'w') as f:
-                exporter(o, f)
+        with open(fn, 'w') as f:
+            exporter(o, f)

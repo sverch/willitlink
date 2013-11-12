@@ -76,16 +76,18 @@ def find_direct_leaks(g, archive_name):
             pass
 
 def main():
-    data_file = os.path.join(os.path.dirname(__file__), "dep_graph.json")
-    pkl_file = os.path.join(os.path.dirname(__file__), "dep_graph.pickle")
-
     if len(sys.argv) != 2:
         print("Usage: " + sys.argv[0] + " <archive name>")
         exit(1)
 
+    pkl_file = os.path.join(os.path.dirname(__file__), "dep_graph.pickle")
+
     if os.path.exists(pkl_file):
         data_file = pkl_file
-        print('[wil]: using pickle rather than json')
+        print('[wil]: using pickle store')
+    else:
+        data_file = os.path.join(os.path.dirname(__file__), "dep_graph.json")
+        print('[wil]: using json store')
 
     with Timer('loading data file', True):
         g = dep_graph.MultiGraph().load(data_file)
