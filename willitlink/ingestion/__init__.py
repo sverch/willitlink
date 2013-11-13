@@ -1,10 +1,12 @@
 import os.path
 import argparse
 
-from willitlink.generate_new_format import generate_edges
-from willitlink.parse_scons_dependency_tree import parse_tree
-from willitlink.import_dep_info import ingest_deps
+from build_graph import generate_edges
+from parse_scons_dependency_tree import parse_tree
+from import_dep_info import ingest_deps
 from willitlink.dev_tools import Timer
+
+output_formats = ['json', 'pickle', 'pkl', 'jsn']
 
 def worker(input_tree, dep_info, output_dep_file, timer=False):
     with Timer('parsing', timer):
@@ -21,7 +23,7 @@ def worker(input_tree, dep_info, output_dep_file, timer=False):
 
 def argparser(parser):
     parser.add_argument('--timers', '-t', default=False, action='store_true')
-    parser.add_argument('--format', '-f', default='json', action='store', choices=['json', 'pickle', 'pkl', 'jsn'])
+    parser.add_argument('--format', '-f', default='json', action='store', choices=output_formats)
     parser.add_argument('input_tree', default=os.path.join(os.path.dirname(__file__), "dependency_tree.txt"))
     parser.add_argument('dep_info', default=os.path.join(os.path.dirname(__file__), "deps.json"))
     parser.add_argument('output_dep_name', default=os.path.join(os.path.dirname(__file__), "dep_graph"))
@@ -29,7 +31,10 @@ def argparser(parser):
     return parser
 
 def command(args):
-    output_fn = args.output_dep_name + '.' + args.format
+    if os.path.splitext(args.output_dep_name)[1][1:] in output_formats:
+        output_fn = args.output_dep_name
+    else:
+        output_fn = args.output_dep_name + '.' + args.format
 
     worker(args.input_tree, args.dep_info, output_fn, args.timers)
 

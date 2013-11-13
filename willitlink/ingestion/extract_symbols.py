@@ -71,7 +71,6 @@ def usage():
     print("Usage: " + sys.argv[0] + " file [defined/used (default=defined)]")
 
 def main():
-
     extraction_type = "defined"
     object_file = ""
 

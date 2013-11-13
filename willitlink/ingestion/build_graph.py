@@ -8,66 +8,6 @@ import sys
 
 from willitlink.graph import MultiGraph
 
-# Strucutre of new format
-# {
-#    "symbols" : [
-#        "mongo::inShutdown()",
-#        ...
-#    ],
-#    "files" : [
-#        "src/mongo/db/shutdown.o",
-#        ...
-#    ],
-#    "symbol_sources" : { // symbol_to_file_sources
-#         "mongo::inShutdown()" : [
-#             "shutdown.o",
-#         ],
-#         ...
-#    }
-#    "symbol_dependents" : {  // symbol_to_file_dependencies
-#         "mongo::inShutdown()" : [
-#             "file_that_uses_shutdown.o",
-#         ],
-#         ...
-#    }
-#    "symbols_provided" : { // file_to_symbol_definitions
-#         "shutdown.o" : [
-#             "mongo::inShutdown()",
-#         ],
-#         ...
-#    }
-#    "symbols_needed" : { // file_to_symbol_dependencies
-#         "file_that_uses_shutdown.o" : [
-#             "mongo::inShutdown()",
-#         ],
-#         ...
-#    }
-#    "children" : { // target_to_dependencies
-#         "libshutdown.a" : [
-#             "libstringutils.a",
-#         ],
-#         "all" : [
-#             "alltools",
-#         ],
-#         ...
-#    }
-#    "members" : { // archives_to_components
-#         "libshutdown.a" : [
-#             "shutdown.o",
-#         ],
-#         ...
-#    }
-#    "parents" : { // dependency_to_targets
-#         "shutdown.o" : [
-#             "libshutdown.a",
-#         ],
-#         "libstringutils.a" : [
-#             "libshutdown.a"
-#         ],
-#         ...
-#    }
-# }
-
 def generate_edges(build_objects):
     relationships = [
                       'symbol_to_file_sources', 'symbol_to_file_dependencies',
@@ -181,18 +121,3 @@ def generate_edges(build_objects):
     g.uniquify_lists()
 
     return g
-
-def main():
-    client = pymongo.MongoClient()
-
-    try:
-        out_fn = sys.argv[1]
-    except IndexError:
-        out_fn = 'new_format_deps.json'
-
-    graph = generate_edges(client['test'].deps.find())
-
-    graph.export(out_fn)
-
-if __name__ == '__main__':
-    main()

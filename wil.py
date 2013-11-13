@@ -8,7 +8,7 @@ import willitlink.ingestion as ingestion
 from willitlink.graph import MultiGraph
 from willitlink.dev_tools import Timer
 
-from find_leaks import find_direct_leaks
+from queries.leaks import find_direct_leaks
 
 def get_graph(args):
     with Timer('loading graph {0}'.format(args.data), args.timers):
@@ -41,7 +41,7 @@ def get_leaks(args):
     print(json.dumps( { 'archive': args.name, 'leaks': leaks }, indent=3))
 
 def main():
-    default_data_file = os.path.join(os.path.dirname(__file__), "dep_graph.json")
+    default_data_file = os.path.join(os.path.dirname(__file__), 'data', "dep_graph.json")
     relationships = { 'symdep':('symbol_to_file_sources', 'symbol'),
                       'symsrc':('symbol_to_file_dependencies', 'symbol'),
                       'filedef':('file_to_symbol_definitions', 'file'),
