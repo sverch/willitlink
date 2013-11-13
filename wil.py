@@ -106,31 +106,16 @@ def main():
     get_list_parser.add_argument('filter')
     get_list_parser.add_argument('--data', '-d', default=default_data_file)
 
-    family_tree_symbol_parser = subparsers.add_parser('symfam')
-    family_tree_symbol_parser.add_argument('name')
-    family_tree_symbol_parser.add_argument('depth')
-    family_tree_symbol_parser.add_argument('--data', '-d', default=default_data_file)
-
-    family_tree_file_parser = subparsers.add_parser('filefam')
-    family_tree_file_parser.add_argument('name')
-    family_tree_file_parser.add_argument('depth')
-    family_tree_file_parser.add_argument('--data', '-d', default=default_data_file)
-
-    get_leaks_parser = subparsers.add_parser('leaks')
-    get_leaks_parser.add_argument('name')
-    get_leaks_parser.add_argument('--data', '-d', default=default_data_file)
-
-    leak_check_parser = subparsers.add_parser('leakcheck')
-    leak_check_parser.add_argument('name')
-    leak_check_parser.add_argument('--data', '-d', default=default_data_file)
-
-    direct_leak_parser = subparsers.add_parser('directleaks')
-    direct_leak_parser.add_argument('name')
-    direct_leak_parser.add_argument('--data', '-d', default=default_data_file)
-
-    locate_symbol_parser = subparsers.add_parser('symbol')
-    locate_symbol_parser.add_argument('name')
-    locate_symbol_parser.add_argument('--data', '-d', default=default_data_file)
+    for tree_parser in [ 'symfam', 'filefam']:
+        sp = subparsers.add_parser(tree_parser)
+        sp.add_argument('name')
+        sp.add_argument('depth')
+        sp.add_argument('--data', '-d', default=default_data_file)
+        
+    for query_parser in [ 'leaks', 'leakcheck', 'directleaks', 'symbol']:
+        sp = subparsers.add_parser(tree_parser)
+        sp.add_argument('name')
+        sp.add_argument('--data', '-d', default=default_data_file)
 
     args = parser.parse_args()
 
