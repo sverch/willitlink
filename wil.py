@@ -106,13 +106,13 @@ def main():
     get_list_parser.add_argument('filter')
     get_list_parser.add_argument('--data', '-d', default=default_data_file)
 
-    for tree_parser in [ 'symfam', 'filefam']:
+    for tree_parser in [ 'symbol-family', 'file-family']:
         sp = subparsers.add_parser(tree_parser)
         sp.add_argument('name')
         sp.add_argument('depth')
         sp.add_argument('--data', '-d', default=default_data_file)
         
-    for query_parser in [ 'leaks', 'leakcheck', 'directleaks', 'symbol']:
+    for query_parser in [ 'leaks', 'leak-check', 'direct-leaks', 'symbol']:
         sp = subparsers.add_parser(tree_parser)
         sp.add_argument('name')
         sp.add_argument('--data', '-d', default=default_data_file)
@@ -130,10 +130,10 @@ def main():
         'deptarget': get_relationship_node,
         'list': get_list,
         'leaks': get_leaks,
-        'leakcheck': get_leak_check,
-        'symfam': get_symbol_family_tree, 
-        'filefam': get_file_family_tree,
-        'directleaks': get_direct_leaks,
+        'leak-check': get_leak_check,
+        'symbol-family': get_symbol_family_tree,
+        'file-family': get_file_family_tree,
+        'direct-leaks': get_direct_leaks,
         'symbol': get_symbol_location,
     }
 
