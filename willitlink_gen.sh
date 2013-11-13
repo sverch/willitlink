@@ -9,7 +9,7 @@
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 echo "[wil]: cleanup previous artifacts"
-rm -f $DIR/deps.json $DIR/dep_graph.json $DIR/dependency_tree.txt
+rm -f $DIR/data/deps.json $DIR/data/dep_graph.json $DIR/data/dependency_tree.txt
 
 # Build to make sure we have all our .o files for willitlink.py
 # Also includes special code to extract the dependencies between "*.a" files.
@@ -18,12 +18,12 @@ rm -f $DIR/deps.json $DIR/dep_graph.json $DIR/dependency_tree.txt
 
 git checkout SConstruct
 git checkout site_scons/libdeps.py
-git apply $DIR/print_scons_libdeps.patch
-scons $@ all | grep -e "^{" >| $DIR/deps.json
+git apply $DIR/assets/print_scons_libdeps.patch
+scons $@ all | grep -e "^{" >| $DIR/data/deps.json
 git checkout site_scons/libdeps.py
 
 # Prints out a "tree" of dependencies to the given file
-scons $@ --tree=all,prune all >| $DIR/dependency_tree.txt
+scons $@ --tree=all,prune all >| $DIR/data/dependency_tree.txt
 
 echo "[wil]: completed data generation, moving to ingestion phase."
-python $DIR/wil.py ingest -t $DIR/dependency_tree.txt $DIR/deps.json $DIR/dep_graph.json
+python $DIR/wil.py ingest -t $DIR/data/dependency_tree.txt $DIR/data/deps.json $DIR/data/dep_graph.json

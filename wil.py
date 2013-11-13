@@ -4,7 +4,7 @@ import argparse
 import os
 import json
 
-import willitlink.ingestion as ingestion
+import ingestion
 from willitlink.graph import MultiGraph
 from willitlink.dev_tools import Timer
 

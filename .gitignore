@@ -8,3 +8,4 @@ dep_graph.pkl
 #*#
 .#*
 *.pickle
+data/*
