@@ -13,6 +13,7 @@ from willitlink.queries.libstats import resolve_leak_info
 from willitlink.queries.family_tree import symbol_family_tree, file_family_tree
 from willitlink.queries.tree_leaks import find_direct_leaks
 from willitlink.queries.symbols import locate_symbol
+from willitlink.queries.extra_archives import find_extra_archives
 
 def get_graph(args):
     with Timer('loading graph {0}'.format(args.data), args.timers):
@@ -76,7 +77,13 @@ def get_symbol_location(args):
 
     with Timer('find symbol location', args.timers):
         render(locate_symbol(g, args.name))
-        
+
+def get_unneeded_libdeps(args):
+    g = get_graph(args)
+
+    with Timer('find unneeded libdeps', args.timers):
+        render(find_extra_archives(g, args.name))
+
 def main():
     default_data_file = os.path.join(os.path.dirname(__file__), 'data', "dep_graph.json")
     relationships = { 'symdep':('symbol_to_file_sources', 'symbol'),
@@ -111,9 +118,9 @@ def main():
         sp.add_argument('name')
         sp.add_argument('depth')
         sp.add_argument('--data', '-d', default=default_data_file)
-        
-    for query_parser in [ 'leaks', 'leak-check', 'direct-leaks', 'symbol']:
-        sp = subparsers.add_parser(tree_parser)
+
+    for query_parser in [ 'leaks', 'leak-check', 'direct-leaks', 'symbol', 'extra-libdeps']:
+        sp = subparsers.add_parser(query_parser)
         sp.add_argument('name')
         sp.add_argument('--data', '-d', default=default_data_file)
 
@@ -135,6 +142,7 @@ def main():
         'file-family': get_file_family_tree,
         'direct-leaks': get_direct_leaks,
         'symbol': get_symbol_location,
+        'extra-libdeps': get_unneeded_libdeps,
     }
 
     with Timer('complete operation time', args.timers):
