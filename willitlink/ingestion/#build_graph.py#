@@ -6,7 +6,7 @@ import pymongo
 import subprocess
 import sys
 
-from willitlink.graph import MultiGraph
+from willitlink.base. graph import MultiGraph
 
 def generate_edges(build_objects):
     relationships = [

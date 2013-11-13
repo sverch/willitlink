@@ -4,10 +4,24 @@ import os
 import sys
 import json
 
-import dep_graph
-from helpers.dev_tools import Timer
-import family_tree
-import tree_leaks
+from willitlink.base.graph import MultiGraph
+from willitlink.base.dev_tools import Timer
+from willitlink.queries.family_tree import symbol_family_tree
+from willitlink.queries.tree_leaks import  find_direct_leaks
+
+def resolve_leak_info(g, name):
+    o = []
+
+    for leak in find_direct_leaks(g, name):
+
+        leak_object = {
+            'leak': leak,
+            'sources': symbol_family_tree(g, leak['symbol'], 2)
+        }
+
+        o.append(leak_object)
+
+    return o
 
 def main():
     if len(sys.argv) != 2:
@@ -24,16 +38,11 @@ def main():
         print('[wil]: using json store')
 
     with Timer('loading data file', True):
-        g = dep_graph.MultiGraph().load(data_file)
+        g = MultiGraph().load(data_file)
 
     with Timer('leak detection query operation', True):
-        leak_objects = []
-        for leak in tree_leaks.find_direct_leaks(g, sys.argv[1]):
-            leak_object = {}
-            leak_object['leak'] = leak
-            leak_object['sources'] = family_tree.symbol_family_tree(g, leak['symbol'], 2)
-            leak_objects.append(leak_object)
-
+        leak_objects = resolve_leak_info(g, sys.argv[1])
+        
         print(json.dumps(leak_objects, indent=3))
 
 if __name__ == '__main__':

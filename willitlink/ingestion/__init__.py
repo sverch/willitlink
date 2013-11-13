@@ -1,10 +1,10 @@
 import os.path
 import argparse
 
-from ingestion.build_graph import generate_edges
-from ingestion.parse_scons_dependency_tree import parse_tree
-from ingestion.import_dep_info import ingest_deps
-from willitlink.dev_tools import Timer
+from willitlink.ingestion.build_graph import generate_edges
+from willitlink.ingestion.parse_scons_dependency_tree import parse_tree
+from willitlink.ingestion.import_dep_info import ingest_deps
+from willitlink.base.dev_tools import Timer
 
 output_formats = ['json', 'pickle', 'pkl', 'jsn']
 

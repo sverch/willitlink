@@ -53,7 +53,7 @@ try:
 except ImportError:
     import pickle
 
-from willitlink.dev_tools import Timer
+from willitlink.base.dev_tools import Timer
 
 logger = logging.getLogger(__name__)
 

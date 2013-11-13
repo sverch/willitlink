@@ -4,8 +4,8 @@ import os
 import sys
 import json
 
-import dep_graph
-from helpers.dev_tools import Timer
+from willitlink.base.graph import MultiGraph
+from willitlink.base.dev_tools import Timer
 
 def get_full_filenames(g, file_name):
 
@@ -116,7 +116,7 @@ def main():
         print('[wil]: using json store')
 
     with Timer('loading data file', True):
-        g = dep_graph.MultiGraph().load(data_file)
+        g = MultiGraph().load(data_file)
 
     with Timer('leak detection query operation', True):
         print(json.dumps(find_direct_leaks(g, sys.argv[1]), indent=3))

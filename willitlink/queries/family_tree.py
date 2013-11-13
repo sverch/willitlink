@@ -4,8 +4,8 @@ import os
 import sys
 import json
 
-import dep_graph
-from helpers.dev_tools import Timer
+from willitlink.base.graph import MultiGraph
+from willitlink.base.dev_tools import Timer
 
 def add_path(result_map, path):
     if len(path) == 0:
@@ -124,7 +124,6 @@ def usage():
         print("Usage: " + sys.argv[0] + " <symbol/file> <name> [<depth>]")
 
 def main():
-
     depth = None
 
     if len(sys.argv) == 4:
@@ -143,7 +142,7 @@ def main():
         print('[wil]: using json store')
 
     with Timer('loading data file', True):
-        g = dep_graph.MultiGraph().load(data_file)
+        g = MultiGraph().load(data_file)
 
     if sys.argv[1] == "symbol":
         with Timer('family tree query operation', True):

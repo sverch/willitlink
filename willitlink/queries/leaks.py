@@ -4,8 +4,8 @@ import os.path
 import sys
 import json
 
-from willitlink.graph import MultiGraph
-from willitlink.dev_tools import Timer
+from willitlink.base.graph import MultiGraph
+from willitlink.base.dev_tools import Timer
 
 def get_full_filenames(g, file_name):
 

@@ -4,11 +4,15 @@ import argparse
 import os
 import json
 
-import ingestion
-from willitlink.graph import MultiGraph
-from willitlink.dev_tools import Timer
+import willitlink.ingestion as ingestion
+from willitlink.base.graph import MultiGraph
+from willitlink.base.dev_tools import Timer
 
-from queries.leaks import find_direct_leaks
+from willitlink.queries.leaks import find_direct_leaks
+from willitlink.queries.libstats import resolve_leak_info
+from willitlink.queries.family_tree import symbol_family_tree, file_family_tree
+from willitlink.queries.tree_leaks import find_direct_leaks
+from willitlink.queries.symbols import locate_symbol
 
 def get_graph(args):
     with Timer('loading graph {0}'.format(args.data), args.timers):
@@ -16,21 +20,24 @@ def get_graph(args):
 
     return g
 
-def render_data_for_cli(g, name, rel):
-    return json.dumps( { rel: { name: g.get_endswith(rel, name)}}, indent=3)
+def render(data):
+    print(json.dumps(data, indent=3))
 
 def get_relationship_node(args):
     g = get_graph(args)
 
     try:
-        print(render_data_for_cli(g, args.name, args.relationship))
+        name = args.name
+        rel = args.relationship
+
+        render({ rel: { name: g.get_endswith(rel, name)}})
     except KeyError:
         print('[wil]: there is no {0} named {1}'.format(args.thing, args.name))
 
 def get_list(args):
     g = get_graph(args)
 
-    print(json.dumps(getattr(g, args.name)))
+    render([ i for i in getattr(g, args.name) if i.endswith(args.filter)])
 
 def get_leaks(args):
     g = get_graph(args)
@@ -38,8 +45,38 @@ def get_leaks(args):
     with Timer('leaks query', args.timers):
         leaks = find_direct_leaks(g, args.name)
 
-    print(json.dumps( { 'archive': args.name, 'leaks': leaks }, indent=3))
+    render({ 'archive': args.name, 'leaks': leaks })
 
+def get_leak_check(args):
+    g = get_graph(args)
+    
+    with Timer('leaks tree query', args.timers):
+        render(resolve_leak_info(g, args.name))
+
+def get_file_family_tree(args):
+    g = get_graph(args)
+
+    with Timer('get file family tree query', args.timers):
+        render(file_family_tree(g, args.name, args.depth))
+
+def get_symbol_family_tree(args):
+    g = get_graph(args)
+
+    with Timer('get symbol family tree query', args.timers):
+        render(symbol_family_tree(g, args.name, args.depth))
+
+def get_direct_leaks(args):
+    g = get_graph(args)
+
+    with Timer('direct leak query', args.timers):
+        render(find_direct_leaks(g, args.name))
+
+def get_symbol_location(args):
+    g = get_graph(args)
+
+    with Timer('find symbol location', args.timers):
+        render(locate_symbol(g, args.name))
+        
 def main():
     default_data_file = os.path.join(os.path.dirname(__file__), 'data', "dep_graph.json")
     relationships = { 'symdep':('symbol_to_file_sources', 'symbol'),
@@ -65,12 +102,35 @@ def main():
         sp.add_argument('--data', '-d', default=default_data_file)
 
     get_list_parser = subparsers.add_parser('list')
-    get_list_parser.add_argument('name', choices=['symbols', 'files'])
+    get_list_parser.add_argument('type', choices=['symbols', 'files'])
+    get_list_parser.add_argument('filter')
     get_list_parser.add_argument('--data', '-d', default=default_data_file)
+
+    family_tree_symbol_parser = subparsers.add_parser('symfam')
+    family_tree_symbol_parser.add_argument('name')
+    family_tree_symbol_parser.add_argument('depth')
+    family_tree_symbol_parser.add_argument('--data', '-d', default=default_data_file)
+
+    family_tree_file_parser = subparsers.add_parser('filefam')
+    family_tree_file_parser.add_argument('name')
+    family_tree_file_parser.add_argument('depth')
+    family_tree_file_parser.add_argument('--data', '-d', default=default_data_file)
 
     get_leaks_parser = subparsers.add_parser('leaks')
     get_leaks_parser.add_argument('name')
     get_leaks_parser.add_argument('--data', '-d', default=default_data_file)
+
+    leak_check_parser = subparsers.add_parser('leakcheck')
+    leak_check_parser.add_argument('name')
+    leak_check_parser.add_argument('--data', '-d', default=default_data_file)
+
+    direct_leak_parser = subparsers.add_parser('directleaks')
+    direct_leak_parser.add_argument('name')
+    direct_leak_parser.add_argument('--data', '-d', default=default_data_file)
+
+    locate_symbol_parser = subparsers.add_parser('symbol')
+    locate_symbol_parser.add_argument('name')
+    locate_symbol_parser.add_argument('--data', '-d', default=default_data_file)
 
     args = parser.parse_args()
 
@@ -85,6 +145,11 @@ def main():
         'deptarget': get_relationship_node,
         'list': get_list,
         'leaks': get_leaks,
+        'leakcheck': get_leak_check,
+        'symfam': get_symbol_family_tree, 
+        'filefam': get_file_family_tree,
+        'directleaks': get_direct_leaks,
+        'symbol': get_symbol_location,
     }
 
     with Timer('complete operation time', args.timers):
