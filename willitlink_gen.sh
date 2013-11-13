@@ -20,6 +20,7 @@ git checkout SConstruct
 git checkout site_scons/libdeps.py
 git apply $DIR/assets/print_scons_libdeps.patch
 scons $@ all | grep -e "^{" >| $DIR/data/deps.json
+git checkout SConstruct
 git checkout site_scons/libdeps.py
 
 # Prints out a "tree" of dependencies to the given file
