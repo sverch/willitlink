@@ -102,26 +102,3 @@ def find_symbol_dependencies_with_file(g, full_archive_name):
 
 def find_symbol_dependencies(g, full_archive_name):
     return [ symbol_needed for (symbol_needed, file_needing) in find_symbol_dependencies_with_file(g, full_archive_name) ]
-
-def main():
-    if len(sys.argv) != 2:
-        print("Usage: " + sys.argv[0] + " <archive name>")
-        exit(1)
-
-    pkl_file = os.path.join(os.path.dirname(__file__), "dep_graph.pickle")
-
-    if os.path.exists(pkl_file):
-        data_file = pkl_file
-        print('[wil]: using pickle store')
-    else:
-        data_file = os.path.join(os.path.dirname(__file__), "dep_graph.json")
-        print('[wil]: using json store')
-
-    with Timer('loading data file', True):
-        g = dep_graph.MultiGraph().load(data_file)
-
-    with Timer('leak detection query operation', True):
-        print(json.dumps(find_extra_archives(g, sys.argv[1]), indent=3))
-
-if __name__ == '__main__':
-    main()

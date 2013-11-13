@@ -119,39 +119,3 @@ def symbol_family_tree(g, symbol_name, depth = None):
         family_tree_hash[file_source] = file_family_tree_recursive(g, file_source, depth)
 
     return flip_tree(family_tree_hash)
-
-def usage():
-        print("Usage: " + sys.argv[0] + " <symbol/file> <name> [<depth>]")
-
-def main():
-    depth = None
-
-    if len(sys.argv) == 4:
-        depth = int(sys.argv[3])
-    elif len(sys.argv) != 3:
-        usage()
-        exit(1)
-
-    pkl_file = os.path.join(os.path.dirname(__file__), "dep_graph.pickle")
-
-    if os.path.exists(pkl_file):
-        data_file = pkl_file
-        print('[wil]: using pickle store')
-    else:
-        data_file = os.path.join(os.path.dirname(__file__), "dep_graph.json")
-        print('[wil]: using json store')
-
-    with Timer('loading data file', True):
-        g = MultiGraph().load(data_file)
-
-    if sys.argv[1] == "symbol":
-        with Timer('family tree query operation', True):
-            print json.dumps(symbol_family_tree(g, sys.argv[2], depth), indent=4)
-    elif sys.argv[1] == "file":
-            print json.dumps(file_family_tree(g, sys.argv[2], depth), indent=4)
-    else:
-        usage()
-        exit(1)
-
-if __name__ == '__main__':
-    main()
