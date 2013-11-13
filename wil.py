@@ -50,9 +50,9 @@ def get_leaks(args):
 
 def get_leak_check(args):
     g = get_graph(args)
-    
+
     with Timer('leaks tree query', args.timers):
-        render(resolve_leak_info(g, args.name))
+        render(resolve_leak_info(g, args.name, args.depth, args.timers))
 
 def get_file_family_tree(args):
     g = get_graph(args)
@@ -113,13 +113,13 @@ def main():
     get_list_parser.add_argument('filter')
     get_list_parser.add_argument('--data', '-d', default=default_data_file)
 
-    for tree_parser in [ 'symbol-family', 'file-family']:
+    for tree_parser in [ 'symbol-family', 'leak-check', 'file-family']:
         sp = subparsers.add_parser(tree_parser)
         sp.add_argument('name')
         sp.add_argument('depth', type=int)
         sp.add_argument('--data', '-d', default=default_data_file)
 
-    for query_parser in [ 'leaks', 'leak-check', 'direct-leaks', 'symbol', 'extra-libdeps']:
+    for query_parser in [ 'leaks', 'direct-leaks', 'symbol', 'extra-libdeps']:
         sp = subparsers.add_parser(query_parser)
         sp.add_argument('name')
         sp.add_argument('--data', '-d', default=default_data_file)
