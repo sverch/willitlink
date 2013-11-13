@@ -85,7 +85,7 @@ def get_unneeded_libdeps(args):
         render(find_extra_archives(g, args.name))
 
 def main():
-    default_data_file = os.path.join(os.path.dirname(__file__), 'data', "dep_graph.json")
+    default_data_file = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data', "dep_graph.json")
     relationships = { 'symdep':('symbol_to_file_sources', 'symbol'),
                       'symsrc':('symbol_to_file_dependencies', 'symbol'),
                       'filedef':('file_to_symbol_definitions', 'file'),
@@ -116,7 +116,7 @@ def main():
     for tree_parser in [ 'symbol-family', 'file-family']:
         sp = subparsers.add_parser(tree_parser)
         sp.add_argument('name')
-        sp.add_argument('depth')
+        sp.add_argument('depth', type=int)
         sp.add_argument('--data', '-d', default=default_data_file)
 
     for query_parser in [ 'leaks', 'leak-check', 'direct-leaks', 'symbol', 'extra-libdeps']:
