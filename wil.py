@@ -15,6 +15,10 @@ from willitlink.queries.tree_leaks import find_direct_leaks
 from willitlink.queries.symbols import locate_symbol
 from willitlink.queries.extra_archives import find_extra_archives
 
+# d3 code
+# TODO: actually make this general
+from willitlink.queries.d3.d3_family_tree import file_family_tree_d3
+
 def get_graph(args):
     with Timer('loading graph {0}'.format(args.data), args.timers):
         g = MultiGraph(timers=args.timers).load(args.data)
@@ -60,6 +64,12 @@ def get_file_family_tree(args):
     with Timer('get file family tree query', args.timers):
         render(file_family_tree(g, args.name, args.depth))
 
+def get_file_family_tree_d3(args):
+    g = get_graph(args)
+
+    with Timer('get file family tree query', args.timers):
+        render(file_family_tree_d3(g, [args.name]))
+
 def get_symbol_family_tree(args):
     g = get_graph(args)
 
@@ -80,6 +90,12 @@ def get_symbol_location(args):
 
 def get_unneeded_libdeps(args):
     g = get_graph(args)
+
+    archives = []
+    for filename in g.files:
+        if filename.endswith(".a"):
+            archives.append(filename)
+    print len(archives)
 
     with Timer('find unneeded libdeps', args.timers):
         render(find_extra_archives(g, args.name))
@@ -119,7 +135,7 @@ def main():
         sp.add_argument('depth', type=int)
         sp.add_argument('--data', '-d', default=default_data_file)
 
-    for query_parser in [ 'leaks', 'direct-leaks', 'symbol', 'extra-libdeps']:
+    for query_parser in [ 'leaks', 'direct-leaks', 'symbol', 'extra-libdeps', 'general-file-family']:
         sp = subparsers.add_parser(query_parser)
         sp.add_argument('name')
         sp.add_argument('--data', '-d', default=default_data_file)
@@ -140,6 +156,7 @@ def main():
         'leak-check': get_leak_check,
         'symbol-family': get_symbol_family_tree,
         'file-family': get_file_family_tree,
+        'general-file-family': get_file_family_tree_d3,
         'direct-leaks': get_direct_leaks,
         'symbol': get_symbol_location,
         'extra-libdeps': get_unneeded_libdeps,
