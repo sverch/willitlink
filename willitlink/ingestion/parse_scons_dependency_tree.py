@@ -137,10 +137,16 @@ def recursive_parse_tree(fileHandle, depth, name, typeName, results):
                     currentBuildElement['objects'] = currentBuildElement['objects'] + [ nextSection ]
                     nextSectionTypeName = "object"
                 else:
-                    if 'deps' not in currentBuildElement:
-                        currentBuildElement['deps'] = []
-                    currentBuildElement['deps'] = currentBuildElement['deps'] + [ nextSection ]
                     nextSectionTypeName = detect_type(nextSection)
+                    if nextSectionTypeName == "object":
+                        if 'objects' not in currentBuildElement:
+                            currentBuildElement['objects'] = []
+                        currentBuildElement['objects'] = currentBuildElement['objects'] + [ nextSection ]
+                    else:
+                        if 'deps' not in currentBuildElement:
+                            currentBuildElement['deps'] = []
+                        currentBuildElement['deps'] = currentBuildElement['deps'] + [ nextSection ]
+
 
                 # Parse any lines that are a level deeper than where we are now (may be none, which
                 # would correspond to an object with no dependencies)
