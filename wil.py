@@ -18,6 +18,7 @@ from willitlink.queries.extra_archives import find_extra_archives
 # d3 code
 # TODO: actually make this general
 from willitlink.queries.d3.d3_family_tree import file_family_tree_d3
+from willitlink.queries.d3.d3_relationship import relationship_info_d3
 from willitlink.queries.d3.d3_leaks import add_leaks_d3
 
 def get_graph(args):
@@ -81,6 +82,12 @@ def get_file_family_tree_with_leaks_d3(args):
 
     with Timer('add leaks query', args.timers):
         render(add_leaks_d3(g, family_tree))
+
+def get_file_family_relationship_d3(args):
+    g = get_graph(args)
+
+    with Timer('relationship info query', args.timers):
+        render(relationship_info_d3(g, [ args.name1, args.name2 ]))
 
 def get_symbol_family_tree(args):
     g = get_graph(args)
@@ -152,6 +159,12 @@ def main():
         sp.add_argument('name')
         sp.add_argument('--data', '-d', default=default_data_file)
 
+    for query_parser in [ 'd3-file-relationship' ]:
+        sp = subparsers.add_parser(query_parser)
+        sp.add_argument('name1')
+        sp.add_argument('name2')
+        sp.add_argument('--data', '-d', default=default_data_file)
+
     args = parser.parse_args()
 
     operations = {
@@ -170,6 +183,7 @@ def main():
         'file-family': get_file_family_tree,
         'd3-file-family': get_file_family_tree_d3,
         'd3-file-family-with-leaks': get_file_family_tree_with_leaks_d3,
+        'd3-file-relationship': get_file_family_relationship_d3,
         'direct-leaks': get_direct_leaks,
         'symbol': get_symbol_location,
         'extra-libdeps': get_unneeded_libdeps,
