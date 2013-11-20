@@ -2,8 +2,6 @@
 
 import re
 import json
-from pymongo import MongoClient
-from pymongo.errors import DuplicateKeyError
 import subprocess
 import sys
 import extract_symbols
@@ -20,16 +18,8 @@ symbol_set = set()
 def persist_node(buildElement, results):
     if buildElement['_id'] not in symbol_set:
         symbol_set.add(buildElement['_id'])
-
-        if isinstance(results, MongoClient):
-            try:
-                results['test'].deps.insert(buildElement)
-            except DuplicateKeyError:
-                print("Duplicate Key!")
-        elif isinstance(results, list):
-            results.append(buildElement)
-        else:
-            print('not persisting {0}'.format(buildElement['_id']))
+        
+        results.append(buildElement)
 
 def detect_type(line):
     if line.endswith('.h'):
@@ -75,7 +65,7 @@ class RegexLib(object):
         self.six = re.compile(prefix + "..\+-(.+)")
         self.seven = re.compile("^" + prefix + "..\+-")
 
-def recursive_parse_tree(fileHandle, depth, name, typeName, results):
+def recursive_parse_tree(fileHandle, depth, name, typeName, results, mongo_path):
     currentBuildElement = {
         '_id': name,
         'type': typeName
@@ -128,9 +118,9 @@ def recursive_parse_tree(fileHandle, depth, name, typeName, results):
 
                     # Add our symbols!
                     if 'symdeps' not in currentBuildElement:
-                        currentBuildElement['symdeps'] = extract_symbols.get_symbols_used(name)
+                        currentBuildElement['symdeps'] = extract_symbols.get_symbols_used(name, mongo_path)
                     if 'symdefs' not in currentBuildElement:
-                        currentBuildElement['symdefs'] = extract_symbols.get_symbols_defined(name)
+                        currentBuildElement['symdefs'] = extract_symbols.get_symbols_defined(name, mongo_path)
                 elif typeName == "archive":
                     if 'objects' not in currentBuildElement:
                         currentBuildElement['objects'] = []
@@ -150,7 +140,7 @@ def recursive_parse_tree(fileHandle, depth, name, typeName, results):
 
                 # Parse any lines that are a level deeper than where we are now (may be none, which
                 # would correspond to an object with no dependencies)
-                lineAfterSection = recursive_parse_tree(fileHandle, depth + 2, nextSection, nextSectionTypeName, results)
+                lineAfterSection = recursive_parse_tree(fileHandle, depth + 2, nextSection, nextSectionTypeName, results, mongo_path)
 
                 # Figure out why we exited.  Either it's because we are still in the same section,
                 # or we are done with THIS section too and should exit.
@@ -170,7 +160,7 @@ def recursive_parse_tree(fileHandle, depth, name, typeName, results):
             persist_node(currentBuildElement, results)
             return line
 
-def parse_tree(filename, results):
+def parse_tree(filename, mongo_path):
     """
     Pass a filename of SCons tree output to parse.
 
@@ -180,32 +170,19 @@ def parse_tree(filename, results):
 
     all_re = re.compile("^\+-all$")
 
+    results = list()
+
     with open(filename, 'r') as treeFile:
         # First skip all our garbage lines not related to the tree output
         for line in treeFile:
             if all_re.search(line) is not None:
-                break
+                m = re.search("^\+-(.*)$", line)        
+                if m is not None:
+                    break
 
-        m = re.search("^\+-(.*)$", line)
         baseSection = m.group(1)
 
         # Start parsing our tree, starting with the base group
-        recursive_parse_tree(treeFile, 0, baseSection, "target", results)
-
-    if isinstance(results, list):
-        return results
-    elif isinstance(results, MongoClient):
-        return True
-    else:
-        return None
-
-def main():
-    if len(sys.argv) != 2:
-        print("Usage: " + sys.argv[0] + " <depsfile>")
-        sys.exit(1)
-
-    parse_tree(filename=sys.argv[1],
-               results=MongoClient())
-
-if __name__ == '__main__':
-    main()
+        result = recursive_parse_tree(treeFile, 0, baseSection, "target", results, mongo_path)
+        
+    return results

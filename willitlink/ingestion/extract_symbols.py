@@ -33,7 +33,9 @@ def list_process(items):
     return r
 
 # TODO: Use the python library to read elf files, so we know the file exists at this point
-def get_symbols_used(object_file):
+def get_symbols_used(object_file, mongo_path):
+    object_file = os.path.join(mongo_path, object_file)
+
     if sys.platform.startswith('linux'):
         cmd = r'nm "' + object_file + r'" | grep -e "U " | c++filt'
         p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
@@ -50,7 +52,9 @@ def get_symbols_used(object_file):
                               for use in uses.split('\n')
                               if use != '' ])
 
-def get_symbols_defined(object_file):
+def get_symbols_defined(object_file, mongo_path):
+    object_file = os.path.join(mongo_path, object_file)
+
     if sys.platform.startswith('linux'):
         cmd = r'nm "' + object_file + r'" | grep -v -e "U " | c++filt'
         p = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True)
@@ -66,39 +70,3 @@ def get_symbols_defined(object_file):
         return list_process([ definition.strip()
                               for definition in definitions.split('\n')
                               if definition != '' ])
-
-def usage():
-    print("Usage: " + sys.argv[0] + " file [defined/used (default=defined)]")
-
-def main():
-    extraction_type = "defined"
-    object_file = ""
-
-    if len(sys.argv) == 2:
-        object_file = sys.argv[1]
-    elif len(sys.argv) == 3:
-        object_file = sys.argv[1]
-        extraction_type = sys.argv[2]
-        if extraction_type != "defined" and extraction_type != "used":
-            usage()
-            sys.exit(-1)
-    else:
-        usage()
-        sys.exit(-1)
-
-    # TODO: The file could still be deleted after this point, but we are using an external command
-    # to get the symbols so we need to check here.
-    if not os.path.exists(object_file):
-        print("Error: \"" + object_file + "\" does not exist")
-        usage()
-        sys.exit(-1)
-
-    if extraction_type == "defined":
-        for symbol in get_symbols_defined(object_file):
-            print(symbol)
-    else:
-        for symbol in get_symbols_used(object_file):
-            print(symbol)
-
-if __name__ == '__main__':
-    main()
