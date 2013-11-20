@@ -18,6 +18,7 @@ from willitlink.queries.extra_archives import find_extra_archives
 # d3 code
 # TODO: actually make this general
 from willitlink.queries.d3.d3_family_tree import file_family_tree_d3
+from willitlink.queries.d3.d3_leaks import add_leaks_d3
 
 def get_graph(args):
     with Timer('loading graph {0}'.format(args.data), args.timers):
@@ -69,6 +70,17 @@ def get_file_family_tree_d3(args):
 
     with Timer('get file family tree query', args.timers):
         render(file_family_tree_d3(g, [args.name]))
+
+def get_file_family_tree_with_leaks_d3(args):
+    g = get_graph(args)
+
+    family_tree = {}
+
+    with Timer('get file family tree query', args.timers):
+        family_tree = file_family_tree_d3(g, [args.name])
+
+    with Timer('add leaks query', args.timers):
+        render(add_leaks_d3(g, family_tree))
 
 def get_symbol_family_tree(args):
     g = get_graph(args)
@@ -135,7 +147,7 @@ def main():
         sp.add_argument('depth', type=int)
         sp.add_argument('--data', '-d', default=default_data_file)
 
-    for query_parser in [ 'leaks', 'direct-leaks', 'symbol', 'extra-libdeps', 'general-file-family']:
+    for query_parser in [ 'leaks', 'direct-leaks', 'symbol', 'extra-libdeps', 'd3-file-family', 'd3-file-family-with-leaks']:
         sp = subparsers.add_parser(query_parser)
         sp.add_argument('name')
         sp.add_argument('--data', '-d', default=default_data_file)
@@ -156,7 +168,8 @@ def main():
         'leak-check': get_leak_check,
         'symbol-family': get_symbol_family_tree,
         'file-family': get_file_family_tree,
-        'general-file-family': get_file_family_tree_d3,
+        'd3-file-family': get_file_family_tree_d3,
+        'd3-file-family-with-leaks': get_file_family_tree_with_leaks_d3,
         'direct-leaks': get_direct_leaks,
         'symbol': get_symbol_location,
         'extra-libdeps': get_unneeded_libdeps,
