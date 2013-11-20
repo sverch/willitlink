@@ -29,26 +29,22 @@ def add_leaks_d3(g, d3_graph_object):
             # Get any symbols that are leaking from this archive
             leaks = find_direct_leaks(g, archive_or_executable)
 
-            # Iterate over all the object files in this archive
-            for archive_component in archive_components:
+            # Iterate all the symbols leaking from this archive
+            for leak_object in leaks:
+                leak_object['symbol']
+                leak_object['file']
 
-                # Iterate over all the symbols needed by the object files in this archive
-                for symbol_needed in g.get('file_to_symbol_dependencies', archive_component):
+                # Get the files this symbol is defined
+                for symbol_source in g.get('symbol_to_file_sources', leak_object['symbol']):
 
-                    # Only add an edge for this if we are leaking this symbol
-                    if symbol_needed not in leaks:
+                    # Get the archives this file is in
+                    for archive_source in g.get('dependency_to_targets', symbol_source):
 
-                        # Get the files this symbol is defined
-                        for symbol_source in g.get('symbol_to_file_sources', symbol_needed):
-
-                            # Get the archives this file is in
-                            for archive_source in g.get('dependency_to_targets', symbol_source):
-
-                                # Finally, for each archive, add an edge
-                                d3_graph_object['edges'].append({ 'to' : archive_source,
-                                                                  'from' : archive_or_executable,
-                                                                  'type' : 'symdep',
-                                                                  'symbol' : symbol_needed })
+                        # Finally, for each archive, add an edge
+                        d3_graph_object['edges'].append({ 'to' : archive_source,
+                                                          'from' : archive_or_executable,
+                                                          'type' : 'symdep',
+                                                          'symbol' : leak_object['symbol'] })
         except KeyError:
             pass
 
