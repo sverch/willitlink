@@ -293,12 +293,12 @@ class OutputGraphD3(object):
         self.nodes = set()
         self.edges = list()
 
-    def add(self, from, to, **kwargs):
-        self.nodes.add(from)
+    def add(self, from_node, to_node, **kwargs):
+        self.nodes.add(from_node)
 
         edge = {
-            'to': to,
-            'from': from, 
+            'to': to_node,
+            'from': from_node,
         }
 
         for k,v in kwargs:
