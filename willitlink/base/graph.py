@@ -287,3 +287,30 @@ class MultiGraph(object):
 
         with open(fn, 'w') as f:
             exporter(o, f)
+
+class OutputGraphD3(object):
+    def __init__(self):
+        self.nodes = set()
+        self.edges = list()
+
+    def add(self, from, to, **kwargs):
+        self.nodes.add(from)
+
+        edge = {
+            'to': to,
+            'from': from, 
+        }
+
+        for k,v in kwargs:
+            edge[k] = v
+
+        self.edges.append(edge)
+    
+    def render(self):
+        return { 
+            'nodes': list(self.nodes),
+            'edges': self.edges
+        }
+    
+    
+
