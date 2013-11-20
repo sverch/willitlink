@@ -1,4 +1,4 @@
-#!/usr/bin/python
+ #!/usr/bin/python
 
 import argparse
 import os
@@ -123,13 +123,13 @@ def get_unneeded_libdeps(args):
 def main():
     default_cwd = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
     default_data_file = os.path.join(default_cwd, 'data', "dep_graph.json")
-    relationships = { 'symdep':('symbol_to_file_sources', 'symbol', 'the file sources for a symbol'),
-                      'symsrc':('symbol_to_file_dependencies', 'symbol', 'the file(s) that a symbol depends on'),
-                      'filedef':('file_to_symbol_definitions', 'file', 'the files that define a symbol'),
-                      'filedep':('file_to_symbol_dependencies', 'file', 'the files that a symbol depends on'),
-                      'targetdep':('target_to_dependencies', 'target', 'the dependencies for a build target'),
-                      'deptarget':('dependency_to_targets', 'dependency', 'the build targets for a dependency'),
-                      'arc':('archives_to_components', 'archive', 'the components of an archive'),
+    relationships = { 'symbol-dep':('symbol_to_file_sources', 'symbol', 'the file sources for a symbol'),
+                      'symbol-src':('symbol_to_file_dependencies', 'symbol', 'the file(s) that a symbol depends on'),
+                      'file-def':('file_to_symbol_definitions', 'file', 'the files that define a symbol'),
+                      'file-dep':('file_to_symbol_dependencies', 'file', 'the files that a symbol depends on'),
+                      'target-dep':('target_to_dependencies', 'target', 'the dependencies for a build target'),
+                      'dep-target':('dependency_to_targets', 'dependency', 'the build targets for a dependency'),
+                      'archive':('archives_to_components', 'archive', 'the components of an archive'),
                     }
 
     parser = argparse.ArgumentParser(prog='wil.py', usage='wil.py [command] [arguments]', add_help='[wil]: a dependency analysis toolkit')
@@ -147,11 +147,13 @@ def main():
     collector_parser.add_argument('--mongo', '-m', default=os.path.join(default_cwd, '..', 'mongo'))
     collector_parser.add_argument('--scons', '-s', nargs='*', default=[])
 
+    relationship_parser = subparsers.add_parser('relationship', help='return direct single relationships')
+    relationship_parser.add_argument('name', help='the name of object.')
+    relationship_parser.add_argument('--data', '-d', default=default_data_file)
+
     for k,v in relationships.items():
-        sp = subparsers.add_parser(k, help=v[2])
-        sp.set_defaults(relationship=v[0], thing=v[1])
-        sp.add_argument('name')
-        sp.add_argument('--data', '-d', default=default_data_file)
+        relationship_parser.add_argument(k, help=v[2])
+        relationship_parser.set_defaults(relationship=v[0], thing=v[1])
 
     get_list_parser = subparsers.add_parser('list', help='a list of all symbols or files.')
     get_list_parser.add_argument('type', choices=['symbols', 'files'], help='kind of object')
@@ -159,19 +161,20 @@ def main():
     get_list_parser.add_argument('--data', '-d', default=default_data_file)
 
     for tree_parser in [ 'symbol-family', 'leak-check', 'file-family']:
-        sp = subparsers.add_parser(tree_parser)
+        sp = subparsers.add_parser(tree_parser, help='render tree for ' + tree_parser)
         sp.add_argument('name')
         sp.add_argument('depth', type=int)
         sp.add_argument('--data', '-d', default=default_data_file)
 
-    for 
-        \ helpquery_parser in [ 'leaks', 'direct-leaks', 'symbol', 'extra-libdeps', 'd3-file-family', 'd3-file-family-with-leaks']:
-        sp = subparsers.add_parser(query_parser)
+    for query_parser in [ 'leaks', 'direct-leaks', 'symbol',
+                              'extra-libdeps', 'd3-file-family',
+                              'd3-file-family-with-leaks']:
+        sp = subparsers.add_parser(query_parser, help='query for ' + query_parser)
         sp.add_argument('name')
         sp.add_argument('--data', '-d', default=default_data_file)
 
     for query_parser in [ 'd3-file-relationship' ]:
-        sp = subparsers.add_parser(query_parser)
+        sp = subparsers.add_parser(query_parser, help='query for ' + query_parser)
         sp.add_argument('name1')
         sp.add_argument('name2')
         sp.add_argument('--data', '-d', default=default_data_file)
@@ -182,13 +185,13 @@ def main():
         'collect': data_collector,
         'ingest': ingestion.command,
 
-        'symdep': get_relationship_node,
-        'symsrc': get_relationship_node,
-        'filedef': get_relationship_node,
-        'filedep': get_relationship_node,
-        'targetdep': get_relationship_node,
-        'arc': get_relationship_node,
-        'deptarget': get_relationship_node,
+        'symbol-dep': get_relationship_node,
+        'symbol-src': get_relationship_node,
+        'file-def': get_relationship_node,
+        'file-dep': get_relationship_node,
+        'target-dep': get_relationship_node,
+        'dep-target': get_relationship_node,
+        'archive': get_relationship_node,
 
         'list': get_list,
 
