@@ -23,4 +23,4 @@ git checkout SConstruct
 git checkout site_scons/libdeps.py
 
 echo "[wil]: completed data generation, moving to ingestion phase."
-python $DIR/wil.py ingest -t $DIR/data/dependency_tree.txt $DIR/data/deps.json $DIR/data/dep_graph.json
+python $DIR/wil.py ingest -t -m `pwd` --input_tree $DIR/data/dependency_tree.txt --dep_info $DIR/data/deps.json --output_dep_name $DIR/data/dep_graph.json 

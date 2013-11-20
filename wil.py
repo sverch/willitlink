@@ -5,6 +5,7 @@ import os
 import json
 
 import willitlink.ingestion as ingestion
+from willitlink.ingestion.collector import data_collector
 from willitlink.base.graph import MultiGraph
 from willitlink.base.dev_tools import Timer
 
@@ -114,13 +115,14 @@ def get_unneeded_libdeps(args):
     for filename in g.files:
         if filename.endswith(".a"):
             archives.append(filename)
-    print len(archives)
+    print('[wil]: number of unneeded libdeps: ' + str(len(archives)))
 
     with Timer('find unneeded libdeps', args.timers):
         render(find_extra_archives(g, args.name))
 
 def main():
-    default_data_file = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data', "dep_graph.json")
+    default_cwd = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
+    default_data_file = os.path.join(default_cwd, 'data', "dep_graph.json")
     relationships = { 'symdep':('symbol_to_file_sources', 'symbol'),
                       'symsrc':('symbol_to_file_dependencies', 'symbol'),
                       'filedef':('file_to_symbol_definitions', 'file'),
@@ -131,11 +133,19 @@ def main():
                     }
 
     parser = argparse.ArgumentParser()
+    parser.set_defaults(cwd=default_cwd)
     parser.add_argument('--timers', '-t', default=False, action='store_true')
     subparsers = parser.add_subparsers(dest='command')
 
     ingest_parser = subparsers.add_parser('ingest')
-    ingest_parser = ingestion.argparser(ingest_parser)
+    ingest_parser = ingestion.argparser(default_cwd, ingest_parser)
+
+    collector_parser = subparsers.add_parser('collect')
+    collector_parser.set_defaults(data_dir=os.path.join(default_cwd, 'data'))
+    collector_parser.add_argument('--tree_name', default='dependency_tree.txt')
+    collector_parser.add_argument('--data', '-d', default='deps.json')
+    collector_parser.add_argument('--mongo', '-m', default=os.path.join(default_cwd, '..', 'mongo'))
+    collector_parser.add_argument('--scons', '-s', nargs='*', default=[])
 
     for k,v in relationships.items():
         sp = subparsers.add_parser(k)
@@ -168,6 +178,7 @@ def main():
     args = parser.parse_args()
 
     operations = {
+        'collect': data_collector,
         'ingest': ingestion.command,
         'symdep': get_relationship_node,
         'symsrc': get_relationship_node,
