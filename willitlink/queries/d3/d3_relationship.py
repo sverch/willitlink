@@ -7,6 +7,7 @@ import json
 from willitlink.base.graph import MultiGraph
 from willitlink.base.dev_tools import Timer
 from willitlink.queries.tree_leaks import find_symbol_dependencies,find_symbol_definitions_recursive
+from willitlink.queries.d3.d3_utils import dedupe_edges_d3
 
 def get_full_filenames(g, file_names):
 
@@ -55,7 +56,7 @@ def relationship_info_d3(g, file_names):
                                 if archive_source in full_file_names and archive_source != archive_or_executable:
                                     d3_graph_object['edges'].append({ 'to' : archive_source,
                                                                     'from' : archive_or_executable,
-                                                                    'type' : 'symdep',
+                                                                    'type' : 'symbol',
                                                                     'symbol' : dependency })
                         except KeyError:
                             pass
@@ -66,4 +67,4 @@ def relationship_info_d3(g, file_names):
 
     d3_graph_object['nodes'] = list(d3_graph_object['nodes'])
 
-    return d3_graph_object
+    return dedupe_edges_d3(d3_graph_object)

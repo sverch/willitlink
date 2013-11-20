@@ -6,6 +6,7 @@ import json
 
 from willitlink.base.graph import MultiGraph
 from willitlink.base.dev_tools import Timer
+from willitlink.queries.d3.d3_utils import dedupe_edges_d3
 
 def detect_type(line):
     if line.endswith('.h'):
@@ -65,10 +66,10 @@ def file_family_tree_d3(g, file_names, get_parents=True, get_children=True, pare
 
         # Add this edge if we came from somewhere
         if parent_node is not None:
-            family_tree['edges'].append({ 'from' : parent_node, 'to' : full_file_name })
+            family_tree['edges'].append({ 'from' : parent_node, 'to' : full_file_name, 'type' : 'file' })
 
         if child_node is not None:
-            family_tree['edges'].append({ 'from' : full_file_name, 'to' : child_node })
+            family_tree['edges'].append({ 'from' : full_file_name, 'to' : child_node, 'type' : 'file' })
 
         if get_parents is True:
             parents = []
@@ -105,4 +106,4 @@ def file_family_tree_d3(g, file_names, get_parents=True, get_children=True, pare
             family_tree['edges'].extend(child_tree['edges'])
 
     family_tree['nodes'] = list(family_tree['nodes'])
-    return family_tree
+    return dedupe_edges_d3(family_tree)
