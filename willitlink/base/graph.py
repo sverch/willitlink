@@ -289,19 +289,21 @@ class MultiGraph(object):
             exporter(o, f)
 
 class OutputGraphD3(object):
-    def __init__(self):
+    def __init__(self, kind):
         self.nodes = set()
         self.edges = list()
+        self.kind = kind
 
-    def add(self, from_node, to_node, **kwargs):
-        self.nodes.add(from_node)
-
+    def add(self, node, arc, **kwargs):
+        self.nodes.add(node)
+        self.nodes.add(arc)
+        
         edge = {
-            'to': to_node,
-            'from': from_node,
+            'to': arc,
+            'from': node,
         }
 
-        for k,v in kwargs:
+        for k,v in kwargs.items():
             edge[k] = v
 
         self.edges.append(edge)
@@ -311,6 +313,3 @@ class OutputGraphD3(object):
             'nodes': list(self.nodes),
             'edges': self.edges
         }
-    
-    
-
