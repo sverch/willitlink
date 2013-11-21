@@ -81,20 +81,27 @@ class Graph(object):
             self.graph[item].add(deps)
 
     def get(self, item):
-        return list(self.graph[item])
+        if item in self.graph:
+            return list(self.graph[item])
+        else:
+            return list()
 
     def get_startswith(self, name):
         r = list()
         for i in self.graph.keys():
             if i.startswith(name):
-                r = self.get(i)
+                item = self.get(i)
+                if item:
+                    r.append(item)
         return r
 
     def get_endswith(self, name):
         r = list()
         for i in self.graph.keys():
             if i.endswith(name):
-                r = self.get(i)
+                item = self.get(i)
+                if item:
+                    r.append(item)
         return r
 
     def holds(self, name):
@@ -107,7 +114,9 @@ class Graph(object):
     def fetch(self):
         r = dict()
         for k in self.graph.keys():
-            r[k] = self.get(k)
+            item = self.get(k)
+            if item:
+                r[k] = item
         return r
 
     def get_nodes(self):
