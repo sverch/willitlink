@@ -2,7 +2,6 @@
 
 import re
 import json
-import pymongo
 import subprocess
 import sys
 
