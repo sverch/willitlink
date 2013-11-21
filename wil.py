@@ -67,7 +67,7 @@ def get_tree(args):
 def get_list(args):
     g = get_graph(args)
 
-    render([ i for i in getattr(g, args.name) if i.endswith(args.filter)])
+    render([ i for i in getattr(g, args.type) if i.endswith(args.filter)])
 
 def get_leaks(args):
     g = get_graph(args)
