@@ -297,7 +297,7 @@ class OutputGraphD3(object):
     def add(self, node, arc, **kwargs):
         self.nodes.add(node)
         self.nodes.add(arc)
-        
+
         edge = {
             'to': arc,
             'from': node,
@@ -307,9 +307,12 @@ class OutputGraphD3(object):
             edge[k] = v
 
         self.edges.append(edge)
-    
+
     def render(self):
-        return { 
+        return {
             'nodes': list(self.nodes),
             'edges': self.edges
         }
+
+    def ingest(self, graph):
+        raise NotImplementedError
