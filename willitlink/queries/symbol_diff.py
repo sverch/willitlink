@@ -72,60 +72,49 @@ def get_symbol_info(g, build_object_names, search_depth=None, symbol_type='depen
     for full_build_object_name in full_build_object_names:
 
         if (detect_type(full_build_object_name) == "object"):
-            try:
-                if symbol_type == "dependency":
-                    for symbol_needed in g.get('file_to_symbol_dependencies', full_build_object_name):
-                        symbol_info_objects.append({ 'symbol' : symbol_needed,
-                                                        'type' : 'dependency',
-                                                        'object' : full_build_object_name,
-                                                        'path' : {} })
-                elif symbol_type == "definition":
-                    for symbol_defined in g.get('file_to_symbol_definitions', full_build_object_name):
-                        symbol_info_objects.append({ 'symbol' : symbol_defined,
-                                                        'type' : 'definition',
-                                                        'object' : full_build_object_name,
-                                                        'path' : {} })
-                else:
-                    print "Unrecognized symbol_type: " + symbol_type + " expected 'dependency' or 'definition'"
-                    return []
-
-            except KeyError:
-                pass
+            if symbol_type == "dependency":
+                for symbol_needed in g.get('file_to_symbol_dependencies', full_build_object_name):
+                    symbol_info_objects.append({ 'symbol' : symbol_needed,
+                                                    'type' : 'dependency',
+                                                    'object' : full_build_object_name,
+                                                    'path' : {} })
+            elif symbol_type == "definition":
+                for symbol_defined in g.get('file_to_symbol_definitions', full_build_object_name):
+                    symbol_info_objects.append({ 'symbol' : symbol_defined,
+                                                    'type' : 'definition',
+                                                    'object' : full_build_object_name,
+                                                    'path' : {} })
+            else:
+                print "Unrecognized symbol_type: " + symbol_type + " expected 'dependency' or 'definition'"
+                return []
 
         else:
 
             object_files = g.get('archives_to_components', full_build_object_name)
 
             for object_file in object_files:
-                try:
-                    if symbol_type == "dependency":
-                        for symbol_needed in g.get('file_to_symbol_dependencies', object_file):
-                            symbol_info_objects.append({ 'symbol' : symbol_needed,
-                                                         'type' : 'dependency',
-                                                         'object' : object_file,
-                                                         'path' : {
-                                                             object_file : full_build_object_name
-                                                         } })
-                    elif symbol_type == "definition":
-                        for symbol_defined in g.get('file_to_symbol_definitions', object_file):
-                            symbol_info_objects.append({ 'symbol' : symbol_defined,
-                                                         'type' : 'definition',
-                                                         'object' : object_file,
-                                                         'path' : {
-                                                             object_file : full_build_object_name
-                                                         } })
-                    else:
-                        print "Unrecognized symbol_type: " + symbol_type + " expected 'dependency' or 'definition'"
-                        return []
-                except KeyError:
-                    pass
+                if symbol_type == "dependency":
+                    for symbol_needed in g.get('file_to_symbol_dependencies', object_file):
+                        symbol_info_objects.append({ 'symbol' : symbol_needed,
+                                                        'type' : 'dependency',
+                                                        'object' : object_file,
+                                                        'path' : {
+                                                            object_file : full_build_object_name
+                                                        } })
+                elif symbol_type == "definition":
+                    for symbol_defined in g.get('file_to_symbol_definitions', object_file):
+                        symbol_info_objects.append({ 'symbol' : symbol_defined,
+                                                        'type' : 'definition',
+                                                        'object' : object_file,
+                                                        'path' : {
+                                                            object_file : full_build_object_name
+                                                        } })
+                else:
+                    print "Unrecognized symbol_type: " + symbol_type + " expected 'dependency' or 'definition'"
+                    return []
 
             # Now, we have to get all archive dependencies of this archive
-            archive_dependencies = []
-            try:
-                archive_dependencies = g.get('target_to_dependencies', full_build_object_name)
-            except KeyError:
-                pass
+            archive_dependencies = g.get('target_to_dependencies', full_build_object_name)
 
             # Recursively search all libdeps
             new_search_depth = None
