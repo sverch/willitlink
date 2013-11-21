@@ -201,8 +201,7 @@ def main():
     tree_parser.add_argument('--depth', type=int, default=1)
 
     for tree in get_tree_types().keys():
-        tree_parser.add_argument('--' + tree, help='render tree of {0} for an object'.format(tree))
-
+        tree_parser.add_argument('--' + tree, nargs='*', help='render tree of {0} for an object'.format(tree))
 
     for query_parser in [ 'leaks', 'direct-leaks', 'symbol',
                           'extra-libdeps', 'd3-file-family',
