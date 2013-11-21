@@ -6,7 +6,7 @@ import json
 
 from willitlink.base.graph import MultiGraph
 from willitlink.base.dev_tools import Timer
-from willitlink.queries.tree_leaks import find_symbol_dependencies,find_symbol_definitions_recursive
+from willitlink.queries.symbol_diff import get_symbol_info
 from willitlink.queries.d3.d3_utils import dedupe_edges_d3
 
 def get_full_filenames(g, file_names):
@@ -38,14 +38,14 @@ def relationship_info_d3(g, file_names):
 
         try:
             # First, we have to get all symbols directly needed by this archive or executable
-            dependencies = find_symbol_dependencies(g, archive_or_executable)
+            dependencies = get_symbol_info(g, [ archive_or_executable ], search_depth=1, symbol_type='dependency')
 
             # Iterate all the symbols needed by this archive
             for dependency in dependencies:
 
                 try:
                     # Get the files this symbol is defined
-                    for symbol_source in g.get('symbol_to_file_sources', dependency):
+                    for symbol_source in g.get('symbol_to_file_sources', dependency['symbol']):
 
                         try:
                             # Get the archives this file is in
@@ -57,7 +57,7 @@ def relationship_info_d3(g, file_names):
                                     d3_graph_object['edges'].append({ 'to' : archive_source,
                                                                     'from' : archive_or_executable,
                                                                     'type' : 'symbol',
-                                                                    'symbol' : dependency })
+                                                                    'symbol' : dependency['symbol'] })
                         except KeyError:
                             pass
                 except KeyError:
