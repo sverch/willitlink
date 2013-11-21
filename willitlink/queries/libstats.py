@@ -9,9 +9,9 @@ from willitlink.base.dev_tools import Timer
 from willitlink.queries.family_tree import symbol_family_tree
 from willitlink.queries.tree_leaks import  find_direct_leaks
 
-def resolve_leak_info(g, name, depth, timers):
+def resolve_leak_info(g, names, depth, timers):
     with Timer('generating direct leak list'):
-        direct_leaks = find_direct_leaks(g, name)
+        direct_leaks = find_direct_leaks(g, names)
 
     return [ {
                'leak': leak,

@@ -3,6 +3,8 @@
 import argparse
 import os
 
+from willitlink.base.dev_tools import Timer
+
 import willitlink.ingestion as ingestion
 from willitlink.ingestion.collector import data_collector
 
