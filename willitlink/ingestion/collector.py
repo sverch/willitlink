@@ -48,4 +48,4 @@ def data_collector(args):
                     f.write('\n')
 
     print('[wil]: collected {0} dependencies.'.format(ct))
-    print('[wil]: data collection complete!'.format(ct))
+    print('[wil]: data collection complete!')
