@@ -27,5 +27,6 @@ def get_file_family_tree_with_leaks_d3(args):
 def get_file_family_relationship_d3(args):
     g = get_graph(args)
 
+    args.files.append(args.first_file)
     with Timer('relationship info query', args.timers):
-        render(relationship_info_d3(g, [ args.name1, args.name2 ]))
+        render(relationship_info_d3(g, args.files))

@@ -80,9 +80,10 @@ def main():
 
     for query_parser in [ 'd3-file-relationship' ]:
         sp = subparsers.add_parser(query_parser, help='query for ' + query_parser)
-        sp.add_argument('name1')
-        sp.add_argument('name2')
         sp.add_argument('--data', '-d', default=default_data_file)
+        # two arguments are used below to ensure two or more files as arguments
+        sp.add_argument('first_file', help="file to relate")
+        sp.add_argument('files', nargs='+', help="list of other files to relate")
 
     args = parser.parse_args()
 
