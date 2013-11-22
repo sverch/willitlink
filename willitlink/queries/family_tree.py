@@ -66,7 +66,7 @@ def symbol_family_tree(g, symbol_name, depth=None):
                             depth=depth,
                             flipped=True)
 
-def family_tree_base(graph, relations, depth, flipped=True)
+def family_tree_base(graph, relations, depth, flipped=True):
     o = {}
 
     if depth is not None:
@@ -78,7 +78,7 @@ def family_tree_base(graph, relations, depth, flipped=True)
 
             if flipped is True:
                 return flip_tree(o)
-             else:
+            else:
                 return o
         else:
             return o

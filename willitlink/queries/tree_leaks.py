@@ -26,7 +26,7 @@ def find_direct_leaks(graph, archive_name):
     o = []
     for leak_object in leaks:
         try:
-            num_deps = len(g.get('symbol_to_file_sources', leak_object['symbol'])
+            num_deps = len(g.get('symbol_to_file_sources', leak_object['symbol']))
 
             if num_deps > 0:
                 o.append(leak_object)
