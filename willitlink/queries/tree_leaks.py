@@ -7,7 +7,7 @@ def find_direct_leaks(graph, archive_names):
     # Get all symbols needed by this archive
     symbols_needed = get_symbol_info(graph,
                                      archive_names,
-                                     search_depth=1,
+                                     search_depth=None,
                                      symbol_type='dependency')
 
     # Get all symbols provided by this archive and archives listed as dependencies

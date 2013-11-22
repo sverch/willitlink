@@ -35,8 +35,6 @@ def find_extra_archives(graph, archive_name):
                                                          symbol_type='definition') ]
             for symbol_defined in symbols_defined:
                 if symbol_defined in symbols_needed:
-                    print symbol_defined
-                    print archive_dependency
                     need_archive = True
             if need_archive == False:
                 extra_archives.append(archive_dependency)

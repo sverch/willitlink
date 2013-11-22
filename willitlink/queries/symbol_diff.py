@@ -56,7 +56,6 @@ def get_symbol_info(g, build_object_names, search_depth=None, symbol_type='depen
 
     for full_build_object_name in queue:
         if isinstance(full_build_object_name, tuple):
-            print full_build_object_name
             parent = full_build_object_name[0]
             full_build_object_name = full_build_object_name[1]
         else:
@@ -88,7 +87,7 @@ def get_symbol_info(g, build_object_names, search_depth=None, symbol_type='depen
                               } }
 
                         if parent is not None:
-                            r[full_build_object_name] = parent
+                            r['path'][full_build_object_name] = parent
 
                         yield r
                 elif symbol_type == "definition":
@@ -101,7 +100,7 @@ def get_symbol_info(g, build_object_names, search_depth=None, symbol_type='depen
                             } }
 
                         if parent is not None:
-                            r[full_build_object_name] = parent
+                            r['path'][full_build_object_name] = parent
 
                         yield r
 
