@@ -1,9 +1,3 @@
-#!/usr/bin/python
-
-import json
-import os.path
-import sys
-
 from willitlink.base.graph import MultiGraph
 
 def locate_symbol(g, symbol_name):

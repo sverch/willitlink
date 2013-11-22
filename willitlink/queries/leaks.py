@@ -1,9 +1,3 @@
-#!/usr/bin/python
-
-import os.path
-import sys
-import json
-
 from willitlink.base.graph import MultiGraph
 from willitlink.base.dev_tools import Timer
 

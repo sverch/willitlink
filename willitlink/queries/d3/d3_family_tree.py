@@ -1,9 +1,3 @@
-#!/usr/bin/python
-
-import os
-import sys
-import json
-
 from willitlink.base.graph import MultiGraph
 from willitlink.base.dev_tools import Timer
 from willitlink.queries.d3.d3_utils import dedupe_edges_d3

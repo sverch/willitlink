@@ -1,5 +1,3 @@
-#!/usr/bin/python
-
 def dedupe_edges_d3(d3_graph_object):
 
     edges_found = []
