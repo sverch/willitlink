@@ -34,7 +34,7 @@ def get_unneeded_libdeps(args):
     for filename in g.files:
         if filename.endswith(".a"):
             archives.append(filename)
-    print('[wil]: number of unneeded libdeps: ' + str(len(archives)))
+    print('[wil]: total number of archives: ' + str(len(archives)))
 
     with Timer('find unneeded libdeps', args.timers):
         render(find_extra_archives(g, args.name))

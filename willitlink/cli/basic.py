@@ -21,7 +21,7 @@ def get_relationship_node(args):
         if rel is None:
             raise Exception('invalid relationship type.')
 
-        render({ rel: { name: g.get_endswith(rel, name)}})
+        render({ rel: { name: g.get_endswith(get_relationship_types()[rel][0], name)}})
     except KeyError:
         print('[wil]: there is no {0} named {1}'.format(args.thing, args.name))
 

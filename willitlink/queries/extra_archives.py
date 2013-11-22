@@ -1,50 +1,42 @@
 from willitlink.base.graph import MultiGraph
 from willitlink.base.dev_tools import Timer
+from willitlink.queries.symbol_diff import get_symbol_info
 
-def get_full_filenames(g, file_name):
+def get_full_filenames(graph, file_name):
 
     full_file_names = []
 
-    for i in g.files:
+    for i in graph.files:
         if i.endswith(file_name):
             full_file_names.append(i)
 
     return full_file_names
 
-# Find all symbols defined in this archive and in all archives that this archive lists as
-# dependencies in scons
-def find_symbol_definitions_recursive(g, full_archive_name):
-
-    # Iterate all components of this archive archive looking at all the symbols
-    # we define directly
-    symbols_defined = set()
-    for archive_component in g.get('archives_to_components', full_archive_name):
-        for symbol_defined in g.get('file_to_symbol_definitions', archive_component):
-            symbols_defined.add(symbol_defined)
-
-    # Now, recursively call this function on each archive we depend on, aggregating the results in
-    # the symbols found set
-    for archive_dependency in g.get('target_to_dependencies', full_archive_name):
-        for symbol_defined in find_symbol_definitions_recursive(g, archive_dependency):
-            symbols_defined.add(symbol_defined)
-
-    # Return all our symbol definitions for this archive and sub archives
-    return list(symbols_defined)
-
-def find_extra_archives(g, archive_name):
+def find_extra_archives(graph, archive_name):
     o = []
 
     # loop over full names of this file
-    for full_archive_name in get_full_filenames(g, archive_name):
+    for full_archive_name in get_full_filenames(graph, archive_name):
         # Get all symbols needed by this archive
-        symbols_needed = find_symbol_dependencies(g, full_archive_name)
+        symbols_needed = set([ s['symbol']
+                               for s in get_symbol_info(graph,
+                                                        [ full_archive_name ],
+                                                        search_depth=1,
+                                                        symbol_type='dependency') ])
 
         extra_archives = []
 
-        for archive_dependency in g.get('target_to_dependencies', full_archive_name):
+        for archive_dependency in graph.get('target_to_dependencies', full_archive_name):
             need_archive = False
-            for symbol_defined in find_symbol_definitions_recursive(g, archive_dependency):
+            symbols_defined = [ s['symbol']
+                                for s in get_symbol_info(graph,
+                                                         [ archive_name ],
+                                                         search_depth=1,
+                                                         symbol_type='definition') ]
+            for symbol_defined in symbols_defined:
                 if symbol_defined in symbols_needed:
+                    print symbol_defined
+                    print archive_dependency
                     need_archive = True
             if need_archive == False:
                 extra_archives.append(archive_dependency)
@@ -55,22 +47,3 @@ def find_extra_archives(g, archive_name):
         o.append(result)
 
     return o
-
-
-# Find all symbols needed be this archive, and include the file name
-def find_symbol_dependencies_with_file(g, full_archive_name):
-
-    # First, we have to get all components of this archive
-    archive_components = g.get('archives_to_components', full_archive_name)
-
-    # Iterate this archive looking at all the symbols we depend on directly
-    symbols_needed = set()
-    for archive_component in archive_components:
-        for symbol_needed in g.get('file_to_symbol_dependencies', archive_component):
-            symbols_needed.add((symbol_needed, archive_component))
-
-    # Return all our symbol dependencies for this archive
-    return list(symbols_needed)
-
-def find_symbol_dependencies(g, full_archive_name):
-    return [ symbol_needed for (symbol_needed, file_needing) in find_symbol_dependencies_with_file(g, full_archive_name) ]
