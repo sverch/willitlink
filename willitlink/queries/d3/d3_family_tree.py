@@ -9,7 +9,7 @@ from willitlink.base.dev_tools import Timer
 from willitlink.queries.d3.d3_utils import dedupe_edges_d3
 
 from willitlink.ingestion.parse_scons_dependency_tree import detect_type
-from willitlink.queries.d3.d3_relationship.py import get_full_filenames
+from willitlink.queries.d3.utils import get_full_filenames
 
 def file_family_tree_d3(g, file_names, get_parents=True, get_children=True,
                         parent_node=None, child_node=None, is_full_file_name=False):

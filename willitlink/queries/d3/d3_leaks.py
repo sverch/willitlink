@@ -7,7 +7,7 @@ import json
 from willitlink.base.graph import MultiGraph
 from willitlink.base.dev_tools import Timer
 from willitlink.queries.tree_leaks import find_direct_leaks
-from willitlink.queries.d3.d3_utils import dedupe_edges_d3
+from willitlink.queries.d3.utils import dedupe_edges_d3
 
 # Pseudocode:
 # for each archive or executable:

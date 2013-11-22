@@ -7,23 +7,7 @@ import json
 from willitlink.base.graph import MultiGraph
 from willitlink.base.dev_tools import Timer
 from willitlink.queries.symbol_diff import get_symbol_info
-from willitlink.queries.d3.d3_utils import dedupe_edges_d3
-
-def get_full_filenames(g, file_names):
-
-    full_file_names = []
-
-    for i in g.files:
-        for file_name in file_names:
-            # If we have an exact match just return a single element to reduce noise
-            # TODO: find a more elegant way to do this and document how it works.
-            if i == file_name:
-                full_file_names = [ file_name ]
-                break
-            if i.endswith(file_name):
-                full_file_names.append(i)
-
-    return full_file_names
+from willitlink.queries.d3.utils import dedupe_edges_d3, get_full_filenames
 
 def relationship_info_d3(g, file_names):
 
