@@ -1,31 +1,18 @@
 from willitlink.base.graph import MultiGraph
 
-# TODO: Do this in a smarter way or preprocess this somehow.  This is related to the ingestion code,
-# so once we get better scons integration we'll be better at determing the types of things at that
-# point.
-def detect_type(line):
-    if line.endswith('.h'):
-        return "header"
+# TODO: Do this in a smarter way or preprocess this somehow.  This is related to
+# the ingestion code, so once we get better scons integration we'll be better at
+# determing the types of things at that point.
 
-    if line.endswith('.o'):
-        return "object"
+from willitlink.ingestion.parse_scons_dependency_tree import detect_type
 
-    if line.endswith('.a'):
-        return "archive"
+# TODO: Do this in a smarter way.  This function's purpose is to basically clean
+# up names from the user, so that they can type libmongocommon.a rather than the
+# full path.
 
-    if line.endswith('.js'):
-        return "javascript"
+# TODO: Doing queries on things like "mongod" result in an infinite loop, since
+# multiple targets end with "mongod"
 
-    # Assume it's a system file if it starts with a '/'
-    if line.startswith('/'):
-        return "system"
-
-    return "target"
-
-# TODO: Do this in a smarter way.  This function's purpose is to basically clean up names from the
-# user, so that they can type libmongocommon.a rather than the full path.
-# TODO: Doing queries on things like "mongod" result in an infinite loop, since multiple targets end
-# with "mongod"
 def get_full_filenames(g, file_names):
 
     full_file_names = []
@@ -59,6 +46,7 @@ def get_full_filenames(g, file_names):
 # },
 # ...
 # ]
+
 def get_symbol_info(g, build_object_names, search_depth=None, symbol_type='dependency', parent=None):
 
     if search_depth is not None and search_depth == 0:
@@ -71,7 +59,7 @@ def get_symbol_info(g, build_object_names, search_depth=None, symbol_type='depen
 
     for full_build_object_name in full_build_object_names:
 
-        if (detect_type(full_build_object_name) == "object"):
+        if detect_type(full_build_object_name) == "object":
             if symbol_type == "dependency":
                 for symbol_needed in g.get('file_to_symbol_dependencies', full_build_object_name):
                     symbol_info_objects.append({ 'symbol' : symbol_needed,

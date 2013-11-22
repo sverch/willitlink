@@ -8,29 +8,33 @@ from willitlink.base.graph import MultiGraph
 from willitlink.base.dev_tools import Timer
 from willitlink.queries.symbol_diff import get_symbol_info
 
-def find_direct_leaks(g, archive_name):
+def find_direct_leaks(graph, archive_name):
 
     # Get all symbols needed by this archive
-    symbols_needed = get_symbol_info(g, [ archive_name ], search_depth=1, symbol_type='dependency')
+    symbols_needed = get_symbol_info(graph,
+                                     [ archive_name ],
+                                     search_depth=1,
+                                     symbol_type='dependency')
 
     # Get all symbols provided by this archive and archives listed as dependencies
-    symbols_found = get_symbol_info(g, [ archive_name ], search_depth=None, symbol_type='definition')
+    symbols_found = set([ s['symbol']
+                          for s in get_symbol_info(graph,
+                                                   [ archive_name ],
+                                                   search_depth=None,
+                                                   symbol_type='definition') ])
 
-    # Diff these lists to get the "leaks"
+
     leaks = []
-    symbols_found_set = set()
-    for symbol_found in symbols_found:
-        symbols_found_set.add(symbol_found['symbol'])
-
     for symbol_needed in symbols_needed:
-
-        if symbol_needed['symbol'] not in symbols_found_set:
+        if symbol_needed['symbol'] not in symbols_found:
             leaks.append(symbol_needed)
 
     o = []
     for leak_object in leaks:
         try:
-            if (len(g.get('symbol_to_file_sources', leak_object['symbol'])) > 0):
+            num_deps = len(g.get('symbol_to_file_sources', leak_object['symbol'])
+
+            if num_deps > 0:
                 o.append(leak_object)
         except KeyError:
             pass

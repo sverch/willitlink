@@ -14,21 +14,17 @@ def add_path(result_map, path):
 
     if path[0] not in result_map:
         result_map[path[0]] = {}
+
     add_path(result_map[path[0]], path[1:])
 
 def add_paths(result_map, path_list):
     for path in path_list:
         add_path(result_map, path)
 
-def dict_is_empty(D):
-    for k in D:
-        return False
-    return True
-
 def get_paths(source_map):
 
     # Base case is empty map
-    if dict_is_empty(source_map):
+    if len(source_map) == 0:
         return []
 
     # Otherwise, iterate the keys, and recursively call
@@ -44,9 +40,8 @@ def get_paths(source_map):
     return path_list
 
 def reverse_lists(lists):
-    for to_reverse in lists:
-        to_reverse.reverse()
-    return lists
+    return [ lst.reverse()
+             for lst in lists ]
 
 def flip_tree(source_map):
     dest_map = {}
@@ -65,57 +60,32 @@ def get_full_filenames(g, file_name):
 
     return full_file_names
 
-def file_family_tree_recursive(g, full_file_name, depth):
 
-    family_tree_hash = {}
+def file_family_tree(g, file_name, depth=None):
+    return family_tree_base(graph=g,
+                            relations=get_full_filenames(g, file_name),
+                            depth=depth,
+                            flipped=True)
 
-    if depth is not None:
-        if depth == 0:
-            return {}
-        depth = depth - 1
+def symbol_family_tree(g, symbol_name, depth=None):
+    return family_tree_base(graph=g,
+                            relations=g.get('symbol_to_file_sources', symbol_name),
+                            depth=depth,
+                            flipped=True)
 
-    parents = []
-    try:
-        parents = g.get('dependency_to_targets', full_file_name)
-    except KeyError:
-        pass
-
-    for parent in parents:
-        family_tree_hash[parent] = file_family_tree_recursive(g, parent, depth)
-
-    return family_tree_hash
-
-def file_family_tree(g, file_name, depth = None):
-
-    family_tree_hash = {}
+def family_tree_base(graph, relations, depth, flipped=True)
+    o = {}
 
     if depth is not None:
-        if depth == 0:
-            return {}
-        depth = depth - 1
+        if depth > 0:
+            depth = depth - 1
 
-    full_file_names = get_full_filenames(g, file_name)
+            for obj in relations:
+                o[obj] = family_tree_base(graph, obj, depth)
 
-    for full_file_name in full_file_names:
-        family_tree_hash[full_file_name] = file_family_tree_recursive(g, full_file_name, depth)
-
-    return flip_tree(family_tree_hash)
-
-def symbol_family_tree(g, symbol_name, depth = None):
-
-    family_tree_hash = {}
-
-    if depth is not None:
-        if depth == 0:
-            return {}
-        depth = depth - 1
-
-    try:
-        file_sources =  g.get('symbol_to_file_sources', symbol_name)
-    except KeyError:
-        pass
-
-    for file_source in file_sources:
-        family_tree_hash[file_source] = file_family_tree_recursive(g, file_source, depth)
-
-    return flip_tree(family_tree_hash)
+            if flipped is True:
+                return flip_tree(o)
+             else:
+                return o
+        else:
+            return o
