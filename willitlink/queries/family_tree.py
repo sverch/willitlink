@@ -34,8 +34,7 @@ def get_paths(source_map):
         if len(paths) == 0:
             path_list.append([ k ])
         else:
-            for path in get_paths(source_map[k]):
-                path_list.append([ k ] + path)
+            path_list.extend([ [ k ] + p for p in paths ])
 
     return path_list
 
