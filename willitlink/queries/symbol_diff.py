@@ -105,7 +105,10 @@ def get_symbol_info(g, build_object_names, search_depth=None, symbol_type='depen
                         yield r
 
             def add_path_info(item):
-                return full_build_object_name, item
+                if parent is not None:
+                    return full_build_object_name, item
+                else:
+                    return { parent: full_build_object_name }, item
 
             next_level_nodes = map(add_path_info, g.get('target_to_dependencies', full_build_object_name))
             queue.extend(next_level_nodes)
