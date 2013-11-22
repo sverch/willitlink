@@ -47,82 +47,85 @@ def get_full_filenames(g, file_names):
 # ...
 # ]
 
-def get_symbol_info(g, build_object_names, search_depth=None, symbol_type='dependency', parent=None):
 
-    if search_depth is not None and search_depth == 0:
-        return []
+def get_symbol_info(g, build_object_names, search_depth=None, symbol_type='dependency'):
+    l = get_full_filenames(g, build_object_names)
 
-    # Get the full names of this file
-    full_build_object_names = get_full_filenames(g, build_object_names)
+    current_level_children = len(l)
+    next_level_children = 0
 
-    symbol_info_objects = []
+    paths = dict()
 
-    for full_build_object_name in full_build_object_names:
+    for full_build_object_name in l:
+        if isinstance(full_build_object_name, tuple):
+            print full_build_object_name
+            parent = full_build_object_name[0]
+            full_build_object_name = full_build_object_name[1]
+        else:
+            parent = None
 
         if detect_type(full_build_object_name) == "object":
             if symbol_type == "dependency":
                 for symbol_needed in g.get('file_to_symbol_dependencies', full_build_object_name):
-                    symbol_info_objects.append({ 'symbol' : symbol_needed,
+                    yield { 'symbol' : symbol_needed,
                                                     'type' : 'dependency',
                                                     'object' : full_build_object_name,
-                                                    'path' : {} })
+                                                    'path' : {} }
             elif symbol_type == "definition":
                 for symbol_defined in g.get('file_to_symbol_definitions', full_build_object_name):
-                    symbol_info_objects.append({ 'symbol' : symbol_defined,
+                    yield { 'symbol' : symbol_defined,
                                                     'type' : 'definition',
                                                     'object' : full_build_object_name,
-                                                    'path' : {} })
-            else:
-                print "Unrecognized symbol_type: " + symbol_type + " expected 'dependency' or 'definition'"
-                return []
+                                                    'path' : {} }
 
         else:
-
-            object_files = g.get('archives_to_components', full_build_object_name)
-
-            for object_file in object_files:
+            for object_file in g.get('archives_to_components', full_build_object_name):
                 if symbol_type == "dependency":
                     for symbol_needed in g.get('file_to_symbol_dependencies', object_file):
-                        symbol_info_objects.append({ 'symbol' : symbol_needed,
-                                                        'type' : 'dependency',
-                                                        'object' : object_file,
-                                                        'path' : {
-                                                            object_file : full_build_object_name
-                                                        } })
+                        r = { 'symbol' : symbol_needed,
+                                'type' : 'dependency',
+                                'object' : object_file,
+                                'path' : {
+                                    object_file : full_build_object_name,
+                              } }
+
+                        if parent is not None:
+                            r[full_build_object_name] = parent
+
+                        yield r
                 elif symbol_type == "definition":
                     for symbol_defined in g.get('file_to_symbol_definitions', object_file):
-                        symbol_info_objects.append({ 'symbol' : symbol_defined,
-                                                        'type' : 'definition',
-                                                        'object' : object_file,
-                                                        'path' : {
-                                                            object_file : full_build_object_name
-                                                        } })
-                else:
-                    print "Unrecognized symbol_type: " + symbol_type + " expected 'dependency' or 'definition'"
-                    return []
+                        r = { 'symbol' : symbol_defined,
+                                'type' : 'definition',
+                                'object' : object_file,
+                                'path' : {
+                                    object_file : full_build_object_name,
+                            } }
 
-            # Now, we have to get all archive dependencies of this archive
-            archive_dependencies = g.get('target_to_dependencies', full_build_object_name)
+                        if parent is not None:
+                            r[full_build_object_name] = parent
 
-            # Recursively search all libdeps
-            new_search_depth = None
-            if search_depth is not None:
-                new_search_depth = search_depth - 1
+                        yield r
 
-            if len(archive_dependencies) > 0:
-                dependency_symbol_info_objects = get_symbol_info(g, archive_dependencies,
-                                                                search_depth=new_search_depth,
-                                                                symbol_type=symbol_type,
-                                                                parent=full_build_object_name)
+            def add_path_info(item):
+                return full_build_object_name, item
 
-                symbol_info_objects.extend(dependency_symbol_info_objects)
+            next_level_nodes = map(add_path_info, g.get('target_to_dependencies', full_build_object_name))
+            l.extend(next_level_nodes)
 
-            # If we have a parent, append info for that now
-            if parent is not None:
-                for symbol_info_object in symbol_info_objects:
-                    symbol_info_object['path'][full_build_object_name] = parent
+            next_level_children += len(next_level_nodes)
+            current_level_children -= 1
 
-    return symbol_info_objects
+            if current_level_children == 0:
+                if search_depth is not None:
+                    search_depth -= 1
+
+                    if search_depth == 0:
+                        raise StopIteration
+
+                current_level_children = next_level_children
+                next_level_children = 0
+
 
 # Okay, so this should be the general case.  We should be able to provide a general way to diff two
 # sets of symbols.  The theory is that you give it a set of file names, and we provide a way to take
