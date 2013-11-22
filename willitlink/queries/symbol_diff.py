@@ -49,14 +49,12 @@ def get_full_filenames(g, file_names):
 
 
 def get_symbol_info(g, build_object_names, search_depth=None, symbol_type='dependency'):
-    l = get_full_filenames(g, build_object_names)
+    queue = get_full_filenames(g, build_object_names)
 
-    current_level_children = len(l)
+    current_level_children = len(queue)
     next_level_children = 0
 
-    paths = dict()
-
-    for full_build_object_name in l:
+    for full_build_object_name in queue:
         if isinstance(full_build_object_name, tuple):
             print full_build_object_name
             parent = full_build_object_name[0]
@@ -111,7 +109,7 @@ def get_symbol_info(g, build_object_names, search_depth=None, symbol_type='depen
                 return full_build_object_name, item
 
             next_level_nodes = map(add_path_info, g.get('target_to_dependencies', full_build_object_name))
-            l.extend(next_level_nodes)
+            queue.extend(next_level_nodes)
 
             next_level_children += len(next_level_nodes)
             current_level_children -= 1
