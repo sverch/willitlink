@@ -69,16 +69,16 @@ def symbol_family_tree(g, symbol_name, depth=None):
 def family_tree_base(graph, relations, depth, flipped=True):
     o = {}
 
-    if depth is not None:
-        if depth > 0:
-            depth = depth - 1
+    if depth is not None and depth > 0:
+        depth = depth - 1
 
-            for obj in relations:
-                o[obj] = family_tree_base(graph, obj, depth)
+        print relations
+        for obj in relations:
+            o[obj] = family_tree_base(graph, graph.get('dependency_to_targets', obj), depth)
 
-            if flipped is True:
-                return flip_tree(o)
-            else:
-                return o
+        if flipped is True:
+            return flip_tree(o)
         else:
             return o
+    else:
+        return o
