@@ -46,20 +46,23 @@ def get_full_filenames(g, file_names):
 # },
 # ...
 # ]
+#
 
-
+# python2 wil.py tree --leak libmongocommon.a
 def get_symbol_info(g, build_object_names, search_depth=None, symbol_type='dependency'):
     queue = get_full_filenames(g, build_object_names)
 
     current_level_children = len(queue)
     next_level_children = 0
 
+    parents = None
     for full_build_object_name in queue:
         if isinstance(full_build_object_name, tuple):
-            parent = full_build_object_name[0]
+            parents = full_build_object_name[0]
             full_build_object_name = full_build_object_name[1]
         else:
-            parent = None
+            if parents is None:
+                parents = [ full_build_object_name ]
 
         if detect_type(full_build_object_name) == "object":
             if symbol_type == "dependency":
@@ -79,36 +82,43 @@ def get_symbol_info(g, build_object_names, search_depth=None, symbol_type='depen
             for object_file in g.get('archives_to_components', full_build_object_name):
                 if symbol_type == "dependency":
                     for symbol_needed in g.get('file_to_symbol_dependencies', object_file):
-                        r = { 'symbol' : symbol_needed,
+                        tmp = list(parents)
+                        p = [{object_file:  full_build_object_name}]
+
+                        while tmp:
+                            if len(tmp) == 1:
+                                p.append({tmp.pop(): None})
+                            else:
+                                p.append({tmp.pop(): tmp.pop()})
+
+                        yield { 'symbol' : symbol_needed,
                                 'type' : 'dependency',
                                 'object' : object_file,
-                                'path' : {
-                                    object_file : full_build_object_name,
-                              } }
-
-                        if parent is not None:
-                            r['path'][full_build_object_name] = parent
-
-                        yield r
+                                'path' : p,
+                                'parents': parents
+                              }
                 elif symbol_type == "definition":
                     for symbol_defined in g.get('file_to_symbol_definitions', object_file):
-                        r = { 'symbol' : symbol_defined,
+                        tmp = list(parents)
+                        p = [{object_file:  full_build_object_name}]
+
+                        while tmp:
+                            if len(tmp) == 1:
+                                p.append({tmp.pop(): None})
+                            else:
+                                p.append({tmp.pop(): tmp.pop()})
+
+                        yield { 'symbol' : symbol_defined,
                                 'type' : 'definition',
                                 'object' : object_file,
-                                'path' : {
-                                    object_file : full_build_object_name,
-                            } }
-
-                        if parent is not None:
-                            r['path'][full_build_object_name] = parent
-
-                        yield r
+                                'path' : p,
+                                'parents': parents
+                              }
 
             def add_path_info(item):
-                if parent is not None:
-                    return full_build_object_name, item
-                else:
-                    return { parent: full_build_object_name }, item
+                if full_build_object_name is not parents[-1]:
+                    parents.append(full_build_object_name)
+                return list(parents), item
 
             next_level_nodes = map(add_path_info, g.get('target_to_dependencies', full_build_object_name))
             queue.extend(next_level_nodes)
