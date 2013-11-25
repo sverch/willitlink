@@ -20,10 +20,20 @@ def get_full_filenames(g, file_names):
     if not isinstance(file_names, basestring):
         for i in g.files:
             for file_name in file_names:
+                # If we have an exact match just return a single element to reduce noise
+                # TODO: find a more elegant way to do this and document how it works.
+                if i == file_name:
+                    full_file_names = [ file_name ]
+                    break
                 if i.endswith(file_name):
                     full_file_names.append(i)
     else:
         for i in g.files:
+            # If we have an exact match just return a single element to reduce noise
+            # TODO: find a more elegant way to do this and document how it works.
+            if i == file_names:
+                full_file_names = [ file_names ]
+                break
             if i.endswith(file_names):
                 full_file_names.append(i)
 
@@ -50,6 +60,7 @@ def get_full_filenames(g, file_names):
 
 # python2 wil.py tree --leak libmongocommon.a
 def get_symbol_info(g, build_object_names, search_depth=None, symbol_type='dependency'):
+
     queue = get_full_filenames(g, build_object_names)
 
     current_level_children = len(queue)

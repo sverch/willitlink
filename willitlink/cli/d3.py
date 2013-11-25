@@ -18,8 +18,10 @@ def get_file_family_tree_with_leaks_d3(args):
 
     family_tree = {}
 
+    # For now set "get_parents" to False, so that we only get children of the node passed in
+    # TODO: Figure out if we'd ever want the whole tree, or provide an option
     with Timer('get file family tree query', args.timers):
-        family_tree = file_family_tree_d3(g, [args.name])
+        family_tree = file_family_tree_d3(g, [args.name], get_parents=False)
 
     with Timer('add leaks query', args.timers):
         render(add_leaks_d3(g, family_tree))

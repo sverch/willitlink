@@ -38,5 +38,8 @@ def get_file_family_tree(args):
 def get_symbol_family_tree(args):
     g = get_graph(args)
 
+    if len(args.name) > 0:
+        raise Exception('Currently only one symbol is allowed')
+
     with Timer('get symbol family tree query', args.timers):
-        render(symbol_family_tree(g, args.name, args.depth))
+        render(symbol_family_tree(g, args.name[0], args.depth))
