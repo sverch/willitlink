@@ -94,7 +94,7 @@ def async_thread_runner(jobs, force, pool, retval):
 
 def async_process_runner(jobs, force, pool, retval):
     try:
-        p = multiprocessing.Pool(pool)
+        p = NestedPool(pool)
     except:
         print('[ERROR]: can\'t start pool, falling back to sync ')
         return sync_runner(jobs, force, retval)
