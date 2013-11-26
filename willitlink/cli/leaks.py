@@ -8,7 +8,8 @@ from willitlink.queries.tree_leaks import find_direct_leaks
 from willitlink.queries.extra_archives import find_extra_archives
 
 def get_leaks(args):
-    g = get_graph(args)
+    if args.g is None:
+        g = get_graph(args)
 
     with Timer('leaks query', args.timers):
         leaks = find_direct_leaks(g, args.name)
@@ -16,7 +17,10 @@ def get_leaks(args):
     render({ 'archive': args.name, 'leaks': leaks })
 
 def get_leak_check(args):
-    g = get_graph(args)
+    if args.g is None:
+        g = get_graph(args)
+    else:
+        g = args.g
 
     with Timer('leaks tree query', args.timers):
         render(resolve_leak_info(g, args.name, args.depth, args.timers))

@@ -86,6 +86,7 @@ def main():
         sp.add_argument('files', nargs='+', help="list of other files to relate")
 
     args = parser.parse_args()
+    args.g = None
 
     with Timer('complete operation time', args.timers):
         operations[args.command](args)

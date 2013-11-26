@@ -26,17 +26,24 @@ def get_tree(args):
     if tree is None:
         raise Exception('invalid tree type.')
 
+    args.g = g
     get_tree_types()[tree](args)
 
 def get_file_family_tree(args):
-    g = get_graph(args)
+    if args.g is None:
+        g = get_graph(args)
+    else:
+        g = args.g
 
     with Timer('get file family tree query', args.timers):
         render(file_family_tree(g, args.name, args.depth))
 
 
 def get_symbol_family_tree(args):
-    g = get_graph(args)
+    if args.g is None:
+        g = get_graph(args)
+    else:
+        g = args.g
 
     if len(args.name) > 0:
         raise Exception('Currently only one symbol is allowed')
