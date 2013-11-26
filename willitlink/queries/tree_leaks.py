@@ -11,11 +11,12 @@ def find_direct_leaks(graph, archive_names):
                                      symbol_type='dependency')
 
     # Get all symbols provided by this archive and archives listed as dependencies
-    symbols_found = set(( s['symbol']
+    # this "set-comprehension "makes us python2.7+
+    symbols_found = { s['symbol']
                           for s in get_symbol_info(graph,
                                                    archive_names,
                                                    search_depth=None,
-                                                   symbol_type='definition') ))
+                                                   symbol_type='definition') }
 
 
     leaks = ( symbol_needed

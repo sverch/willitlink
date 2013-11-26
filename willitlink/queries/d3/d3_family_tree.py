@@ -45,7 +45,7 @@ def file_family_tree_d3(g, file_names, get_parents=True, get_children=True,
                                               child_node=full_file_name,
                                               is_full_file_name=True)
 
-            family_tree['nodes'] = family_tree['nodes'].union(set(parent_tree['nodes']))
+            family_tree['nodes'] = family_tree['nodes'].union(parent_tree['nodes'])
             family_tree['edges'].extend(parent_tree['edges'])
 
         if get_children is True:
@@ -58,7 +58,7 @@ def file_family_tree_d3(g, file_names, get_parents=True, get_children=True,
                                              parent_node=full_file_name,
                                              is_full_file_name=True)
 
-            family_tree['nodes'] = family_tree['nodes'].union(set(child_tree['nodes']))
+            family_tree['nodes'] = family_tree['nodes'].union(child_tree['nodes'])
             family_tree['edges'].extend(child_tree['edges'])
 
     family_tree['nodes'] = list(family_tree['nodes'])

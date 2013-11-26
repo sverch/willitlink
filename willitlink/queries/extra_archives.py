@@ -17,12 +17,12 @@ def find_extra_archives(graph, archive_name):
 
     # loop over full names of this file
     for full_archive_name in get_full_filenames(graph, archive_name):
-        # Get all symbols needed by this archive
-        symbols_needed = set([ s['symbol']
+        # Get all symbols needed by this archive (set-comprehension, python2.7+)
+        symbols_needed = { s['symbol']
                                for s in get_symbol_info(graph,
                                                         [ full_archive_name ],
                                                         search_depth=1,
-                                                        symbol_type='dependency') ])
+                                                        symbol_type='dependency') }
 
         extra_archives = []
 
