@@ -26,7 +26,7 @@ def add_leaks_d3(g, d3_graph_object):
     ]
 
     with Timer('find direct leaks for edges', True):
-        leak_objects = runner(jobs, pool=4)
+        leak_objects = runner(jobs, parallel='threads')
 
     for leak_object in leak_objects:
 
