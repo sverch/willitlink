@@ -2,6 +2,7 @@ import os
 
 import multiprocessing
 import multiprocessing.pool
+import multiprocessing.dummy
 
 from multiprocessing import cpu_count
 
@@ -74,19 +75,33 @@ class NestedPool(multiprocessing.pool.Pool):
 def runner(jobs, pool=None, parallel=True, force=False, retval='results'):
     if pool == 1 or parallel is False:
         return sync_runner(jobs, force, retval)
+    elif parallel == 'threads':
+        return async_thread_runner(jobs, force, pool, retval)
     else:
         if pool is None:
             pool = cpu_count()
 
-        return async_runner(jobs, force, pool, retval)
+        return async_process_runner(jobs, force, pool, retval)
 
-def async_runner(jobs, force, pool, retval):
+def async_thread_runner(jobs, force, pool, retval):
     try:
-        p = NestedPool(pool)
+        p = multiprocessing.dummy.Pool(pool)
     except:
         print('[ERROR]: can\'t start pool, falling back to sync ')
         return sync_runner(jobs, force, retval)
 
+    return async_runner(jobs, force, pool, retval, p)
+
+def async_process_runner(jobs, force, pool, retval):
+    try:
+        p = multiprocessing.Pool(pool)
+    except:
+        print('[ERROR]: can\'t start pool, falling back to sync ')
+        return sync_runner(jobs, force, retval)
+
+    return async_runner(jobs, force, pool, retval, p)
+
+def async_runner(jobs, force, pool, retval, p):
     count = 0
     results = []
 
