@@ -79,50 +79,29 @@ def get_symbol_info(g, build_object_names, search_depth=None, symbol_type='depen
             if symbol_type == "dependency":
                 for symbol_needed in g.get('file_to_symbol_dependencies', full_build_object_name):
                     yield { 'symbol' : symbol_needed,
-                                                    'type' : 'dependency',
-                                                    'object' : full_build_object_name,
-                                                    'path' : {} }
+                            'type' : 'dependency',
+                            'object' : full_build_object_name,
+                            'path' : [] }
             elif symbol_type == "definition":
                 for symbol_defined in g.get('file_to_symbol_definitions', full_build_object_name):
                     yield { 'symbol' : symbol_defined,
-                                                    'type' : 'definition',
-                                                    'object' : full_build_object_name,
-                                                    'path' : {} }
-
+                            'type' : 'definition',
+                            'object' : full_build_object_name,
+                            'parents' : [] }
         else:
             for object_file in g.get('archives_to_components', full_build_object_name):
                 if symbol_type == "dependency":
                     for symbol_needed in g.get('file_to_symbol_dependencies', object_file):
-                        tmp = list(parents)
-                        p = [{object_file:  full_build_object_name}]
-
-                        while tmp:
-                            if len(tmp) == 1:
-                                p.append({tmp.pop(): None})
-                            else:
-                                p.append({tmp.pop(): tmp.pop()})
-
                         yield { 'symbol' : symbol_needed,
                                 'type' : 'dependency',
                                 'object' : object_file,
-                                'path' : p,
                                 'parents': parents
                               }
                 elif symbol_type == "definition":
                     for symbol_defined in g.get('file_to_symbol_definitions', object_file):
-                        tmp = list(parents)
-                        p = [{object_file:  full_build_object_name}]
-
-                        while tmp:
-                            if len(tmp) == 1:
-                                p.append({tmp.pop(): None})
-                            else:
-                                p.append({tmp.pop(): tmp.pop()})
-
                         yield { 'symbol' : symbol_defined,
                                 'type' : 'definition',
                                 'object' : object_file,
-                                'path' : p,
                                 'parents': parents
                               }
 
@@ -147,7 +126,6 @@ def get_symbol_info(g, build_object_names, search_depth=None, symbol_type='depen
                 current_level_children = next_level_children
                 next_level_children = 0
 
-
 # Okay, so this should be the general case.  We should be able to provide a general way to diff two
 # sets of symbols.  The theory is that you give it a set of file names, and we provide a way to take
 # any pair of the following sets:
@@ -156,3 +134,22 @@ def get_symbol_info(g, build_object_names, search_depth=None, symbol_type='depen
 #   "direct leak check" would then be a special case of this with depth of one.
 # - The set of symbols (defined/used) outside the first set
 #def diff_symbol_sets(build_object_names, )
+
+#
+
+# for symbol in symbols:
+#     tmp = list(parents)
+#     p = [{object_file:  full_build_object_name}]
+
+#     while tmp:
+#         if len(tmp) == 1:
+#             p.append({tmp.pop(): None})
+#         else:
+#             p.append({tmp.pop(): tmp.pop()})
+
+#     yield { 'symbol' : symbol_needed,
+#             'type' : 'dependency',
+#             'object' : object_file,
+#            #'path' : p,
+#             'parents': parents
+#           }
