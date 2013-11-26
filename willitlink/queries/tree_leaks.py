@@ -18,16 +18,14 @@ def find_direct_leaks(graph, archive_names):
                                                    symbol_type='definition') ])
 
 
-    leaks = []
-    for symbol_needed in symbols_needed:
-        if symbol_needed['symbol'] not in symbols_found:
-            leaks.append(symbol_needed)
+    leaks = ( symbol_needed
+              for symbol_needed
+              in symbols_needed
+              if symbol_needed ['symbol'] not in symbols_found
+            )
 
-    o = []
-    for leak_object in leaks:
-        num_deps = len(graph.get('symbol_to_file_sources', leak_object['symbol']))
-
-        if num_deps > 0:
-            o.append(leak_object)
-
-    return o
+    return [ leak
+             for leak
+             in leaks
+             if len(graph.get('symbol_to_file_sources', leak['symbol'])) > 0
+           ]
