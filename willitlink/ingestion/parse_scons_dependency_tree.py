@@ -4,7 +4,7 @@ import re
 import json
 import subprocess
 import sys
-import extract_symbols
+from extract_symbols import get_symbols_used, get_symbols_defined
 
 # Phase 1: Parsing the --tree=all output of scons
 #
@@ -18,7 +18,7 @@ symbol_set = set()
 def persist_node(buildElement, results):
     if buildElement['_id'] not in symbol_set:
         symbol_set.add(buildElement['_id'])
-        
+
         results.append(buildElement)
 
 def detect_type(line):
@@ -113,34 +113,38 @@ def recursive_parse_tree(fileHandle, depth, name, typeName, results, mongo_path)
                     else:
                         if 'headers' not in currentBuildElement:
                             currentBuildElement['headers'] = []
-                        currentBuildElement['headers'] = currentBuildElement['headers'] + [ nextSection ]
+                        currentBuildElement['headers'].append( nextSection )
                         nextSectionTypeName = "header"
 
                     # Add our symbols!
                     if 'symdeps' not in currentBuildElement:
-                        currentBuildElement['symdeps'] = extract_symbols.get_symbols_used(name, mongo_path)
+                        currentBuildElement['symdeps'] = get_symbols_used(name, mongo_path)
                     if 'symdefs' not in currentBuildElement:
-                        currentBuildElement['symdefs'] = extract_symbols.get_symbols_defined(name, mongo_path)
+                        currentBuildElement['symdefs'] = get_symbols_defined(name, mongo_path)
                 elif typeName == "archive":
                     if 'objects' not in currentBuildElement:
                         currentBuildElement['objects'] = []
-                    currentBuildElement['objects'] = currentBuildElement['objects'] + [ nextSection ]
+                    currentBuildElement['objects'].append(nextSection)
                     nextSectionTypeName = "object"
                 else:
                     nextSectionTypeName = detect_type(nextSection)
                     if nextSectionTypeName == "object":
                         if 'objects' not in currentBuildElement:
                             currentBuildElement['objects'] = []
-                        currentBuildElement['objects'] = currentBuildElement['objects'] + [ nextSection ]
+                        currentBuildElement['objects'].append(nextSection)
                     else:
                         if 'deps' not in currentBuildElement:
                             currentBuildElement['deps'] = []
-                        currentBuildElement['deps'] = currentBuildElement['deps'] + [ nextSection ]
-
+                        currentBuildElement['deps'].append(nextSection)
 
                 # Parse any lines that are a level deeper than where we are now (may be none, which
                 # would correspond to an object with no dependencies)
-                lineAfterSection = recursive_parse_tree(fileHandle, depth + 2, nextSection, nextSectionTypeName, results, mongo_path)
+                lineAfterSection = recursive_parse_tree(fileHandle,
+                                                        depth + 2,
+                                                        nextSection,
+                                                        nextSectionTypeName,
+                                                        results,
+                                                        mongo_path)
 
                 # Figure out why we exited.  Either it's because we are still in the same section,
                 # or we are done with THIS section too and should exit.
@@ -176,7 +180,7 @@ def parse_tree(filename, mongo_path):
         # First skip all our garbage lines not related to the tree output
         for line in treeFile:
             if all_re.search(line) is not None:
-                m = re.search("^\+-(.*)$", line)        
+                m = re.search("^\+-(.*)$", line)
                 if m is not None:
                     break
 
@@ -184,5 +188,5 @@ def parse_tree(filename, mongo_path):
 
         # Start parsing our tree, starting with the base group
         result = recursive_parse_tree(treeFile, 0, baseSection, "target", results, mongo_path)
-        
+
     return results

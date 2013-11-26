@@ -32,41 +32,44 @@ def list_process(items):
 
     return r
 
-# TODO: Use the python library to read elf files, so we know the file exists at this point
-def get_symbols_used(object_file, mongo_path):
-    object_file = os.path.join(mongo_path, object_file)
+def get_symbol_worker(object_file, platform, task):
+    if platform == 'linux':
+        if task == 'used':
+            cmd = r'nm "' + object_file + r'" | grep -e "U " | c++filt'
+        elif task == 'defined':
+            cmd = r'nm "' + object_file + r'" | grep -v -e "U " | c++filt'
+    elif platform == 'darwin':
+        if task == 'used':
+            cmd = "nm -u " + object_file + " | c++filt"
+        elif task == 'defined':
+            cmd = "nm -jU " + object_file + " | c++filt"
 
-    if sys.platform.startswith('linux'):
-        cmd = r'nm "' + object_file + r'" | grep -e "U " | c++filt'
-        p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
-        uses = p.communicate()[0].decode()
+    p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
+    uses = p.communicate()[0].decode()
 
-        # Linux prints some extra information at the beginning of each symbol line, so we need to
-        # strip that out here
+    if platform == 'linux':
         return list_process([ use[19:]
                               for use in uses.split('\n')
                               if use != '' ])
-    else:
-        uses = subprocess.check_output("nm -u " + object_file + " | c++filt", shell=True)
+    elif platform == 'darwin':
         return list_process([ use.strip()
                               for use in uses.split('\n')
                               if use != '' ])
 
+
+
+# TODO: Use the python library to read elf files, so we know the file exists at this point
+def get_symbols_used(object_file, mongo_path):
+    object_file = os.path.join(mongo_path, object_file)
+
+    platform = 'linux' if sys.platform.startswith('linux') else 'darwin'
+
+    return get_symbol_worker(object_file, platform, task='used')
+
+
 def get_symbols_defined(object_file, mongo_path):
     object_file = os.path.join(mongo_path, object_file)
 
-    if sys.platform.startswith('linux'):
-        cmd = r'nm "' + object_file + r'" | grep -v -e "U " | c++filt'
-        p = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True)
-        definitions = p.communicate()[0].decode()
+    platform = 'linux' if sys.platform.startswith('linux') else 'darwin'
 
-        # Linux prints some extra information at the beginning of each symbol line, so we need to
-        # strip that out here
-        return list_process([ definition[19:]
-                              for definition in definitions.split('\n')
-                              if definition != '' ])
-    else:
-        definitions = subprocess.check_output("nm -jU " + object_file + " | c++filt", shell=True)
-        return list_process([ definition.strip()
-                              for definition in definitions.split('\n')
-                              if definition != '' ])
+    return get_symbol_worker(object_file, platform, task='defined')
