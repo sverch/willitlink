@@ -48,6 +48,8 @@ import datetime
 import logging
 import json
 
+from willitlink.base.jobs import runner
+
 try:
     import cPickle as pickle
 except ImportError:
@@ -59,6 +61,9 @@ logger = logging.getLogger(__name__)
 
 class GraphError(Exception):
     pass
+
+def graph_builder(relationship, graph):
+    return relationship, Graph(graph)
 
 class Graph(object):
     def __init__(self, base=None):
@@ -238,8 +243,14 @@ class MultiGraph(object):
 
             c = MultiGraph(rels)
 
-            for relationship, graph in data['graphs'].items():
-                c.graphs[relationship] = Graph(graph)
+            jobs = [ { 'job': graph_builder, 'args': [relationship, graph] }
+                     for relationship, graph
+                     in data['graphs'].items() ]
+
+            graphs = runner(jobs, parallel='threads')
+
+            for relationship, graph in graphs:
+                c.graphs[relationship] = graph
 
             c.make_lists(data['lists'])
 
@@ -325,3 +336,5 @@ class OutputGraphD3(object):
 
     def ingest(self, graph):
         raise NotImplementedError
+
+

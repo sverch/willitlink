@@ -73,14 +73,14 @@ class NestedPool(multiprocessing.pool.Pool):
 ############### Task Running Framework ###############
 
 def runner(jobs, pool=None, parallel=True, force=False, retval='results'):
+    if pool is None:
+        pool = cpu_count()
+
     if pool == 1 or parallel is False:
         return sync_runner(jobs, force, retval)
     elif parallel == 'threads':
         return async_thread_runner(jobs, force, pool, retval)
     else:
-        if pool is None:
-            pool = cpu_count()
-
         return async_process_runner(jobs, force, pool, retval)
 
 def async_thread_runner(jobs, force, pool, retval):
