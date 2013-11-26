@@ -52,9 +52,14 @@ def symbol_resolver(g, leak_object):
         for archive_source in g.get('dependency_to_targets', symbol_source):
 
             # Finally, for each archive, add an edge
-            o.append( { 'to' : archive_source,
-                       'from' : leak_object['parents'][-1],
-                       'type' : 'symbol',
-                       'symbol' : leak_object['symbol'] })
+            # XXX: Ignore the client_build for now, since we will get edges going there that we
+            # don't really care about.
+            # TODO: Actually get the client build out of the data so that we can analyze it
+            # separately (it is logically separate and just adds more noise to our data)
+            if archive_source.find("client_build") == -1:
+                o.append( { 'to' : archive_source,
+                            'from' : leak_object['parents'][-1],
+                            'type' : 'symbol',
+                            'symbol' : leak_object['symbol'] })
 
     return o
