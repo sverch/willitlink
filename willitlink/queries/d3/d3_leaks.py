@@ -19,31 +19,42 @@ def add_leaks_d3(g, d3_graph_object):
     # Get any symbols that are leaking from this archive
     # Iterate all the symbols leaking from this archive
 
-    jobs = [
+    jobs = (
         { 'job': find_direct_leaks, 'args': [g, fn_obj] }
         for fn_obj
         in d3_graph_object['nodes']
-    ]
+    )
 
     with Timer('find direct leaks for edges', True):
         leak_objects = runner(jobs, parallel='threads')
 
+    with Timer('resolve direct leak edges', True):
+        map(d3_graph_object['edges'].extend,
+            runner(symbol_resolving_jobs(g, leak_objects), parallel='threads') )
+
+    return dedupe_edges_d3(d3_graph_object)
+
+def symbol_resolving_jobs(g, leak_objects):
     for leak_object in leak_objects:
 
         if 'symbol' not in leak_object and isinstance(leak_object, list):
             leak_objects.extend(leak_object)
             continue
 
-        # Get the files this symbol is defined
-        for symbol_source in g.get('symbol_to_file_sources', leak_object['symbol']):
+        yield { 'job': symbol_resolver, 'args': [g, leak_object]}
 
-            # Get the archives this file is in
-            for archive_source in g.get('dependency_to_targets', symbol_source):
+def symbol_resolver(g, leak_object):
+    o = []
+    # Get the files this symbol is defined
+    for symbol_source in g.get('symbol_to_file_sources', leak_object['symbol']):
 
-                # Finally, for each archive, add an edge
-                d3_graph_object['edges'].append({ 'to' : archive_source,
-                                                  'from' : leak_object['parents'][-1],
-                                                  'type' : 'symbol',
-                                                  'symbol' : leak_object['symbol'] })
+        # Get the archives this file is in
+        for archive_source in g.get('dependency_to_targets', symbol_source):
 
-    return dedupe_edges_d3(d3_graph_object)
+            # Finally, for each archive, add an edge
+            o.append( { 'to' : archive_source,
+                       'from' : leak_object['parents'][-1],
+                       'type' : 'symbol',
+                       'symbol' : leak_object['symbol'] })
+
+    return o
