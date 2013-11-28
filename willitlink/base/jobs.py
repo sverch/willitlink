@@ -169,3 +169,41 @@ def sync_runner(jobs, force, retval):
     else:
         return dict(count=count,
                     results=results)
+
+def mapper(func, iter, pool=None, parallel='process'):
+    if pool is None:
+        pool = cpu_count()
+    elif pool == 1:
+        return map(func, iter)
+
+    if parallel in ['serial', 'single']:
+        return map(func, iter)
+    else:
+        if parallel == 'process':
+            p = NestedPool(pool)
+        elif parallel.startswith('thread'):
+            p = multiprocessing.dummy.Pool(pool)
+        else:
+            return map(func, iter)
+
+    result = p.map(func, iter)
+
+    p.close()
+    p.join()
+
+    return result
+
+class WorkerPool(object):
+    def __exit__(self, *args):
+        self.p.close()
+        self.p.join()
+
+class ThreadPool(WorkerPool):
+    def __enter__(self):
+        self.p = multiprocessing.dummy.Pool()
+        return self.p
+
+class ProcessPool(WorkerPool):
+    def __enter__(self):
+        self.p = NestedPool()
+        return self.p

@@ -67,6 +67,7 @@ def get_symbol_info(g, build_object_names, search_depth=None, symbol_type='depen
     next_level_children = 0
 
     parents = None
+
     for full_build_object_name in queue:
         if isinstance(full_build_object_name, tuple):
             parents = full_build_object_name[0]

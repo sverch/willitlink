@@ -19,7 +19,7 @@ index e17a4fa..7cff371 100644
      node.attributes.libdeps_exploring = True
      try:
          try:
-@@ -113,9 +116,28 @@ def __compute_libdeps(node):
+@@ -113,9 +116,26 @@ def __compute_libdeps(node):
              if len(e.cycle_nodes) == 1 or e.cycle_nodes[0] != e.cycle_nodes[-1]:
                  e.cycle_nodes.append(node)
                  raise
@@ -37,13 +37,11 @@ index e17a4fa..7cff371 100644
      finally:
          node.attributes.libdeps_exploring = False
  
-+    print "\n"
++    print("\n")
 +    print(json.dumps({ '_id': str(node), 'type': 'special', 'libdeps': [ str(dep) for dep in topleveldeps ] }))
 +    # This is here to avoid getting the JSON line garbled in other build output
 +    # TODO: Actually integrate this all with scons and just output to a file
-+    print "\n"
-+    print "\n"
-+    print "\n"
++    print("\n")
 +
      return deps
  

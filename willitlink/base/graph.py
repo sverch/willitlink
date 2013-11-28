@@ -48,12 +48,7 @@ import datetime
 import logging
 import json
 
-from willitlink.base.jobs import runner
-
-try:
-    import cPickle as pickle
-except ImportError:
-    import pickle
+from willitlink.base.jobs import runner, ThreadPool, ProcessPool
 
 from willitlink.base.dev_tools import Timer
 
@@ -231,31 +226,40 @@ class MultiGraph(object):
             logger.debug(msg)
             raise Exception(msg)
 
-        if fn.endswith('pickle') or fn.endswith('pkl'):
-            loader = pickle.load
-        elif fn.endswith('json') or fn.endswith('jsn'):
-            loader = json.load
-
         with open(fn, 'r') as f:
-            data = loader(f)
+            data = json.load(f)
+            data_dir = os.path.dirname(fn)
 
             rels = data['relationships']
 
             c = MultiGraph(rels)
 
-            jobs = [ { 'job': graph_builder, 'args': [relationship, graph] }
-                     for relationship, graph
-                     in data['graphs'].items() ]
+            tmp_graphs = {}
+            tmp_lists = {}
+            with ThreadPool() as p:
+                for rel, graph in data['graphs']:
+                    tmp_graphs[rel] = p.apply_async(load_from_file,
+                                                    args=[os.path.join(data_dir, graph)])
+                for lst in data['list_names']:
+                    tmp_lists[lst] = p.apply_async(load_from_file,
+                                                   args=[os.path.join(data_dir, lst)])
 
-            graphs = runner(jobs, parallel='threads')
+                data['graphs'] = {k:v.get() for k,v in tmp_graphs.items() }
+                data['lists'] = {os.path.splitext(k)[0]:v.get() for k,v in tmp_lists.items() }
+
+                graphs = []
+                for relationship, graph in data['graphs'].items():
+                    graphs.append(p.apply_async(graph_builder, args=[relationship, graph]))
+
+                graphs = [ g.get() for g in graphs ]
 
             for relationship, graph in graphs:
                 c.graphs[relationship] = graph
 
-            c.make_lists(data['lists'])
+            c.make_lists(data['lists'].keys())
 
-            for lst in data['lists']:
-                c.extend_list(lst, data['list_contents'][lst])
+            for name, lst in data['lists'].items():
+                c.extend_list(name, lst)
 
         return c
 
@@ -278,35 +282,51 @@ class MultiGraph(object):
 
     def fetch(self):
         o = {
-            'timestamp': datetime.datetime.utcnow().strftime("%s"),
-            'path': os.getcwd(),
-            'relationships': self.relationships,
-            'graphs': {},
-            'subset': self.subset,
-            'lists': self.lists,
-            'list_contents': { }
-            }
-
-        for i in self.relationships:
-            o['graphs'][i] = self.graphs[i].fetch()
+             'main': {
+                      'timestamp': datetime.datetime.utcnow().strftime("%s"),
+                      'path': os.getcwd(),
+                      'graphs': [],
+                      'relationships': self.relationships,
+                      'subset': self.subset,
+                      'list_names': [],
+                      'v': 1
+                     }
+        }
 
         for i in self.lists:
-            o['list_contents'][i] = getattr(self, i)
+            o[i] = getattr(self, i)
+            o['main']['list_names'].append('.'.join([i, 'json']))
+
+        for i in self.relationships:
+            o[i] = self.graphs[i].fetch()
+            o['main']['graphs'].append((i, '.'.join([i, 'json'])))
 
         return o
 
     def export(self, fn='.depgraph.json'):
-        is_bson = False
-        if fn.endswith('pickle') or fn.endswith('pkl'):
-            exporter = pickle.dump
-        elif fn.endswith('json') or fn.endswith('jsn'):
-            exporter = json.dump
+        data_dir = os.path.dirname(fn)
 
         with Timer('constructing object for export', self.timer):
             o = self.fetch()
 
-        with open(fn, 'w') as f:
-            exporter(o, f)
+        with ThreadPool() as p:
+            for k,v in o.items():
+                if k == 'main':
+                    part_fn = fn
+                else:
+                    part_fn = os.path.join(data_dir, '.'.join([k, 'json']))
+
+                with Timer('writing file name ' + fn, self.timer):
+                    p.apply_async(dump_to_file, args=[part_fn, v])
+
+def dump_to_file(fn, data):
+    with open(fn, 'w') as f:
+        json.dump(data, f)
+
+def load_from_file(fn):
+    with open(fn, 'r') as f:
+        return json.load(f)
+
 
 class OutputGraphD3(object):
     def __init__(self, kind):
@@ -336,5 +356,3 @@ class OutputGraphD3(object):
 
     def ingest(self, graph):
         raise NotImplementedError
-
-
