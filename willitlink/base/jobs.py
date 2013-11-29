@@ -193,6 +193,13 @@ def mapper(func, iter, pool=None, parallel='process'):
 
     return result
 
+
+def resolve_dict_keys(dict):
+    return { k:v.get() for k,v in dict.items() }
+
+def resolve_results(results):
+    return [ r.get() for r in results ]
+
 class WorkerPool(object):
     def __exit__(self, *args):
         self.p.close()

@@ -48,7 +48,7 @@ import datetime
 import logging
 import json
 
-from willitlink.base.jobs import runner, ThreadPool, ProcessPool
+from willitlink.base.jobs import runner, ThreadPool, resolve_dict_keys, resolve_results
 
 from willitlink.base.dev_tools import Timer
 
@@ -238,20 +238,17 @@ class MultiGraph(object):
             tmp_lists = {}
             with ThreadPool() as p:
                 for rel, graph in data['graphs']:
-                    tmp_graphs[rel] = p.apply_async(load_from_file,
-                                                    args=[os.path.join(data_dir, graph)])
+                    tmp_graphs[rel] = cls.load_part(graph, data_dir, p)
                 for lst in data['list_names']:
-                    tmp_lists[lst] = p.apply_async(load_from_file,
-                                                   args=[os.path.join(data_dir, lst)])
+                    tmp_lists[os.path.splitext(lst)[0]] = cls.load_part(lst, data_dir, p)
 
-                data['graphs'] = {k:v.get() for k,v in tmp_graphs.items() }
-                data['lists'] = {os.path.splitext(k)[0]:v.get() for k,v in tmp_lists.items() }
+                data['graphs'] = resolve_dict_keys(tmp_graphs)
+                data['lists'] = resolve_dict_keys(tmp_lists)
 
                 graphs = []
                 for relationship, graph in data['graphs'].items():
                     graphs.append(p.apply_async(graph_builder, args=[relationship, graph]))
-
-                graphs = [ g.get() for g in graphs ]
+                graphs = resolve_results(graphs)
 
             for relationship, graph in graphs:
                 c.graphs[relationship] = graph
@@ -262,6 +259,13 @@ class MultiGraph(object):
                 c.extend_list(name, lst)
 
         return c
+
+    @staticmethod
+    def load_part(fn, data_dir, pool):
+        graph = pool.apply_async(load_from_file,
+                                 args=[os.path.join(data_dir, fn)])
+
+        return graph
 
     def merge(self, g):
         for item in g.relationships:
@@ -326,7 +330,6 @@ def dump_to_file(fn, data):
 def load_from_file(fn):
     with open(fn, 'r') as f:
         return json.load(f)
-
 
 class OutputGraphD3(object):
     def __init__(self, kind):
