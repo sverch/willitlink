@@ -237,15 +237,18 @@ class MultiGraph(object):
             tmp_graphs = {}
             tmp_lists = {}
             with ThreadPool() as p:
-                for rel, graph in data['graphs']:
+                for rel, graph in (gm.items()[0] for gm in data['graphs']):
                     tmp_graphs[rel] = cls.load_part(graph, data_dir, p)
+
                 for lst in data['list_names']:
                     tmp_lists[os.path.splitext(lst)[0]] = cls.load_part(lst, data_dir, p)
+
 
                 data['graphs'] = resolve_dict_keys(tmp_graphs)
                 data['lists'] = resolve_dict_keys(tmp_lists)
 
                 graphs = []
+
                 for relationship, graph in data['graphs'].items():
                     graphs.append(p.apply_async(graph_builder, args=[relationship, graph]))
                 graphs = resolve_results(graphs)
@@ -293,7 +296,7 @@ class MultiGraph(object):
                       'relationships': self.relationships,
                       'subset': self.subset,
                       'list_names': [],
-                      'v': 1
+                      'v': 2
                      }
         }
 
@@ -303,7 +306,7 @@ class MultiGraph(object):
 
         for i in self.relationships:
             o[i] = self.graphs[i].fetch()
-            o['main']['graphs'].append((i, '.'.join([i, 'json'])))
+            o['main']['graphs'].append({ i: '.'.join([i, 'json'])})
 
         return o
 
