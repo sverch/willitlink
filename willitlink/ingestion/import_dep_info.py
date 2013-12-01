@@ -10,7 +10,7 @@ def process_dep(line, results):
 
     try:
         buildElement = json.loads(line)
-    except ValueError, e:
+    except ValueError as e:
         print("Failed to parse line as JSON: " + str(e))
         print(line)
         sys.exit(-1)

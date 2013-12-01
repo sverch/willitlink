@@ -4,7 +4,7 @@ import re
 import json
 import subprocess
 import sys
-from extract_symbols import get_symbols_used, get_symbols_defined
+from willitlink.ingestion.extract_symbols import get_symbols_used, get_symbols_defined
 
 # Phase 1: Parsing the --tree=all output of scons
 #

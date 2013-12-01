@@ -17,7 +17,7 @@ def get_full_filenames(g, file_names):
 
     full_file_names = []
 
-    if not isinstance(file_names, basestring):
+    if isinstance(file_names, list):
         for i in g.files:
             for file_name in file_names:
                 # If we have an exact match just return a single element to reduce noise
@@ -112,9 +112,11 @@ def get_symbol_info(g, build_object_names, search_depth=None, symbol_type='depen
                 return list(parents), item
 
             next_level_nodes = map(add_path_info, g.get('target_to_dependencies', full_build_object_name))
+            next_level_nodes_count = len(queue)
             queue.extend(next_level_nodes)
+            next_level_nodes_count = len(queue) - next_level_nodes_count
 
-            next_level_children += len(next_level_nodes)
+            next_level_children += next_level_nodes_count
             current_level_children -= 1
 
             if current_level_children == 0:

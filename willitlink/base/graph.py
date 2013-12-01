@@ -237,8 +237,9 @@ class MultiGraph(object):
             tmp_graphs = {}
             tmp_lists = {}
             with ThreadPool() as p:
-                for rel, graph in (gm.items()[0] for gm in data['graphs']):
-                    tmp_graphs[rel] = cls.load_part(graph, data_dir, p)
+                for pair in data['graphs']:
+                    for rel, graph in pair.items():
+                        tmp_graphs[rel] = cls.load_part(graph, data_dir, p)
 
                 for lst in data['list_names']:
                     tmp_lists[os.path.splitext(lst)[0]] = cls.load_part(lst, data_dir, p)
