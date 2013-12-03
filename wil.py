@@ -12,6 +12,7 @@ from willitlink.cli.basic import get_relationship_node, get_list, get_symbol_loc
 from willitlink.cli.leaks import get_leaks, get_direct_leaks, get_unneeded_libdeps, get_leak_check
 from willitlink.cli.trees import get_tree, get_tree_types
 from willitlink.cli.d3 import get_file_family_tree_d3, get_file_family_tree_with_leaks_d3, get_file_family_relationship_d3
+from willitlink.cli.libs_needed import get_required_libs, get_circle_deps
 
 from willitlink.web.api import start_app
 
@@ -23,6 +24,8 @@ operations = {
     'relationship': get_relationship_node,
     'tree': get_tree,
     'list': get_list,
+    'libs-needed': get_required_libs,
+    'libs-cycle': get_circle_deps,
 
     'leaks': get_leaks,
 
@@ -90,6 +93,11 @@ def main():
         # two arguments are used below to ensure two or more files as arguments
         sp.add_argument('first_file', help="file to relate")
         sp.add_argument('files', nargs='+', help="list of other files to relate")
+
+    for query_parser in [ 'libs-needed', 'libs-cycle' ]:
+        sp = subparsers.add_parser(query_parser, help='query for ' + query_parser)
+        sp.add_argument('--data', '-d', default=default_data_file)
+        sp.add_argument('names', nargs='+', help="list of libraries or objects to check deps of")
 
     args = parser.parse_args()
     args.g = None

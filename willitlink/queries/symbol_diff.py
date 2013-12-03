@@ -82,13 +82,15 @@ def get_symbol_info(g, build_object_names, search_depth=None, symbol_type='depen
                     yield { 'symbol' : symbol_needed,
                             'type' : 'dependency',
                             'object' : full_build_object_name,
-                            'path' : [] }
+                            'parents': parents
+                        }
             elif symbol_type == "definition":
                 for symbol_defined in g.get('file_to_symbol_definitions', full_build_object_name):
                     yield { 'symbol' : symbol_defined,
                             'type' : 'definition',
                             'object' : full_build_object_name,
-                            'parents' : [] }
+                            'parents': parents
+                        }
         else:
             for object_file in g.get('archives_to_components', full_build_object_name):
                 if symbol_type == "dependency":
@@ -106,28 +108,28 @@ def get_symbol_info(g, build_object_names, search_depth=None, symbol_type='depen
                                 'parents': parents
                               }
 
-            def add_path_info(item):
-                if full_build_object_name is not parents[-1]:
-                    parents.append(full_build_object_name)
-                return list(parents), item
+        def add_path_info(item):
+            if full_build_object_name is not parents[-1]:
+                parents.append(full_build_object_name)
+            return list(parents), item
 
-            next_level_nodes = map(add_path_info, g.get('target_to_dependencies', full_build_object_name))
-            next_level_nodes_count = len(queue)
-            queue.extend(next_level_nodes)
-            next_level_nodes_count = len(queue) - next_level_nodes_count
+        next_level_nodes = map(add_path_info, g.get('target_to_dependencies', full_build_object_name))
+        next_level_nodes_count = len(queue)
+        queue.extend(next_level_nodes)
+        next_level_nodes_count = len(queue) - next_level_nodes_count
 
-            next_level_children += next_level_nodes_count
-            current_level_children -= 1
+        next_level_children += next_level_nodes_count
+        current_level_children -= 1
 
-            if current_level_children == 0:
-                if search_depth is not None:
-                    search_depth -= 1
+        if current_level_children == 0:
+            if search_depth is not None:
+                search_depth -= 1
 
-                    if search_depth == 0:
-                        raise StopIteration
+                if search_depth == 0:
+                    raise StopIteration
 
-                current_level_children = next_level_children
-                next_level_children = 0
+            current_level_children = next_level_children
+            next_level_children = 0
 
 # Okay, so this should be the general case.  We should be able to provide a general way to diff two
 # sets of symbols.  The theory is that you give it a set of file names, and we provide a way to take
