@@ -13,9 +13,12 @@ from willitlink.cli.leaks import get_leaks, get_direct_leaks, get_unneeded_libde
 from willitlink.cli.trees import get_tree, get_tree_types
 from willitlink.cli.d3 import get_file_family_tree_d3, get_file_family_tree_with_leaks_d3, get_file_family_relationship_d3
 
+from willitlink.web.api import start_app
+
 operations = {
     'collect': data_collector,
     'ingest': ingestion.command,
+    'web': start_app,
 
     'relationship': get_relationship_node,
     'tree': get_tree,
@@ -50,6 +53,9 @@ def main():
     collector_parser.add_argument('--data', '-d', default='deps.json')
     collector_parser.add_argument('--mongo', '-m', default=os.path.join(default_cwd, '..', 'mongo'))
     collector_parser.add_argument('--scons', '-s', nargs='*', default=[])
+
+    web_api_parser = subparsers.add_parser('web', help='start a simple json api to')
+    web_api_parser.add_argument('--data', '-d', default=default_data_file)
 
     get_list_parser = subparsers.add_parser('list', help='a list of all symbols or files.')
     get_list_parser.add_argument('type', choices=['symbols', 'files'], help='kind of object')
