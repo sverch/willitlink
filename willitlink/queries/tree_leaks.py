@@ -1,6 +1,6 @@
-from willitlink.base.graph import MultiGraph
+from willitlink.base.graph import MultiGraph, ResultsGraph
 from willitlink.base.dev_tools import Timer
-from willitlink.queries.symbol_diff import get_symbol_info
+from willitlink.queries.symbol_diff import get_symbol_info, get_symbol_map
 
 def get_full_filenames(g, file_names):
 
@@ -149,7 +149,8 @@ def find_libraries_needed(graph, archive_names):
         # If this symbol was defined in more than one place, add the objects as a dict with a
         # description
         if len(symbol_locations) > 1:
-            bad_objects_needed.append({ "objects" : symbol_locations, "multiple_definitions" : True })
+            for i in symbol_locations:
+                bad_objects_needed.append({ "objects" : symbol_locations, "multiple_definitions" : True })
         elif len(symbol_locations) != 0:
             objects_needed.append(symbol_locations[0])
 
@@ -240,4 +241,3 @@ def find_libraries_needed_multi(graph, archive_names):
         bad_archives_needed.append(bad_archives_needed_single)
 
     return { 'good' : list(set(archives_needed)), 'bad' : bad_archives_needed }
-

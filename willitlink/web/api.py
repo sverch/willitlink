@@ -5,7 +5,7 @@ from willitlink.base.graph import MultiGraph
 from willitlink.base.dev_tools import Timer
 
 from willitlink.queries.d3.d3_relationship import relationship_info_d3
-
+from willitlink.queries.extra_archives import find_all_extra_archives
 app = Flask('wil')
 
 def render(obj):
@@ -15,7 +15,7 @@ def render(obj):
 def return_symbols(prefix=None):
     try:
         ret = filter_lists(app.g, request, 'symbols')
-    except Exception as e: 
+    except Exception as e:
         print(e)
 
     return render(ret)
@@ -24,7 +24,7 @@ def return_symbols(prefix=None):
 def return_files():
     try:
         ret = filter_lists(app.g, request, 'files')
-    except Exception as e: 
+    except Exception as e:
         print(e)
 
     return render(ret)
@@ -63,6 +63,17 @@ def filter_lists(graph, request, kind):
             ret = { kind: getattr(graph, kind)}
 
     return ret
+
+@app.route('/unneeded-dependencies')
+def return_unneeded_archive_dependencies():
+    archive = request.args.get('archive')
+    if archive is not None:
+        archive = archive.split(',')
+
+    with Timer('render all extra archives', True):
+        unneeded_deps = find_all_extra_archives(app.g)
+
+    return render(unneeded_deps.narrow(archive).render())
 
 
 @app.route('/')

@@ -1,5 +1,3 @@
-from willitlink.base.graph import MultiGraph
-
 # Return object format:
 #
 # [{

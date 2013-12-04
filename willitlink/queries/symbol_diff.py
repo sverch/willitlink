@@ -1,4 +1,4 @@
-from willitlink.base.graph import MultiGraph
+from willitlink.base.graph import MultiGraph, ResultsGraph
 
 # TODO: Do this in a smarter way or preprocess this somehow.  This is related to
 # the ingestion code, so once we get better scons integration we'll be better at
@@ -158,3 +158,13 @@ def get_symbol_info(g, build_object_names, search_depth=None, symbol_type='depen
 #            #'path' : p,
 #             'parents': parents
 #           }
+
+def get_symbol_map(symbol_info):
+    o = dict()
+
+    for node in symbol_info:
+        symbol = node['symbol']
+        del node['symbol']
+        o[symbol] = node
+
+    return o

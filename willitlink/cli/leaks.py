@@ -34,11 +34,12 @@ def get_direct_leaks(args):
 def get_unneeded_libdeps(args):
     g = get_graph(args)
 
-    archives = []
+
+    ct = 0
     for filename in g.files:
         if filename.endswith(".a"):
-            archives.append(filename)
-    print('[wil]: total number of archives: ' + str(len(archives)))
+            ct += 1
+    print('[wil]: total number of archives: ' + str(ct))
 
     with Timer('find unneeded libdeps', args.timers):
         render(find_extra_archives(g, args.name))

@@ -69,19 +69,18 @@ class Graph(object):
 
     def add(self, item, deps):
         if isinstance(item, list):
-            print(item)
-            return
+            raise GraphError('cannot add lists to graph')
 
         if item not in self.graph:
             self.graph[item] = set()
 
         if isinstance(deps, list):
-            self.graph[item].update(dep)
+            self.graph[item].update(deps)
         else:
             self.graph[item].add(deps)
 
     def get(self, item):
-        if item in self.graph:
+        if item in self.graph.keys():
             return list(self.graph[item])
         else:
             return list()
@@ -211,8 +210,13 @@ class MultiGraph(object):
         graph = MultiGraph()
         graph.subset = True
 
-        for i in self.relationships:
-            graph.add(i, item, self.graphs[i].get(item))
+        if isinstance(item, list):
+            for node in item:
+                for i in self.relationships:
+                    graph.add(i, node, self.graphs[i].get(item))
+        else:
+            for i in self.relationships:
+                graph.add(i, item, self.graphs[i].get(item))
 
         return graph
 
@@ -335,31 +339,51 @@ def load_from_file(fn):
     with open(fn, 'r') as f:
         return json.load(f)
 
-class OutputGraphD3(object):
-    def __init__(self, kind):
-        self.nodes = set()
-        self.edges = list()
-        self.kind = kind
+class ResultsGraph(MultiGraph):
+    def add(self, relationship, source, target, edge):
+        if relationship in self.relationships:
+            self.graphs[relationship].add(source, (target, edge))
+        else:
+            logger.debug('cannot add to non-extant relationship type ' + relationship)
 
-    def add(self, node, arc, **kwargs):
-        self.nodes.add(node)
-        self.nodes.add(arc)
+    def narrow(self, item):
+        graph = ResultsGraph(self.relationships)
+        graph.subset = True
 
-        edge = {
-            'to': arc,
-            'from': node,
-        }
+        if isinstance(item, list):
+            for node in item:
+                for i in self.relationships:
+                    edges = self.graphs[i].get(node)
+                    for target, edge in edges:
+                        graph.add(i, node, target, edge)
+        else:
+            for i in self.relationships:
+                edges = self.graphs[i].get(item)
+                for target, edge in edges:
+                    graph.add(item, node, target, edge)
 
-        for k,v in kwargs.items():
-            edge[k] = v
-
-        self.edges.append(edge)
+        return graph
 
     def render(self):
-        return {
-            'nodes': list(self.nodes),
-            'edges': self.edges
-        }
+        o = {}
+        for i in self.relationships:
+            o[i] = self.graphs[i].fetch()
 
-    def ingest(self, graph):
-        raise NotImplementedError
+        return o
+
+class ResultsGraphD3(ResultsGraph):
+    def render(self):
+        output = { 'nodes': set(),
+                   'edges': list() }
+
+        for rel in self.relationships:
+            output['nodes'].update(self.graphs[rel].keys())
+
+            for source, target in self.graphs[rel].items():
+                output['edges'].append( { 'to': target,
+                                          'from': source,
+                                          'relationship': rel } )
+
+        output['nodes'] = list(output['nodes'])
+
+        return output

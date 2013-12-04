@@ -15,7 +15,7 @@ def command(command, cwd=None, capture=False, ignore=False):
         err_stream = dev_null
 
     try:
-        p = subprocess.Popen(command, 
+        p = subprocess.Popen(command,
                              shell=True,
                              cwd=cwd,
                              stdout=out_stream,
