@@ -80,7 +80,7 @@ class Graph(object):
             self.graph[item].add(deps)
 
     def get(self, item):
-        if item in self.graph.keys():
+        if item in self.graph:
             return list(self.graph[item])
         else:
             return list()
