@@ -353,12 +353,12 @@ class ResultsGraph(MultiGraph):
         if isinstance(item, list):
             for node in item:
                 for i in self.relationships:
-                    edges = self.graphs[i].get(node)
+                    edges = self.graphs[i].get_endswith(node)[0]
                     for target, edge in edges:
                         graph.add(i, node, target, edge)
         else:
             for i in self.relationships:
-                edges = self.graphs[i].get(item)
+                edges = self.graphs[i].get_endswith(item)[0]
                 for target, edge in edges:
                     graph.add(item, node, target, edge)
 

@@ -1,4 +1,5 @@
 from willitlink.base.graph import MultiGraph, ResultsGraph
+from willitlink.base.jobs import ThreadPool
 from willitlink.base.dev_tools import Timer
 from willitlink.queries.symbol_diff import get_symbol_info
 
@@ -8,45 +9,32 @@ def get_full_filenames(graph, file_name):
             yield i
 
 def find_extra_archives(graph, archive_name):
-    o = []
-
-    symbols_defined = [ s['symbol']
+    symbols_defined = { s['symbol']
                         for s in get_symbol_info(graph,
                                                  [ archive_name ],
                                                  search_depth=1,
-                                                 symbol_type='definition') ]
+                                                 symbol_type='definition') }
+
     # loop over full names of this file
     for full_archive_name in get_full_filenames(graph, archive_name):
         # Get all symbols needed by this archive
-        symbols_needed = get_symbol_info(graph,
+        symbols_needed = { s['symbol'] for s in get_symbol_info(graph,
                                          [ full_archive_name ],
                                          search_depth=1,
-                                         symbol_type='dependency')
+                                         symbol_type='dependency') }
 
-        extra_archives = []
-
-        symbols_needed_set =  set([s['symbol'] for s in symbols_needed])
-
+        extra_archives = list()
         for archive_dependency in graph.get('target_to_dependencies', full_archive_name):
-            need_archive = False
-            for symbol_defined in symbols_defined:
-
-                if symbol_defined in symbols_needed_set:
-                    need_archive = True
-
-            if need_archive is False:
+            if not symbols_defined.issubset(symbols_needed):
                 extra_archives.append(archive_dependency)
 
-        result = { 'archive': full_archive_name,
-                   'extras': extra_archives }
-
-        o.append(result)
-
-    return o
+        yield { 'archive': full_archive_name,
+                'extras': extra_archives }
 
 def find_all_extra_archives(graph):
     r = ResultsGraph(relationships=['unneeded_archives'])
-    for archive in graph.slice('archives_to_components').keys():
+
+    def add_results(archive):
         for i in find_extra_archives(graph, archive):
             extras = i['extras']
             if len(extras) == 0:
@@ -61,6 +49,9 @@ def find_all_extra_archives(graph):
                     r.add(relationship='unneeded_archives',
                           source=archive,
                           target=extra,
-                          edge=None)
+                          edge=None)        
+
+    archives = graph.slice('archives_to_components').keys()
+    map(add_results, archives)
 
     return r
