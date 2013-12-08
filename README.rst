@@ -76,7 +76,7 @@ ASCII Art of Build Process, with terminology:
     Static Library (Shared Library):          ||         libbc.a (libbc.so)
     Linking:                                  \\         //
                                                 \\      //
-                                                abc.exe
+    Executable:                                   abc.exe
 
 Note: I'll use the terms "Archive" and "Library" interchangeably.
 
