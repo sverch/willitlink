@@ -15,7 +15,7 @@
 
 def locate_symbol(g, symbol_name):
     symbol_info = []
-    for containing_file in g.get('symbol_to_file_sources', symbol_name):
+    for containing_file in g.get_contains('symbol_to_file_sources', symbol_name):
         for containing_archive in g.get('dependency_to_targets', containing_file):
             for next_containing_archive in g.get('dependency_to_targets', containing_archive):
                 symbol_info.append({ 'symbol' : symbol_name,

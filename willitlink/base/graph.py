@@ -103,6 +103,15 @@ class Graph(object):
                     r.append(item)
         return r
 
+    def get_contains(self, name):
+        r = list()
+        for i in self.graph.keys():
+            if name in i:
+                item = self.get(i)
+                if item:
+                    r.append(item)
+        return r
+
     def holds(self, name):
         r = dict()
         for k, v in self.graph.items():
@@ -187,6 +196,12 @@ class MultiGraph(object):
     def get_endswith(self, relationship, name):
         if relationship in self.relationships:
             return self.graphs[relationship].get_endswith(name)
+        else:
+            logger.debug('cannot fetch from non-extant relationship type ' + relationship)
+
+    def get_contains(self, relationship, name):
+        if relationship in self.relationships:
+            return self.graphs[relationship].get_contains(name)
         else:
             logger.debug('cannot fetch from non-extant relationship type ' + relationship)
 

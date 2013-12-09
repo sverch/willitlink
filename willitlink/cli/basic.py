@@ -21,14 +21,14 @@ def get_relationship_node(args):
         if rel is None:
             raise Exception('invalid relationship type.')
 
-        render({ rel: { name: g.get_endswith(get_relationship_types()[rel][0], name)}})
+        render({ rel: { name: g.get_contains(get_relationship_types()[rel][0], name)}})
     except KeyError:
         print('[wil]: there is no {0} named {1}'.format(args.thing, args.name))
 
 
 def get_relationship_types():
     return { 'symbol_dep':('symbol_to_file_sources', 'symbol', 'the file sources for a symbol'),
-             'symbol_src':('symbol_to_file_dependencies', 'symbol', 'the file(s) that a symbol depends on'),
+             'symbol_src':('symbol_to_file_dependencies', 'symbol', 'the file(s) that depend on a symbol'),
              'file_def':('file_to_symbol_definitions', 'file', 'the files that define a symbol'),
              'file_dep':('file_to_symbol_dependencies', 'file', 'the files that a symbol depends on'),
              'target_dep':('target_to_dependencies', 'target', 'the dependencies for a build target'),
