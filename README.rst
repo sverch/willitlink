@@ -4,7 +4,60 @@
 
 Welcome to Willitlink!
 
-This project is aimed to help manage the dependencies of large statically linked C and C++ projects.
+This project aims to help manage the dependencies of large statically
+linked C and C++ projects. In particular, it wants to help new projects
+avoid, and existing projects reduce, the number of unintended or
+misunderstood circular dependencies between source files.
+
+Circular dependencies can have a big impact on the ability of new
+engineers to get up to speed on a project. The reason is that as
+more circular dependencies accrue on a codebase, it becomes more and
+more difficult for a new engineer to have confidence in what the code
+seems to be doing. A state change or key behavior could appear anywhere
+along the dependency chain. Without tracing that whole chain from start
+to finish, an engineer may not be able to confirm that things happen
+the way they expect. Calling a disk-related function may eventually
+change something in our networking library, or elsewhere.
+
+Circular dependencies also make it more difficult to test
+features. When you write a unit test, in the ideal case you would
+only build the library being unittested, plus its dependencies. That
+way if it breaks, you have a much smaller search-space to find the
+problem. But if the dependencies between libraries aren't well-defined,
+they may end up including the whole code base. And if the test fails
+for any reason, the debugging process could involve every file in
+the code base, for what was meant to be an isolated component test.
+
+Why do circular dependencies happen? The reason is that a dependency
+can be hard to see. You could try to figure out what modules are in a
+large project by looking at the directory structure, only to discover
+that the actual division of modules is very different. A statically
+linked program may compile and link successfully, even if the chain
+of dependencies eliminate all meaningful separations between the
+parts of the project.
+
+Willitlink is a script that identifies the dependencies between files,
+so that engineers can see what they are and make informed decisions
+about what they should be.
+
+Willitlink tries to make it easier for engineers to identify parts
+of the codebase that can be safely extracted into a dependency-free
+library. Such a library can be maintained and tested much more easily,
+and can be understood by newcomers much more readily.
+
+Once a codebase has been freed from circular dependencies, Willitlink
+can be automated to enforce the desired structure as a compile
+time check, or to reveal what code is actually used in a library
+by displaying linker symbols that are defined in one place and used
+in another.
+
+Willitlink gives engineers a tool to understand the structure of
+dependencies in a project. Because it uses the real up-to-date data
+from the build, it provides a source of truth that can't be found by
+looking at the directory hierarchy or the libraries created by the
+build system.
+
+Have fun!
 
 Quick Start
 -----------
