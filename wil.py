@@ -10,6 +10,7 @@ from willitlink.ingestion.collector import data_collector
 
 from willitlink.cli.basic import get_relationship_node, get_list, get_symbol_location, get_relationship_types
 from willitlink.cli.leaks import get_leaks, get_direct_leaks, get_unneeded_libdeps, get_leak_check
+from willitlink.cli.interface import get_interface
 from willitlink.cli.trees import get_tree, get_tree_types
 from willitlink.cli.d3 import get_file_family_tree_d3, get_file_family_tree_with_leaks_d3, get_file_family_relationship_d3
 from willitlink.cli.libs_needed import get_required_libs, get_circle_deps
@@ -34,6 +35,7 @@ operations = {
     'd3-file-relationship': get_file_family_relationship_d3,
 
     'direct-leaks': get_direct_leaks,
+    'interface': get_interface,
     'symbol': get_symbol_location,
     'extra-libdeps': get_unneeded_libdeps,
 }
@@ -80,7 +82,7 @@ def main():
     for tree in get_tree_types().keys():
         tree_parser.add_argument('--' + tree, nargs='*', help='render tree of {0} for an object'.format(tree))
 
-    for query_parser in [ 'leaks', 'direct-leaks', 'symbol',
+    for query_parser in [ 'leaks', 'direct-leaks', 'symbol', 'interface',
                           'extra-libdeps', 'd3-file-family',
                           'd3-file-family-with-leaks']:
         sp = subparsers.add_parser(query_parser, help='query for ' + query_parser)
