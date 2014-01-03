@@ -5,35 +5,37 @@ from willitlink.base.dev_tools import Timer
 
 from willitlink.queries.symbols import locate_symbol
 
-
 def get_relationship_node(args):
     g = get_graph(args)
 
     try:
         name = args.name
 
-        rel = None
-        for rel_type in get_relationship_types().keys():
-            if getattr(args, rel_type) is not None:
-                rel = rel_type
-                break
+        rel = args.relationship
 
         if rel is None:
             raise Exception('invalid relationship type.')
 
+        # XXX: get_contains is more user friendly for long symbol names, but the problem is that we
+        # don't know WHICH symbol we actually matched.  All we know is what we are looking for.
+        # This means if we look for "inShutdown", we get a list of lists, but have no idea what the
+        # original symbol was.
+        #
+        # The solution to this would be to look in the list of all symbols first, then expand the
+        # names and return that as part of the result to the user.  That requires some refactoring.
         render({ rel: { name: g.get_contains(get_relationship_types()[rel][0], name)}})
     except KeyError:
         print('[wil]: there is no {0} named {1}'.format(args.thing, args.name))
 
 
 def get_relationship_types():
-    return { 'symbol_dep':('symbol_to_file_sources', 'symbol', 'the file sources for a symbol'),
-             'symbol_src':('symbol_to_file_dependencies', 'symbol', 'the file(s) that depend on a symbol'),
-             'file_def':('file_to_symbol_definitions', 'file', 'the files that define a symbol'),
-             'file_dep':('file_to_symbol_dependencies', 'file', 'the files that a symbol depends on'),
-             'target_dep':('target_to_dependencies', 'target', 'the dependencies for a build target'),
-             'dep_target':('dependency_to_targets', 'dependency', 'the build targets for a dependency'),
-             'archive':('archives_to_components', 'archive', 'the components of an archive'),
+    return { 'sources':('symbol_to_file_sources', 'symbol', 'the files where a symbol is defined'),
+             'uses':('symbol_to_file_dependencies', 'symbol', 'the files where a symbol is used'),
+             'definitions':('file_to_symbol_definitions', 'file', 'the symbols defined by a file'),
+             'dependencies':('file_to_symbol_dependencies', 'file', 'the symbols needed by a file'),
+             'children':('target_to_dependencies', 'target', 'the build targets that this build target depends on'),
+             'parents':('dependency_to_targets', 'dependency', 'the build targets that require this build target'),
+             'components':('archives_to_components', 'archive', 'the components of an archive'),
     }
 
 def get_list(args):

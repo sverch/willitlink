@@ -22,7 +22,7 @@ operations = {
     'ingest': ingestion.command,
     'web': start_app,
 
-    'relationship': get_relationship_node,
+    'basic': get_relationship_node,
     'tree': get_tree,
     'list': get_list,
     'libs-needed': get_required_libs,
@@ -67,13 +67,12 @@ def main():
     get_list_parser.add_argument('filter', help='a prefix limiting expression')
     get_list_parser.add_argument('--data', '-d', default=default_data_file)
 
-    relationship_parser = subparsers.add_parser('relationship', help='return direct single relationships')
+    relationship_parser = subparsers.add_parser('basic', help='return basic single relationships')
     relationship_parser.add_argument('--data', '-d', default=default_data_file)
+    relationship_subparsers = relationship_parser.add_subparsers(dest='relationship')
 
     for k,v in get_relationship_types().items():
-        relationship_parser.add_argument('--' + k, action='store_const', const=v[1], help=v[2] )
-
-    relationship_parser.add_argument('name', help='the name of object.')
+        relationship_subparsers.add_parser(k, help=v[2]).add_argument('name')
 
     tree_parser = subparsers.add_parser('tree', help='return relationships rendered as trees')
     tree_parser.add_argument('--data', '-d', default=default_data_file)
