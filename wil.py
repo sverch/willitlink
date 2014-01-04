@@ -14,6 +14,7 @@ from willitlink.cli.interface import get_interface
 from willitlink.cli.trees import get_tree, get_tree_types
 from willitlink.cli.d3 import get_file_family_tree_d3, get_file_family_tree_with_leaks_d3, get_file_family_relationship_d3
 from willitlink.cli.libs_needed import get_required_libs, get_circle_deps
+from willitlink.cli.file_graph import get_file_graph
 
 from willitlink.web.api import start_app
 
@@ -38,6 +39,8 @@ operations = {
     'interface': get_interface,
     'symbol': get_symbol_location,
     'extra-libdeps': get_unneeded_libdeps,
+
+    'file-graph' : get_file_graph
 }
 
 def main():
@@ -99,6 +102,9 @@ def main():
         sp = subparsers.add_parser(query_parser, help='query for ' + query_parser)
         sp.add_argument('--data', '-d', default=default_data_file)
         sp.add_argument('names', nargs='+', help="list of libraries or objects to check deps of")
+
+    file_graph_parser = subparsers.add_parser('file-graph', help='return a structure that represents a weighted graph of dependencies between files')
+    file_graph_parser.add_argument('--data', '-d', default=default_data_file)
 
     args = parser.parse_args()
     args.g = None
