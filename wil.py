@@ -84,12 +84,16 @@ def main():
     for tree in get_tree_types().keys():
         tree_parser.add_argument('--' + tree, nargs='*', help='render tree of {0} for an object'.format(tree))
 
-    for query_parser in [ 'leaks', 'direct-leaks', 'symbol', 'interface',
+    for query_parser in [ 'leaks', 'direct-leaks', 'symbol',
                           'extra-libdeps', 'd3-file-family',
                           'd3-file-family-with-leaks']:
         sp = subparsers.add_parser(query_parser, help='query for ' + query_parser)
         sp.add_argument('name')
         sp.add_argument('--data', '-d', default=default_data_file)
+
+    sp = subparsers.add_parser('interface', help='query for interface')
+    sp.add_argument('names', nargs='+', help="list of libraries or objects to get interface of")
+    sp.add_argument('--data', '-d', default=default_data_file)
 
     for query_parser in [ 'd3-file-relationship' ]:
         sp = subparsers.add_parser(query_parser, help='query for ' + query_parser)

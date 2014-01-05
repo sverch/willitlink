@@ -9,4 +9,4 @@ def get_interface(args):
     g = get_graph(args)
 
     with Timer('direct leak query', args.timers):
-        render(find_interface(g, args.name))
+        render(find_interface(g, args.names))
