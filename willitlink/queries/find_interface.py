@@ -36,7 +36,7 @@ def find_interface(graph, archive_names):
     for symbol_defined in symbols_defined:
         files_requiring_symbol = []
         for file_requiring_symbol in graph.get('symbol_to_file_dependencies', symbol_defined['symbol']):
-            if file_requiring_symbol in files_in_archive:
+            if file_requiring_symbol in files_in_archive or "_test.o" in file_requiring_symbol:
                 continue
             else:
                 files_requiring_symbol.append(file_requiring_symbol)
