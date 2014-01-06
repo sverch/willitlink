@@ -23,7 +23,7 @@ def get_leak_check(args):
         g = args.g
 
     with Timer('leaks tree query', args.timers):
-        render(resolve_leak_info(g, args.name, args.depth, args.timers))
+        render(resolve_leak_info(g, args.name, args.depth, args.timers, args.source_names))
 
 def get_direct_leaks(args):
     g = get_graph(args)

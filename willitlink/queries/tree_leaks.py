@@ -19,7 +19,13 @@ def get_full_filenames(g, file_names):
 
     return full_file_names
 
-def find_direct_leaks(graph, archive_names):
+# archive_names are the files or archives we are checking the leaks of, whereas archive_source_names
+# are files or archives that we want to ignore in the output.
+#
+# For example, if a file "database.o" depeneds on "assert_util.o", we probably don't care about
+# seeing that, but we also don't want to add the dependencies of "assert_util.o" to the output
+
+def find_direct_leaks(graph, archive_names, archive_source_names):
     # Get all symbols needed by this archive
     symbols_needed = get_symbol_info(graph,
                                      archive_names,
@@ -31,7 +37,7 @@ def find_direct_leaks(graph, archive_names):
 
     symbols_found = { s['symbol']
                       for s in get_symbol_info(graph,
-                                               archive_names,
+                                               archive_names + archive_source_names,
                                                search_depth=None,
                                                symbol_type='definition') }
 

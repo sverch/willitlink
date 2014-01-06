@@ -82,6 +82,10 @@ def main():
     for tree in get_tree_types().keys():
         tree_parser.add_argument('--' + tree, nargs='*', help='render tree of {0} for an object'.format(tree))
 
+    # XXX: I shouldn't also be adding this to the other trees.  This only makes sense for the
+    # "--leak" option.
+    tree_parser.add_argument('--source_names', '-s', nargs='*', help='names of files to look up symbols in but not check for leaks of', default=[])
+
     for query_parser in [ 'leaks', 'direct-leaks', 'symbol',
                           'extra-libdeps', 'd3-file-family',
                           'd3-file-family-with-leaks']:
