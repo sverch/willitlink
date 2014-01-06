@@ -56,9 +56,7 @@ def main():
     ingest_parser = ingestion.argparser(default_cwd, ingest_parser)
 
     collector_parser = subparsers.add_parser('collect', help='generate and collect data from the build system')
-    collector_parser.set_defaults(data_dir=os.path.join(default_cwd, 'data'))
-    collector_parser.add_argument('--tree_name', default='dependency_tree.txt')
-    collector_parser.add_argument('--data', '-d', default='deps.json')
+    collector_parser.add_argument('--data_dir', '-d', default=os.path.join(default_cwd, 'data'))
     collector_parser.add_argument('--mongo', '-m', default=os.path.join(default_cwd, '..', 'mongo'))
     collector_parser.add_argument('--scons', '-s', nargs='*', default=[])
 

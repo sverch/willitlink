@@ -4,9 +4,15 @@ from willitlink.base.shell import command
 from willitlink.base.dev_tools import Timer
 
 def data_collector(args):
-    for fn in [ os.path.join(args.data_dir, args.data),
+    # Output of scons dependency tree
+    tree_output = os.path.join(args.data_dir, 'dependency_tree.txt')
+
+    # Output from our libdeps patch
+    libdeps_output = os.path.join(args.data_dir, 'deps.json')
+
+    for fn in [ libdeps_output,
                 os.path.join(args.data_dir, 'dep_graph.json'),
-                os.path.join(args.data_dir, args.tree_name)]:
+                tree_output ]:
         if os.path.exists(fn):
             os.remove(fn)
 
@@ -32,14 +38,16 @@ def data_collector(args):
 
     print('[wil]: gathering dependency information from SCons output.')
 
-    tree_output = os.path.join(args.data_dir, args.tree_name)
+    if not os.path.exists(args.data_dir):
+        os.mkdir(args.data_dir)
+
     with open(tree_output, 'w') as f:
         with Timer('writing data to ' + tree_output, args.timers):
             f.writelines(tree['out'])
 
     ct = 0
     tree_data = tree['out'].split('\n')
-    with open(os.path.join(args.data_dir, args.data), 'w') as f:
+    with open(libdeps_output, 'w') as f:
         with Timer('filtering out dep info from scons output', args.timers):
             for ln in tree_data:
                 if ln.startswith('{'):
