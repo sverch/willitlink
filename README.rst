@@ -16,13 +16,13 @@ Collect the data from scons (does a full build).  Note the quote around the scon
 
 ::
 
-   python wil.py collect -m <path_to_mongodb_repo> --tree_name <path_to_willitlink>/data/dependency_tree.txt --data <path_too_willitlink>/data/deps.json --scons "<scons_flags>"
+   python wil.py collect -m <path_to_mongodb_repo> --scons "<scons_flags>"
 
 Complete the initial data processing and make the result dataset.
 
 ::
 
-   python wil.py ingest -t -m <path_to_mongodb_repo> --input_tree <path_to_willitlink>/data/dependency_tree.txt --dep_info <path_to_willitlink>/data/deps.json --output_dep_name <path_to_willitlink>/data/dep_graph.json
+   python wil.py ingest -t -m <path_to_mongodb_repo>
 
 Example Queries
 ~~~~~~~~~~~~~~~
@@ -31,19 +31,31 @@ Get all symbols needed by this archive that are not defined by this archive or a
 
 ::
 
-    python wil.py -t tree --leak libmongocommon.a 2
+    python wil.py tree --leak libmongocommon.a
+
+Get all symbols needed by this archive that are not defined by this archive or anything it depends on (meaning that this archive will not link on its own) AND are also not defined in the files provided after the "-s".  This is a way to get rid of unnecessary noise (symbols that you know are leaking but don't want to look at).
+
+::
+
+    python wil.py tree --leak libmongocommon.a -s unittest/crutch.o
+
+Get the interface of a set of files
+
+::
+
+    python wil.py interface libmongocommon.a sock.o
 
 Get all libraries needed by this archive.  The "bad" entry in the dictionary represents a symbol that is defined in more than one place, which means that "one of these archives" is needed to link.
 
 ::
 
-    python wil.py -t libs-needed libmongocommon.a
+    python wil.py libs-needed libmongocommon.a
 
 Get circular dependencies for the library.
 
 ::
 
-    python wil.py -t libs-cycle liblasterror.a
+    python wil.py libs-cycle liblasterror.a
 
 Project Motivation
 ------------------
