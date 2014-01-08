@@ -15,6 +15,7 @@ from willitlink.cli.trees import get_tree, get_tree_types
 from willitlink.cli.d3 import get_file_family_tree_d3, get_file_family_tree_with_leaks_d3, get_file_family_relationship_d3
 from willitlink.cli.libs_needed import get_required_libs, get_circle_deps
 from willitlink.cli.file_graph import get_file_graph
+from willitlink.cli.executables import get_executables
 
 from willitlink.web.api import start_app
 
@@ -40,7 +41,9 @@ operations = {
     'symbol': get_symbol_location,
     'extra-libdeps': get_unneeded_libdeps,
 
-    'file-graph' : get_file_graph
+    'file-graph' : get_file_graph,
+
+    'executables' : get_executables
 }
 
 def main():
@@ -95,6 +98,10 @@ def main():
 
     sp = subparsers.add_parser('interface', help='query for interface')
     sp.add_argument('names', nargs='+', help="list of libraries or objects to get interface of")
+    sp.add_argument('--data', '-d', default=default_data_file)
+
+    sp = subparsers.add_parser('executables', help='query for the executables a file is built into.  Currently only mongod and mongos supported')
+    sp.add_argument('name', help="file to check the executable list for")
     sp.add_argument('--data', '-d', default=default_data_file)
 
     for query_parser in [ 'd3-file-relationship' ]:
