@@ -100,7 +100,7 @@ def main():
     sp.add_argument('names', nargs='+', help="list of libraries or objects to get interface of")
     sp.add_argument('--data', '-d', default=default_data_file)
 
-    sp = subparsers.add_parser('executables', help='query for the executables a file is built into.  Currently only mongod and mongos supported')
+    sp = subparsers.add_parser('executables', help='query for the executables a file is built into')
     sp.add_argument('name', help="file to check the executable list for")
     sp.add_argument('--data', '-d', default=default_data_file)
 
