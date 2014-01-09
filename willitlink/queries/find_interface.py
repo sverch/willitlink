@@ -35,7 +35,7 @@ def find_interface(graph, archive_names):
 
     for symbol_defined in symbols_defined:
 
-        # Removing these right now because they are not useful
+        # Removing these right now because they are not useful (or incorrect)
         del symbol_defined['parents']
         del symbol_defined['type']
 

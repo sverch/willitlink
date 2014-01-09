@@ -98,6 +98,7 @@ def get_symbol_info(g, build_object_names, search_depth=None, symbol_type='depen
                         yield { 'symbol' : symbol_needed,
                                 'type' : 'dependency',
                                 'object' : object_file,
+                                'archive' : full_build_object_name,
                                 'parents': parents
                               }
                 elif symbol_type == "definition":
@@ -105,6 +106,7 @@ def get_symbol_info(g, build_object_names, search_depth=None, symbol_type='depen
                         yield { 'symbol' : symbol_defined,
                                 'type' : 'definition',
                                 'object' : object_file,
+                                'archive' : full_build_object_name,
                                 'parents': parents
                               }
 
