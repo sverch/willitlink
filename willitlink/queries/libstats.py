@@ -11,7 +11,7 @@ from willitlink.queries.tree_leaks import  find_direct_leaks
 # For example, if a file "database.o" depeneds on "assert_util.o", we probably don't care about
 # seeing that, but we also don't want to add the dependencies of "assert_util.o" to the output
 def resolve_leak_info(g, names, depth, timers, source_names):
-    with Timer('generating direct leak list'):
+    with Timer('generating direct leak list', timers):
         direct_leaks = find_direct_leaks(g, names, source_names)
 
     for leak in direct_leaks:
