@@ -23,7 +23,7 @@ def get_full_filenames(g, file_names):
                 # If we have an exact match just return a single element to reduce noise
                 # TODO: find a more elegant way to do this and document how it works.
                 if i == file_name:
-                    full_file_names = [ file_name ]
+                    full_file_names.append(file_name)
                     break
                 if i.endswith(file_name):
                     full_file_names.append(i)
