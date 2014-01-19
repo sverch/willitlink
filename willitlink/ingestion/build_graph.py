@@ -128,8 +128,6 @@ def generate_edges(build_objects):
                           item=libdep,
                           deps=build_object_name)
 
-            # TODO: I believe we want to distinguish between objects and archives, but this treats
-            # them all the same.
             # Iterate the object dependencies of this build object, if applicable
             if 'objects' in build_object:
                 for objdep in build_object['objects']:
