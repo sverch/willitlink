@@ -11,7 +11,7 @@ output_formats = ['json', 'pickle', 'pkl', 'jsn']
 def worker(input_tree, dep_info, output_dep_file, mongo_path, timer=False):
     with Timer('parsing', timer):
         results = parse_tree(input_tree, mongo_path)
-        
+
     with Timer('importing dep info', timer):
         ingest_deps(dep_info, results)
 
@@ -24,20 +24,31 @@ def worker(input_tree, dep_info, output_dep_file, mongo_path, timer=False):
 def argparser(cwd, parser):
     parser.add_argument('--timers', '-t', default=False, action='store_true')
     parser.add_argument('--format', '-f', default='json', action='store', choices=output_formats)
-    parser.add_argument('--input_tree', default=os.path.join(cwd, 'data', "dependency_tree.txt"))
-    parser.add_argument('--dep_info', default=os.path.join(cwd, 'data', "deps.json"))
+    parser.add_argument('--data_dir', '-d', default=os.path.join(cwd, 'data'))
     parser.add_argument('--mongo', '-m', default=os.path.join(cwd, '..', 'mongo'))
-    parser.add_argument('--output_dep_name', default=os.path.join(cwd, 'data', "dep_graph.json"))
 
     return parser
 
 def command(args):
-    if os.path.splitext(args.output_dep_name)[1][1:] in output_formats:
-        output_fn = args.output_dep_name
-    else:
-        output_fn = args.output_dep_name + '.' + args.format
+    # Output of scons dependency tree
+    input_tree = os.path.join(args.data_dir, 'dependency_tree.txt')
 
-    worker(args.input_tree, args.dep_info, output_fn, args.mongo, args.timers)
+    # Output from our libdeps patch
+    dep_info = os.path.join(args.data_dir, 'deps.json')
+
+    # Final output for graph result
+    output_dep_file = os.path.join(args.data_dir, 'dep_graph.json')
+
+    for fn in [ output_dep_file ]:
+        if os.path.exists(fn):
+            os.remove(fn)
+
+    if os.path.splitext(output_dep_file)[1][1:] in output_formats:
+        output_fn = output_dep_file
+    else:
+        output_fn = output_dep_file + '.' + args.format
+
+    worker(input_tree, dep_info, output_fn, args.mongo, args.timers)
 
 def main():
     parser = argparser(argparse.ArgumentParser("[wil]: willitlink ingestion"))
