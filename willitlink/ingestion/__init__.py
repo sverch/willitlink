@@ -24,20 +24,19 @@ def worker(input_tree, dep_info, output_dep_file, mongo_path, timer=False):
 def argparser(cwd, parser):
     parser.add_argument('--timers', '-t', default=False, action='store_true')
     parser.add_argument('--format', '-f', default='json', action='store', choices=output_formats)
-    parser.add_argument('--data_dir', '-d', default=os.path.join(cwd, 'data'))
     parser.add_argument('--mongo', '-m', default=os.path.join(cwd, '..', 'mongo'))
 
     return parser
 
 def command(args):
     # Output of scons dependency tree
-    input_tree = os.path.join(args.data_dir, 'dependency_tree.txt')
+    input_tree = os.path.join(args.data, 'dependency_tree.txt')
 
     # Output from our libdeps patch
-    dep_info = os.path.join(args.data_dir, 'deps.json')
+    dep_info = os.path.join(args.data, 'deps.json')
 
     # Final output for graph result
-    output_dep_file = os.path.join(args.data_dir, 'dep_graph.json')
+    output_dep_file = os.path.join(args.data, 'dep_graph.json')
 
     for fn in [ output_dep_file ]:
         if os.path.exists(fn):

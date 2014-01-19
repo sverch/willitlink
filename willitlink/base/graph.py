@@ -238,8 +238,15 @@ class MultiGraph(object):
     def slice(self, relationship):
         return self.graphs[relationship].fetch()
 
+    # TODO: Right now this function can either take a "graph file" or a directory, in which case the
+    # graph file defaults to 'dep_graph.json'.  It's a little confusing that it takes a filename
+    # because it uses other things in the directory that file is in in both cases.  This should be
+    # more consistent (probably just a data directory).
     @classmethod
     def load(cls, fn):
+        if os.path.isdir(fn):
+            fn = os.path.join(fn, 'dep_graph.json')
+
         if not os.path.exists(fn):
             msg = 'cannot load from non existing file {0} please rebuild'.format(fn)
             logger.debug(msg)

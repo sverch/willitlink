@@ -5,13 +5,13 @@ from willitlink.base.dev_tools import Timer
 
 def data_collector(args):
     # Output of scons dependency tree
-    tree_output = os.path.join(args.data_dir, 'dependency_tree.txt')
+    tree_output = os.path.join(args.data, 'dependency_tree.txt')
 
     # Output from our libdeps patch
-    libdeps_output = os.path.join(args.data_dir, 'deps.json')
+    libdeps_output = os.path.join(args.data, 'deps.json')
 
     for fn in [ libdeps_output,
-                os.path.join(args.data_dir, 'dep_graph.json'),
+                os.path.join(args.data, 'dep_graph.json'),
                 tree_output ]:
         if os.path.exists(fn):
             os.remove(fn)
@@ -38,8 +38,8 @@ def data_collector(args):
 
     print('[wil]: gathering dependency information from SCons output.')
 
-    if not os.path.exists(args.data_dir):
-        os.mkdir(args.data_dir)
+    if not os.path.exists(args.data):
+        os.mkdir(args.data)
 
     with open(tree_output, 'w') as f:
         with Timer('writing data to ' + tree_output, args.timers):
