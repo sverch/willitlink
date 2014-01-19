@@ -4,6 +4,7 @@ from willitlink.base.graph import MultiGraph
 from willitlink.base.dev_tools import Timer
 
 from willitlink.queries.symbols import locate_symbol
+from willitlink.queries.fullnames import get_full_filenames, get_full_symbol_names
 
 def get_relationship_node(args):
     g = get_graph(args)
@@ -16,14 +17,16 @@ def get_relationship_node(args):
         if rel is None:
             raise Exception('invalid relationship type.')
 
-        # XXX: get_contains is more user friendly for long symbol names, but the problem is that we
-        # don't know WHICH symbol we actually matched.  All we know is what we are looking for.
-        # This means if we look for "inShutdown", we get a list of lists, but have no idea what the
-        # original symbol was.
-        #
-        # The solution to this would be to look in the list of all symbols first, then expand the
-        # names and return that as part of the result to the user.  That requires some refactoring.
-        render({ rel: { name: g.get_contains(get_relationship_types()[rel][0], name)}})
+        result = {}
+        if get_relationship_types()[rel][1] == 'symbol':
+            full_symbol_names = get_full_symbol_names(g, args.name)
+            for full_symbol_name in full_symbol_names:
+                result[full_symbol_name] = g.get(get_relationship_types()[rel][0], full_symbol_name)
+        else:
+            full_file_names = get_full_filenames(g, args.name)
+            for full_file_name in full_file_names:
+                result[full_file_name] = g.get(get_relationship_types()[rel][0], full_file_name)
+        render(result)
     except KeyError:
         print('[wil]: there is no {0} named {1}'.format(args.thing, args.name))
 

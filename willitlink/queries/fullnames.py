@@ -57,23 +57,23 @@ def get_full_symbol_names(g, symbol_names):
     full_symbol_names = []
 
     if isinstance(symbol_names, list):
-        for i in g.files:
-            for file_name in symbol_names:
+        for i in g.symbols:
+            for symbol_name in symbol_names:
                 # If we have an exact match just return a single element to reduce noise
                 # TODO: find a more elegant way to do this and document how it works.
-                if i == file_name:
-                    full_symbol_names.append(file_name)
+                if i == symbol_name:
+                    full_symbol_names.append(symbol_name)
                     break
-                if i.contains(file_name):
+                if i.contains(symbol_name):
                     full_symbol_names.append(i)
     else:
-        for i in g.files:
+        for i in g.symbols:
             # If we have an exact match just return a single element to reduce noise
             # TODO: find a more elegant way to do this and document how it works.
             if i == symbol_names:
                 full_symbol_names = [ symbol_names ]
                 break
-            if i.contains(symbol_names):
+            if symbol_names in i:
                 full_symbol_names.append(i)
 
 
