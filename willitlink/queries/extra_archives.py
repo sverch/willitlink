@@ -2,11 +2,7 @@ from willitlink.base.graph import MultiGraph, ResultsGraph
 from willitlink.base.jobs import ThreadPool
 from willitlink.base.dev_tools import Timer
 from willitlink.queries.symbol_diff import get_symbol_info
-
-def get_full_filenames(graph, file_name):
-    for i in graph.files:
-        if i.endswith(file_name):
-            yield i
+from willitlink.queries.fullnames import get_full_filenames
 
 def find_extra_archives(graph, archive_name):
     symbols_defined = { s['symbol']

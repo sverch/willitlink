@@ -1,44 +1,12 @@
 from willitlink.base.graph import MultiGraph, ResultsGraph
 
-# TODO: Do this in a smarter way or preprocess this somehow.  This is related to
-# the ingestion code, so once we get better scons integration we'll be better at
-# determing the types of things at that point.
-
+# TODO: Do this type detection in a smarter way or preprocess this somehow.  This is related to the
+# ingestion code, so once we get better scons integration we'll be better at determing the types of
+# things at that point.  All we need is to have it recorded in our graph somehow.  Maybe adding a
+# "build_object_to_type" relationship is the answer.
 from willitlink.ingestion.parse_scons_dependency_tree import detect_type
 
-# TODO: Do this in a smarter way.  This function's purpose is to basically clean
-# up names from the user, so that they can type libmongocommon.a rather than the
-# full path.
-
-# TODO: Doing queries on things like "mongod" result in an infinite loop, since
-# multiple targets end with "mongod"
-
-def get_full_filenames(g, file_names):
-
-    full_file_names = []
-
-    if isinstance(file_names, list):
-        for i in g.files:
-            for file_name in file_names:
-                # If we have an exact match just return a single element to reduce noise
-                # TODO: find a more elegant way to do this and document how it works.
-                if i == file_name:
-                    full_file_names.append(file_name)
-                    break
-                if i.endswith(file_name):
-                    full_file_names.append(i)
-    else:
-        for i in g.files:
-            # If we have an exact match just return a single element to reduce noise
-            # TODO: find a more elegant way to do this and document how it works.
-            if i == file_names:
-                full_file_names = [ file_names ]
-                break
-            if i.endswith(file_names):
-                full_file_names.append(i)
-
-
-    return full_file_names
+from willitlink.queries.fullnames import get_full_filenames
 
 # Get the set of symbols either used or defined at a certain depth
 #

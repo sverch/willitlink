@@ -2,23 +2,6 @@ from willitlink.base.graph import MultiGraph, ResultsGraph
 from willitlink.base.dev_tools import Timer
 from willitlink.queries.symbol_diff import get_symbol_info, get_symbol_map
 
-def get_full_filenames(g, file_names):
-
-    full_file_names = []
-
-    if isinstance(file_names, list):
-        for i in g.files:
-            for file_name in file_names:
-                if i.endswith(file_name):
-                    full_file_names.append(i)
-    else:
-        for i in g.files:
-            if i.endswith(file_names):
-                full_file_names.append(i)
-
-
-    return full_file_names
-
 def find_interface(graph, archive_names):
     # Get all symbols defined by this archive
     symbols_defined = list(get_symbol_info(graph,

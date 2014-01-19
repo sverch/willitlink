@@ -2,7 +2,8 @@ from willitlink.base.graph import MultiGraph
 from willitlink.base.dev_tools import Timer
 
 from willitlink.ingestion.parse_scons_dependency_tree import detect_type
-from willitlink.queries.d3.utils import get_full_filenames, dedupe_edges_d3
+from willitlink.queries.d3.utils import dedupe_edges_d3
+from willitlink.queries.fullnames import get_full_filenames
 
 def file_family_tree_d3(g, file_names, get_parents=True, get_children=True,
                         parent_node=None, child_node=None, is_full_file_name=False):

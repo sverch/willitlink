@@ -1,7 +1,8 @@
 from willitlink.base.graph import MultiGraph
 from willitlink.base.dev_tools import Timer
 from willitlink.queries.symbol_diff import get_symbol_info
-from willitlink.queries.d3.utils import dedupe_edges_d3, get_full_filenames
+from willitlink.queries.d3.utils import dedupe_edges_d3
+from willitlink.queries.fullnames import get_full_filenames
 
 def relationship_info_d3(g, file_names):
 

@@ -1,6 +1,6 @@
 from willitlink.base.graph import MultiGraph
 from willitlink.base.dev_tools import Timer
-from willitlink.queries.symbol_diff import get_full_filenames
+from willitlink.queries.fullnames import get_full_filenames
 
 def add_path(result_map, path):
     if len(path) == 0:

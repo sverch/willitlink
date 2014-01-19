@@ -1,23 +1,7 @@
 from willitlink.base.graph import MultiGraph, ResultsGraph
 from willitlink.base.dev_tools import Timer
 from willitlink.queries.symbol_diff import get_symbol_info, get_symbol_map
-
-def get_full_filenames(g, file_names):
-
-    full_file_names = []
-
-    if isinstance(file_names, list):
-        for i in g.files:
-            for file_name in file_names:
-                if i.endswith(file_name):
-                    full_file_names.append(i)
-    else:
-        for i in g.files:
-            if i.endswith(file_names):
-                full_file_names.append(i)
-
-
-    return full_file_names
+from willitlink.queries.fullnames import get_full_filenames
 
 # archive_names are the files or archives we are checking the leaks of, whereas archive_source_names
 # are files or archives that we want to ignore in the output.

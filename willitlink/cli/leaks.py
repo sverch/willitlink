@@ -42,4 +42,4 @@ def get_unneeded_libdeps(args):
     print('[wil]: total number of archives: ' + str(ct))
 
     with Timer('find unneeded libdeps', args.timers):
-        render(find_extra_archives(g, args.name))
+        render(list(find_extra_archives(g, args.name)))
