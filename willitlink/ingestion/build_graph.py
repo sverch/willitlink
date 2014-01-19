@@ -11,7 +11,9 @@ def generate_edges(build_objects):
     relationships = [
                       'symbol_to_file_sources', 'symbol_to_file_dependencies',
                       'file_to_symbol_definitions', 'file_to_symbol_dependencies',
-                      'target_to_dependencies', 'archives_to_components', 'dependency_to_targets'
+                      'target_to_dependencies', 'archives_to_components', 'dependency_to_targets',
+                      'file_to_header_includes', 'header_to_files_including',
+                      'file_to_source', 'source_to_file'
                     ]
 
     g = MultiGraph(relationships)
@@ -78,6 +80,34 @@ def generate_edges(build_objects):
                     g.add(relationship='symbol_to_file_sources',
                           item=symdef,
                           deps=build_object_name)
+
+            if 'headers' in build_object:
+                for header in build_object['headers']:
+
+                    # Skip this header if it's the empty string
+                    if header == "":
+                        continue
+
+                    # Add an edge to indicate that this file includes this header
+                    g.add(relationship='file_to_header_includes',
+                          item=build_object_name,
+                          deps=header)
+
+                    # Add an edge to indicate that this header is included by this file
+                    g.add(relationship='header_to_files_including',
+                          item=header,
+                          deps=build_object_name)
+
+            if 'source' in build_object:
+                # Add an edge to indicate that this object file is built from this source
+                g.add(relationship='file_to_source',
+                        item=build_object_name,
+                        deps=build_object['source'])
+
+                # Add an edge to indicate that this source file builds this object file
+                g.add(relationship='source_to_file',
+                        item=build_object['source'],
+                        deps=build_object_name)
 
         # Add the file dependency information for this file
         else:

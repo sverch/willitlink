@@ -36,6 +36,10 @@ def get_relationship_types():
              'children':('target_to_dependencies', 'target', 'the build targets that this build target depends on'),
              'parents':('dependency_to_targets', 'dependency', 'the build targets that require this build target'),
              'components':('archives_to_components', 'archive', 'the components of an archive'),
+             'headers':('file_to_header_includes', 'file', 'the headers that are built into an object file'),
+             'objects-including':('header_to_files_including', 'file', 'the objects that include a header'),
+             'source':('file_to_source', 'file', 'the source that an object file is built from'),
+             'object-built':('source_to_file', 'file', 'the headers that are built into an object file'),
     }
 
 def get_list(args):
