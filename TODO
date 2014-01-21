@@ -1,0 +1,6 @@
+- Add support for showing where header files included in the queries.  Already extracting the
+  necessary data from the collect phase.
+
+- Convert from source or header to object file in the necessary queries.  For example, this would
+  mean that a user could use sock.cpp to query for the leaks or interface of sock.o.  Again, the
+  data is already in the graph from the collect phase.
