@@ -10,6 +10,14 @@ from willitlink.queries.fullnames import get_full_filenames
 # seeing that, but we also don't want to add the dependencies of "assert_util.o" to the output
 
 def find_direct_leaks(graph, archive_names, archive_source_names):
+
+    # Convert the arguments to lists if they aren't already
+    if not isinstance(archive_names, list):
+        archive_names = [ archive_names ]
+
+    if not isinstance(archive_source_names, list):
+        archive_source_names = [ archive_source_names ]
+
     # Get all symbols needed by this archive
     symbols_needed = get_symbol_info(graph,
                                      archive_names,
