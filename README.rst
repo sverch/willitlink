@@ -60,9 +60,6 @@ Get circular dependencies for the library.
 Project Motivation
 ------------------
 
-In one phrase, the motivation of this project is to help people with statically
-linked projects get out of dependency hell.
-
 Poorly understood dependencies can have a big impact on the ability of
 engineers to get up to speed on a project.  As more circular dependencies accrue
 on a codebase, it becomes more and more difficult for anyone to have confidence
