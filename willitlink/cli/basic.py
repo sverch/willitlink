@@ -42,7 +42,7 @@ def get_relationship_types():
              'headers':('file_to_header_includes', 'file', 'the headers that are built into an object file'),
              'objects-including':('header_to_files_including', 'file', 'the objects that include a header'),
              'source':('file_to_source', 'file', 'the source that an object file is built from'),
-             'object-built':('source_to_file', 'file', 'the headers that are built into an object file'),
+             'object-built':('source_to_file', 'file', 'the source that is used to build an object file'),
     }
 
 def get_list(args):
