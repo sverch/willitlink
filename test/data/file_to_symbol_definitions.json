@@ -1,0 +1,17 @@
+{
+    "provides_strlen_needs_memcmp.o" : [
+        "strlen"
+    ],
+    "provides_strcpy_needs_memcmp_malloc_free.o" : [
+        "strcpy"
+    ],
+    "provides_malloc_needs_memcmp.o" : [
+        "malloc"
+    ],
+    "provides_free_needs_memcmp.o" : [
+        "free"
+    ],
+    "provides_memcmp.o" : [
+        "memcmp"
+    ]
+}

@@ -1,0 +1,20 @@
+{
+    "program": [
+        "main.o",
+        "libstring.a"
+    ],
+    "libstring.a": [
+        "provides_strlen_needs_memcmp.o",
+        "provides_strcpy_needs_memcmp_malloc_free.o",
+        "libutil.a",
+        "libmemory.a"
+    ],
+    "libmemory.a": [
+        "provides_malloc_needs_memcmp.o",
+        "provides_free_needs_memcmp.o",
+        "libutil.a"
+    ],
+    "libutil.a": [
+        "provides_memcmp.o"
+    ]
+}

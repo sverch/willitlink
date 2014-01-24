@@ -4,9 +4,9 @@ deps.json
 *.pyc
 dep_graph.json
 dep_graph.pkl
-*.json
+/*.json
 #*#
 .#*
 *.pickle
-data/*
+/data/*
 TAGS

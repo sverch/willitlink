@@ -1,0 +1,7 @@
+[
+    "memcmp",
+    "malloc",
+    "free",
+    "strlen",
+    "strcpy"
+]
