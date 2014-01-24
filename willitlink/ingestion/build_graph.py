@@ -7,7 +7,7 @@ import sys
 
 from willitlink.base.graph import MultiGraph
 
-def generate_edges(build_objects):
+def generate_edges(build_objects, client_build=False):
     relationships = [
                       'symbol_to_file_sources', 'symbol_to_file_dependencies',
                       'file_to_symbol_definitions', 'file_to_symbol_dependencies',
@@ -33,6 +33,13 @@ def generate_edges(build_objects):
             # This prints something huge, so maybe it's not what we are expecting
             #print build_object
             sys.exit(-1)
+
+        # Only use object files from the build that the user asked for, whether it's the C++ driver
+        # or the main server
+        if client_build and "client_build" not in build_object_name:
+            continue
+        if not client_build and "client_build" in build_object_name:
+            continue
 
         # Add this file
         g.files.append(build_object_name)
@@ -98,6 +105,10 @@ def generate_edges(build_objects):
                           item=header,
                           deps=build_object_name)
 
+                    # Add this file
+                    if header not in g.files:
+                        g.files.append(header)
+
             if 'source' in build_object:
                 # Add an edge to indicate that this object file is built from this source
                 g.add(relationship='file_to_source',
@@ -108,6 +119,10 @@ def generate_edges(build_objects):
                 g.add(relationship='source_to_file',
                         item=build_object['source'],
                         deps=build_object_name)
+
+                # Add this file
+                if build_object['source'] not in g.files:
+                    g.files.append(build_object['source'])
 
         # Add the file dependency information for this file
         else:
@@ -132,7 +147,7 @@ def generate_edges(build_objects):
             if 'objects' in build_object:
                 for objdep in build_object['objects']:
 
-                    # Add this symbol to the set of all files
+                    # Add this file to the set of all files
                     g.files.append(objdep)
 
                     # Add an edge to indicate that this file provides this symbol

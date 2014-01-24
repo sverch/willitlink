@@ -8,7 +8,7 @@ from willitlink.base.dev_tools import Timer
 
 output_formats = ['json', 'pickle', 'pkl', 'jsn']
 
-def worker(input_tree, dep_info, output_dep_file, mongo_path, timer=False):
+def worker(input_tree, dep_info, output_dep_file, mongo_path, timer=False, client_build=False):
     with Timer('parsing', timer):
         results = parse_tree(input_tree, mongo_path)
 
@@ -16,7 +16,7 @@ def worker(input_tree, dep_info, output_dep_file, mongo_path, timer=False):
         ingest_deps(dep_info, results)
 
     with Timer('generating graph', timer):
-        g = generate_edges(results)
+        g = generate_edges(results, client_build)
 
     with Timer('writing output file', timer):
         g.export(output_dep_file)
@@ -25,6 +25,8 @@ def argparser(cwd, parser):
     parser.add_argument('--timers', '-t', default=False, action='store_true')
     parser.add_argument('--format', '-f', default='json', action='store', choices=output_formats)
     parser.add_argument('--mongo', '-m', default=os.path.join(cwd, '..', 'mongo'))
+    parser.add_argument('--client', '-c', default=False, action='store_true',
+            help='Use the C++ driver build objects instead of the server build objects')
 
     return parser
 
@@ -47,7 +49,7 @@ def command(args):
     else:
         output_fn = output_dep_file + '.' + args.format
 
-    worker(input_tree, dep_info, output_fn, args.mongo, args.timers)
+    worker(input_tree, dep_info, output_fn, args.mongo, args.timers, args.client)
 
 def main():
     parser = argparser(argparse.ArgumentParser("[wil]: willitlink ingestion"))

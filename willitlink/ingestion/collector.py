@@ -4,6 +4,12 @@ from willitlink.base.shell import command
 from willitlink.base.dev_tools import Timer
 
 def data_collector(args):
+
+    # We only care about the directory that the user is referencing, not a single specific file
+    # inside, since we actually output many files
+    if not os.path.isdir(args.data):
+        args.data = os.path.dirname(args.data)
+
     # Output of scons dependency tree
     tree_output = os.path.join(args.data, 'dependency_tree.txt')
 
