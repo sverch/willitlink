@@ -6,7 +6,7 @@ from willitlink.base.graph import MultiGraph, ResultsGraph
 # "build_object_to_type" relationship is the answer.
 from willitlink.ingestion.parse_scons_dependency_tree import detect_type
 
-from willitlink.queries.fullnames import get_full_filenames
+from willitlink.queries.fullnames import expand_file_names
 
 # Get the set of symbols either used or defined at a certain depth
 #
@@ -29,7 +29,7 @@ from willitlink.queries.fullnames import get_full_filenames
 # python2 wil.py tree --leak libmongocommon.a
 def get_symbol_info(g, build_object_names, search_depth=None, symbol_type='dependency'):
 
-    queue = get_full_filenames(g, build_object_names)
+    queue = expand_file_names(g, build_object_names)
 
     current_level_children = len(queue)
     next_level_children = 0

@@ -1,6 +1,6 @@
 from willitlink.base.graph import MultiGraph
 from willitlink.base.dev_tools import Timer
-from willitlink.queries.fullnames import get_full_filenames
+from willitlink.queries.fullnames import expand_file_names
 
 def add_path(result_map, path):
     if len(path) == 0:
@@ -46,7 +46,7 @@ def flip_tree(source_map):
 
 def file_family_tree(g, file_name, depth=None):
     return family_tree_base(graph=g,
-                            relations=get_full_filenames(g, file_name),
+                            relations=expand_file_names(g, file_name),
                             depth=depth,
                             flipped=True)
 

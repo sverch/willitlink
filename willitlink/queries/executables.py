@@ -1,6 +1,6 @@
 from willitlink.base.graph import MultiGraph
 from willitlink.base.dev_tools import Timer
-from willitlink.queries.fullnames import get_full_filenames
+from willitlink.queries.fullnames import expand_file_names
 
 def get_parent_objects(graph, build_object_name):
     """Gets the build objects that "include" the given build object
@@ -41,7 +41,7 @@ def get_parent_objects(graph, build_object_name):
     return parents
 
 def get_executable_list(graph, file_name):
-    file_names = get_full_filenames(graph, file_name)
+    file_names = expand_file_names(graph, file_name)
     checked_file_names = set()
 
     # TODO: don't hard code these executable lists.  Instead, use something like this:

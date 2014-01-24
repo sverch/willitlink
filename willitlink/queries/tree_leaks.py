@@ -1,7 +1,7 @@
 from willitlink.base.graph import MultiGraph, ResultsGraph
 from willitlink.base.dev_tools import Timer
 from willitlink.queries.symbol_diff import get_symbol_info, get_symbol_map
-from willitlink.queries.fullnames import get_full_filenames
+from willitlink.queries.fullnames import expand_file_names
 
 # archive_names are the files or archives we are checking the leaks of, whereas archive_source_names
 # are files or archives that we want to ignore in the output.
@@ -68,11 +68,11 @@ def find_direct_leaks(graph, archive_names, archive_source_names):
 # }]
 def get_paths(g, archive_target, archive_sources):
 
-    queue = get_full_filenames(g, archive_sources)
+    queue = expand_file_names(g, archive_sources)
     traversed = []
     traversed.extend(queue)
 
-    full_archive_targets = get_full_filenames(g, archive_target)
+    full_archive_targets = expand_file_names(g, archive_target)
 
     if len(full_archive_targets) != 1:
         print "Error: did not get exactly one valid archive target"
@@ -193,7 +193,7 @@ def find_libraries_needed_full(graph, archive_names):
         archives_needed.extend(graph.get('dependency_to_targets', object_needed))
 
     results = []
-    for archive_name in get_full_filenames(graph, archive_names):
+    for archive_name in expand_file_names(graph, archive_names):
         results.extend(get_paths(graph, archive_name, list(set(archives_needed))))
 
     return results

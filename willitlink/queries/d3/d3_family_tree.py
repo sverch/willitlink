@@ -3,7 +3,7 @@ from willitlink.base.dev_tools import Timer
 
 from willitlink.ingestion.parse_scons_dependency_tree import detect_type
 from willitlink.queries.d3.utils import dedupe_edges_d3
-from willitlink.queries.fullnames import get_full_filenames
+from willitlink.queries.fullnames import expand_file_names
 
 def file_family_tree_d3(g, file_names, get_parents=True, get_children=True,
                         parent_node=None, child_node=None, is_full_file_name=False):
@@ -16,7 +16,7 @@ def file_family_tree_d3(g, file_names, get_parents=True, get_children=True,
 
     # Resolve the full file names if just the end was specified
     if not is_full_file_name:
-        full_file_names = get_full_filenames(g, file_names)
+        full_file_names = expand_file_names(g, file_names)
     else:
         full_file_names = file_names
 

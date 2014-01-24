@@ -4,7 +4,7 @@ from willitlink.base.graph import MultiGraph
 from willitlink.base.dev_tools import Timer
 
 from willitlink.queries.symbols import locate_symbol
-from willitlink.queries.fullnames import get_full_filenames, get_full_symbol_names
+from willitlink.queries.fullnames import expand_file_names, expand_symbol_names
 
 def get_relationship_node(args):
     g = get_graph(args)
@@ -19,11 +19,11 @@ def get_relationship_node(args):
 
         result = {}
         if get_relationship_types()[rel][1] == 'symbol':
-            full_symbol_names = get_full_symbol_names(g, args.name)
+            full_symbol_names = expand_symbol_names(g, args.name)
             for full_symbol_name in full_symbol_names:
                 result[full_symbol_name] = g.get(get_relationship_types()[rel][0], full_symbol_name)
         else:
-            full_file_names = get_full_filenames(g, args.name)
+            full_file_names = expand_file_names(g, args.name)
             for full_file_name in full_file_names:
                 result[full_file_name] = g.get(get_relationship_types()[rel][0], full_file_name)
         render(result)
