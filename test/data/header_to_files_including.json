@@ -1,3 +1,20 @@
 {
-    "" []
+    "provides_strlen_needs_memcmp.h" : [
+        "main.o"
+    ],
+    "provides_memcmp.h" : [
+        "provides_strlen_needs_memcmp.o",
+        "provides_strcpy_needs_memcmp_malloc_free.o",
+        "provides_malloc_needs_memcmp.o",
+        "provides_free_needs_memcmp.o"
+    ],
+    "provides_free_needs_memcmp.h" : [
+        "provides_strcpy_needs_memcmp_malloc_free.o"
+    ],
+    "provides_malloc_needs_memcmp.h" : [
+        "provides_strcpy_needs_memcmp_malloc_free.o"
+    ],
+    "provides_strcpy_needs_memcmp_malloc_free.h" : [
+        "main.o"
+    ]
 }
