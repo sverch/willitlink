@@ -67,7 +67,7 @@ def main():
 
     get_list_parser = subparsers.add_parser('list', help='a list of all symbols or files.')
     get_list_parser.add_argument('type', choices=['symbols', 'files'], help='kind of object')
-    get_list_parser.add_argument('filter', help='a prefix limiting expression')
+    get_list_parser.add_argument('--filter', help='a prefix limiting expression', default="")
 
     relationship_parser = subparsers.add_parser('basic', help='return basic single relationships')
     relationship_subparsers = relationship_parser.add_subparsers(dest='relationship')
