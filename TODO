@@ -1,6 +1,21 @@
+- Add a --exclude option to every complex query, similar to the -s option for tree --leak.  This
+  would be to not show output for things, but not make them actually part of the query.
+
+  For example: "wil.py interface sock.o --exclude listen.o"
+
 - Add support for showing where header files included in the queries.  Already extracting the
   necessary data from the collect phase.
 
 - Convert from source or header to object file in the necessary queries.  For example, this would
   mean that a user could use sock.cpp to query for the leaks or interface of sock.o.  Again, the
   data is already in the graph from the collect phase.
+
+Ingestion:
+- Do not require the link phase to ingest the symbols, only compilation
+
+- Create a top level command that does both phases of data generation
+
+- Integrate with SCons by reading the "Node" object.  The advantage is two fold:
+  - The "Node" object has more granularity about the dependency type (implicit, explicit, source)
+  - A willitlink plugin can be added to site_scons that handles both LIBDEPS and the other kind of
+    dependencies.  Currently they are separate
