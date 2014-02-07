@@ -19,3 +19,36 @@ Ingestion:
   - The "Node" object has more granularity about the dependency type (implicit, explicit, source)
   - A willitlink plugin can be added to site_scons that handles both LIBDEPS and the other kind of
     dependencies.  Currently they are separate
+
+TODOs from module_data project
+
+- Make script to autumatically diff the current files in the project with willitlink data
+
+- Make modules nested and grouped by high level category
+Example:
+    Query system:
+        Aggregation
+        Core Queries
+        Geo
+        FTS
+    Storage:
+        Journal
+        Data Files
+        mmap library
+
+- Clean up top level overview of the module and provide a way to "drill down"
+  Instead of the "Interface" section containing every symbol, provide a "Used By" section that shows
+  what other modules this system is used by.  Then the drill down can show the symbols that are used
+  by that other module specifically
+
+- Convert the current ".txt" file into something more consistent (maybe markdown) and parse that, or
+  else remove support for that entirely
+
+- Consolidate scripts into a single script that takes various documentation file types and generates
+  the whole project tree
+
+- Remove the local willitlink data when integration is better with the file diff
+
+- Attempt to put the file diff into an SCons plugin, at the same time as the assert code generator
+
+- Remove all the "client_build" stuff from this project, and pin it to a specific version
