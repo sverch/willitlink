@@ -2,7 +2,8 @@ import os
 import yaml
 
 
-# Helpers to generate README.md files from our willitlink data and from our project data.
+# Helpers to generate a tree of github browseable README.md files from our willitlink data and from
+# our project data.
 
 
 # Outputs a README.md file for each system with some useful information
@@ -209,3 +210,35 @@ def dump_module_files(project_directory, result_map):
             module_file.write(yaml.dump(module_object, indent=4, default_flow_style=False))
 
     return result_map
+
+
+def generate_readme_tree():
+
+    # This code is all to dump the janky README files
+    dump_module_files(base_directory, project_data)
+    output_readme_files_for_systems(base_directory, project_data)
+    output_readme_files_for_modules(base_directory, project_data)
+
+def main():
+
+    if len(sys.argv) != 2:
+        print "Usage: <base_data_directory> <dest_directory>"
+        exit(1)
+
+    base_data_directory = sys.argv[1]
+    dest_directory = sys.argv[2]
+
+    # Read the project data
+    project_data = read_project_structure_file(base_data_directory)
+
+    # Add the data from willitlink
+    graph = load_willitlink_graph(base_data_directory)
+    add_willitlink_data(graph, project_data)
+
+    # This code is all to dump the janky README files
+    dump_module_files(dest_directory, project_data)
+    output_readme_files_for_systems(dest_directory, project_data)
+    output_readme_files_for_modules(dest_directory, project_data)
+
+if __name__ == '__main__':
+    main()

@@ -2,7 +2,6 @@ import sys
 
 from get_willitlink_data import add_willitlink_data
 from data_access import read_project_structure_file, load_willitlink_graph, write_processed_project_structure_file, read_processed_project_structure_file
-from readme_generator import output_readme_files_for_systems, output_readme_files_for_modules, dump_module_files
 
 # This is the first interface to the willitlink doc data generator
 # Note: This depends on willitlink-data being in the base directory and containing willitlink data
@@ -47,11 +46,6 @@ def main():
 
     # Dump the processed project data
     write_processed_project_structure_file(base_directory, project_data)
-
-    # This code is all to dump the janky README files
-    dump_module_files(base_directory, project_data)
-    output_readme_files_for_systems(base_directory, project_data)
-    output_readme_files_for_modules(base_directory, project_data)
 
 if __name__ == '__main__':
     main()

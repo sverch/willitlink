@@ -8,12 +8,7 @@ import yaml
 
 from process_module_files import read_modules_file, dump_modules_file
 from get_willitlink_data import load_graph
-
-def get_project_data(base_directory):
-    return read_modules_file(os.path.join(base_directory, "modules.yaml"))
-
-def dump_project_data(base_directory, project_data):
-    return dump_modules_file(base_directory, project_data)
+from data_access import read_project_structure_file, load_willitlink_graph, write_project_structure_file
 
 def get_all_project_files(project_data):
     all_files = []
@@ -64,12 +59,12 @@ def main():
 
     base_directory = sys.argv[1]
 
-    project_data = get_project_data(base_directory)
-    graph = load_graph(base_directory)
+    project_data = read_project_structure_file(base_directory)
+    graph = load_willitlink_graph(base_directory)
 
     diff_files(graph, project_data)
 
-    dump_project_data(base_directory, project_data)
+    write_project_structure_file(base_directory, project_data)
 
 if __name__ == '__main__':
     main()
