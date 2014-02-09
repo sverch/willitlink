@@ -6,8 +6,6 @@ import re
 import json
 import yaml
 
-from process_module_files import read_modules_file, dump_modules_file
-from get_willitlink_data import load_graph
 from data_access import read_project_structure_file, load_willitlink_graph, write_project_structure_file
 
 def get_all_project_files(project_data):
@@ -31,7 +29,7 @@ def diff_files(graph, project_data):
     for file_name in graph.files:
         file_name = str(file_name)
         # If this file is not in our project and it's a source file
-        if file_name not in all_project_files and (file_name.endswith('.cc') or file_name.endswith('.cpp') or file_name.endswith('.h') or file_name.endswith('.hpp')):
+        if file_name not in all_project_files and (file_name.endswith('.cc') or file_name.endswith('.cpp') or file_name.endswith('.h') or file_name.endswith('.hpp') or file_name.endswith('.js') or file_name.endswith('.py')):
             if 'uncategorized_system' not in project_data:
                 project_data['uncategorized_system'] = {}
                 project_data['uncategorized_system']['description'] = 'Files that have not yet been categorized into a particular system'

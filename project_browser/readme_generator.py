@@ -1,5 +1,7 @@
 import os
 import yaml
+import sys
+from process_project_data import generate_willitlink_data, get_processed_project_data
 
 
 # Helpers to generate a tree of github browseable README.md files from our willitlink data and from
@@ -212,33 +214,30 @@ def dump_module_files(project_directory, result_map):
     return result_map
 
 
-def generate_readme_tree():
+def generate_readme_tree(dest_directory, project_data):
 
     # This code is all to dump the janky README files
-    dump_module_files(base_directory, project_data)
-    output_readme_files_for_systems(base_directory, project_data)
-    output_readme_files_for_modules(base_directory, project_data)
+    dump_module_files(dest_directory, project_data)
+    output_readme_files_for_systems(dest_directory, project_data)
+    output_readme_files_for_modules(dest_directory, project_data)
 
 def main():
 
-    if len(sys.argv) != 2:
+    if len(sys.argv) != 3:
         print "Usage: <base_data_directory> <dest_directory>"
         exit(1)
 
     base_data_directory = sys.argv[1]
     dest_directory = sys.argv[2]
 
-    # Read the project data
-    project_data = read_project_structure_file(base_data_directory)
+    # Merge in the willitlink data
+    generate_willitlink_data(base_data_directory)
 
-    # Add the data from willitlink
-    graph = load_willitlink_graph(base_data_directory)
-    add_willitlink_data(graph, project_data)
+    # Get and print the merged data
+    project_data = get_processed_project_data(base_data_directory)
 
     # This code is all to dump the janky README files
-    dump_module_files(dest_directory, project_data)
-    output_readme_files_for_systems(dest_directory, project_data)
-    output_readme_files_for_modules(dest_directory, project_data)
+    generate_readme_tree(dest_directory, project_data)
 
 if __name__ == '__main__':
     main()

@@ -10,11 +10,6 @@ import json
 import os
 import re
 
-from data_access import read_project_structure_file, load_willitlink_graph, write_processed_project_structure_file
-from readme_generator import output_readme_files_for_systems, output_readme_files_for_modules
-
-import willitlink
-
 def dbgprint(my_object):
     print json.dumps(my_object, indent=4)
 
@@ -92,24 +87,3 @@ def add_willitlink_data(graph, project_data):
     add_interface_data(graph, project_data)
     add_leak_data(graph, project_data)
     add_executable_data(graph, project_data)
-
-def main():
-
-    if len(sys.argv) != 2:
-        print "Usage: <base_directory>"
-        exit(1)
-
-    base_directory = sys.argv[1]
-
-    project_data = read_project_structure_file(base_directory)
-    graph = load_willitlink_graph(base_directory)
-
-    add_willitlink_data(graph, project_data)
-
-    write_processed_project_structure_file(base_directory, project_data)
-    output_readme_files_for_systems(base_directory, project_data)
-    output_readme_files_for_modules(base_directory, project_data)
-
-if __name__ == '__main__':
-    main()
-
