@@ -10,26 +10,26 @@ from process_project_data import generate_willitlink_data, get_processed_project
 
 # Outputs a README.md file for each system with some useful information
 def output_readme_files_for_systems(project_directory, project_data):
-    for system_name in project_data.keys():
-        system_directory = os.path.join(project_directory, system_name)
+    for system_object in project_data:
+        system_directory = os.path.join(project_directory, system_object['system_name'])
 
         top_level_readme = open(os.path.join(system_directory, "README.md"), 'w')
         top_level_readme.truncate()
 
         # Add the header for this system
-        markdown_sanitized_system_name = system_name.replace("_", "\\_")
-        top_level_readme.write("# " + markdown_sanitized_system_name + "\n\n")
+        markdown_sanitized_system_object = system_object["system_name"].replace("_", "\\_")
+        top_level_readme.write("# " + markdown_sanitized_system_object + "\n\n")
 
         # TODO: add the description for this system
 
         # Output module information for this system
         top_level_readme.write("## Modules\n\n")
-        for module_object in project_data[system_name]['modules']:
-            module_path = os.path.join(system_directory, module_object['name'])
+        for module_object in system_object['system_modules']:
+            module_path = os.path.join(system_directory, module_object['module_name'])
             if os.path.isdir(module_path):
 
                 # Sanitize the module name for this sytem readme
-                markdown_sanitized_module_name = module_object['name'].replace("_", "\\_")
+                markdown_sanitized_module_name = module_object['module_name'].replace("_", "\\_")
 
                 # Heading for this module
                 top_level_readme.write("### " + markdown_sanitized_module_name + "\n\n")
@@ -44,17 +44,17 @@ def output_readme_files_for_systems(project_directory, project_data):
 # Builds a map of source files to modules
 def build_file_to_module_map(project_data):
     file_to_module = {}
-    for system_name in project_data.keys():
-        for module_object in project_data[system_name]['modules']:
+    for system_object in project_data:
+        for module_object in system_object['system_modules']:
             for module_file in module_object['files_flat']:
-                file_to_module[module_file] = module_object['name']
+                file_to_module[module_file] = module_object['module_name']
     return file_to_module
 
 # Builds a map of source files to executables
 def build_file_to_executables_map(project_data):
     file_to_executables = {}
-    for system_name in project_data.keys():
-        for module_object in project_data[system_name]['modules']:
+    for system_object in project_data:
+        for module_object in system_object['system_modules']:
             for file_with_exec in module_object['files_with_exec']:
                 if (file_with_exec["name"] is not None):
                     file_to_executables[file_with_exec['name']] = file_with_exec['execs']
@@ -63,8 +63,8 @@ def build_file_to_executables_map(project_data):
 # Builds a map of source files to interface
 def build_file_to_interface_map(project_data):
     file_to_interface = {}
-    for system_name in project_data.keys():
-        for module_object in project_data[system_name]['modules']:
+    for system_object in project_data:
+        for module_object in system_object['system_modules']:
             for interface_object in module_object['interface']:
                 file_name = interface_object['object']
                 if file_name not in file_to_interface:
@@ -75,8 +75,8 @@ def build_file_to_interface_map(project_data):
 # Builds a map of source files to dependencies
 def build_file_to_dependencies_map(project_data):
     file_to_dependencies = {}
-    for system_name in project_data.keys():
-        for module_object in project_data[system_name]['modules']:
+    for system_object in project_data:
+        for module_object in system_object['system_modules']:
             for dependencies_object in module_object['leaks']:
                 file_name = dependencies_object['object']
                 if file_name not in file_to_dependencies:
@@ -120,33 +120,33 @@ def output_readme_files_for_modules(project_directory, project_data):
     file_to_dependencies = build_file_to_dependencies_map(project_data)
     file_to_module = build_file_to_module_map(project_data)
 
-    for system_name in project_data.keys():
-        modules_directory = os.path.join(project_directory, system_name)
+    for system_object in project_data:
+        modules_directory = os.path.join(project_directory, system_object['system_name'])
 
-        for module_object in project_data[system_name]['modules']:
-            module_path = os.path.join(modules_directory, module_object['name'])
+        for module_object in system_object['system_modules']:
+            module_path = os.path.join(modules_directory, module_object['module_name'])
             if os.path.isdir(module_path):
 
                 f = open(os.path.join(module_path, "README.md"), 'w')
                 f.truncate()
                 # First, the title of the module
-                f.write("# " + module_object['name'].replace("_", "\\_") + "\n\n")
+                f.write("# " + module_object['module_name'].replace("_", "\\_") + "\n\n")
 
                 f.write("# Module Groups\n")
 
                 # Do the following analysis for each group separately
-                for module_group in module_object['groups']:
+                for module_group in module_object['module_groups']:
 
                     # Horizontal rule
                     f.write("\n-------------\n\n")
 
                     # Comments for this group of files
                     f.write("# Group Description\n")
-                    f.write(module_group["comments"].replace("#", " ").replace("_", "\\_").lstrip() + "\n\n")
+                    f.write(module_group["group_description"].replace("#", " ").replace("_", "\\_").lstrip() + "\n\n")
 
                     # Files in this module group
                     f.write("# Files\n")
-                    for file_name in module_group["files"]:
+                    for file_name in module_group["group_files"]:
                         f.write("- " + file_name.replace("_", "\\_"))
                         if file_name in file_to_executables:
                             file_to_executables[file_name]
@@ -157,7 +157,7 @@ def output_readme_files_for_modules(project_directory, project_data):
                     # Interface for this module group (symbols used from outside this module)
                     f.write("\n# Interface\n")
                     something_in_interface = False
-                    for file_name in module_group["files"]:
+                    for file_name in module_group["group_files"]:
                         if file_name in file_to_interface:
                             something_in_interface = True
                             f.write("\n### " + file_name.replace("_", "\\_") + "\n")
@@ -178,7 +178,7 @@ def output_readme_files_for_modules(project_directory, project_data):
                     # Dependencies for this module group (symbols used that are defined outside this module)
                     f.write("\n# Dependencies\n")
                     something_in_dependencies = False
-                    for file_name in module_group["files"]:
+                    for file_name in module_group["group_files"]:
                         if file_name in file_to_dependencies:
                             something_in_dependencies = True
                             f.write("\n### " + file_name.replace("_", "\\_") + "\n")
@@ -198,20 +198,20 @@ def output_readme_files_for_modules(project_directory, project_data):
 
 
 
-def dump_module_files(project_directory, result_map):
+def dump_module_files(project_directory, project_data):
 
-    for system_name in result_map.keys():
-        system_directory = os.path.join(project_directory, system_name)
+    for system_object in project_data:
+        system_directory = os.path.join(project_directory, system_object['system_name'])
         if not os.path.exists(system_directory):
             os.mkdir(system_directory)
-        for module_object in result_map[system_name]['modules']:
-            module_directory = os.path.join(system_directory, module_object['name'])
+        for module_object in system_object['system_modules']:
+            module_directory = os.path.join(system_directory, module_object['module_name'])
             if not os.path.exists(module_directory):
                 os.mkdir(module_directory)
             module_file = open(os.path.join(module_directory, 'module.yaml'), 'w')
             module_file.write(yaml.dump(module_object, indent=4, default_flow_style=False))
 
-    return result_map
+    return project_data
 
 
 def generate_readme_tree(dest_directory, project_data):
