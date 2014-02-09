@@ -10,22 +10,10 @@ import json
 import os
 import re
 
+from data_manipulation import flat_module_files
+
 def dbgprint(my_object):
     print json.dumps(my_object, indent=4)
-
-# The modules have files listed in "groups".  This returns a list of all files for the module.
-def get_module_files(single_module_data):
-    module_files = []
-    for module_group in single_module_data['module_groups']:
-        module_files.extend(module_group['group_files'])
-    return module_files
-
-# The modules have files listed in "groups".  This adds a 'files_flat' entry to each module that has
-# a list of all files for the module.
-def add_files_list(project_data):
-    for system_object in project_data:
-        for module_object in system_object['system_modules']:
-            module_object['files_flat'] = get_module_files(module_object)
 
 # The following four *_file_to_*_file(s) functions convert to/from *.o and *.cpp files.
 # TODO:  If we use the "client_build" and the server build, this function will return more than one
@@ -60,7 +48,7 @@ def object_files_to_source_files(graph, object_files):
 def add_interface_data(graph, project_data):
     for system_object in project_data:
         for module_object in system_object['system_modules']:
-            module_object['interface'] = find_interface(graph, source_files_to_object_files(graph, module_object['files_flat']))
+            module_object['interface'] = find_interface(graph, source_files_to_object_files(graph, flat_module_files(module_object)))
             for interface_object in module_object['interface']:
                 interface_object['object'] = object_files_to_source_files(graph, [interface_object['object']])[0]
                 interface_object['used_by'] = object_files_to_source_files(graph, interface_object['used_by'])
@@ -68,7 +56,7 @@ def add_interface_data(graph, project_data):
 def add_leak_data(graph, project_data):
     for system_object in project_data:
         for module_object in system_object['system_modules']:
-            module_object['leaks'] = resolve_leak_info(graph, source_files_to_object_files(graph, module_object['files_flat']), 1, None, [])
+            module_object['leaks'] = resolve_leak_info(graph, source_files_to_object_files(graph, flat_module_files(module_object)), 1, None, [])
             for leak_object in module_object['leaks']:
                 leak_object['object'] = object_files_to_source_files(graph, [leak_object['object']])[0]
                 leak_object['sources'] = list(set(object_files_to_source_files(graph, leak_object['sources'].keys())))
@@ -77,13 +65,12 @@ def add_executable_data(graph, project_data):
     for system_object in project_data:
         for module_object in system_object['system_modules']:
             module_object['files_with_exec'] = []
-            for source_file in module_object['files_flat']:
+            for source_file in flat_module_files(module_object):
                 executable_list = []
                 executable_list = get_executable_list(graph, source_file)
                 module_object['files_with_exec'].append({ "name" : source_file, "execs" : executable_list })
 
 def add_willitlink_data(graph, project_data):
-    add_files_list(project_data)
     add_interface_data(graph, project_data)
     add_leak_data(graph, project_data)
     add_executable_data(graph, project_data)

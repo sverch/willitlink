@@ -7,14 +7,7 @@ import json
 import yaml
 
 from data_access import read_project_structure_file, load_willitlink_graph, write_project_structure_file
-
-def get_all_project_files(project_data):
-    all_files = []
-    for system_object in project_data:
-        for module_object in system_object['system_modules']:
-            for module_group in module_object['groups']:
-                all_files.extend(module_group['files'])
-    return all_files
+from data_manipulation import flat_project_files
 
 def diff_files(graph, project_data):
     # First remove things from our project data that we no longer have
@@ -25,7 +18,7 @@ def diff_files(graph, project_data):
 
     # Now add things to "uncategorized_system/uncategorized_module" if they aren't in our project,
     # but are in the file list we are comparing against
-    all_project_files = get_all_project_files(project_data)
+    all_project_files = flat_project_files(project_data)
 
     # TODO: Actually preserve order of the whole thing by loading as OrderedDict
     uncategorized_system_object = OrderedDict()

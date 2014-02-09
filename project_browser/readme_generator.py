@@ -2,6 +2,7 @@ import os
 import yaml
 import sys
 from process_project_data import generate_willitlink_data, get_processed_project_data
+from data_manipulation import flat_module_files
 
 
 # Helpers to generate a tree of github browseable README.md files from our willitlink data and from
@@ -35,7 +36,7 @@ def output_readme_files_for_systems(project_directory, project_data):
                 top_level_readme.write("### " + markdown_sanitized_module_name + "\n\n")
 
                 # Files in this module
-                for source_file in module_object['files_flat']:
+                for source_file in flat_module_files(module_object):
                     markdown_sanitized_source_file = source_file.replace("_", "\\_")
                     top_level_readme.write("- [" + markdown_sanitized_source_file + "](" + markdown_sanitized_module_name + ")" + "\n")
 
@@ -46,7 +47,7 @@ def build_file_to_module_map(project_data):
     file_to_module = {}
     for system_object in project_data:
         for module_object in system_object['system_modules']:
-            for module_file in module_object['files_flat']:
+            for module_file in flat_module_files(module_object):
                 file_to_module[module_file] = module_object['module_name']
     return file_to_module
 

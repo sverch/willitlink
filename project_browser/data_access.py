@@ -95,7 +95,6 @@ def validate_project_structure_file_schema(project_data_directory):
 
 
 
-# TODO: Don't convert to the old schema
 def read_project_structure_file(project_data_directory):
     project_structure_data = read_yaml_file(os.path.join(project_data_directory, PROJECT_STRUCTURE_FILENAME))
     if is_new_schema(project_structure_data):
