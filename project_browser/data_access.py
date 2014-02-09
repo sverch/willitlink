@@ -77,10 +77,13 @@ class Loader_map_as_anydict( object):
 
 # This allows us to dump an OrderedDict with yaml.dump
 from collections import OrderedDict
+class OrderedDictLoader(Loader_map_as_anydict, yaml.Loader):
+    anydict = OrderedDict
+OrderedDictLoader.load_map_as_anydict()
 dump_anydict_as_map(OrderedDict)
 
 def read_yaml_file(filename):
-    return yaml.load(open(filename))
+    return yaml.load(open(filename), Loader=OrderedDictLoader)
 
 def write_yaml_file(filename, output_dict):
     with open(filename, 'w') as f:
