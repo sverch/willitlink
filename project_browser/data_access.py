@@ -91,6 +91,11 @@ def write_yaml_file(filename, output_dict):
 
 
 
+def validate_processed_project_structure_file_schema(project_data_directory):
+    project_structure = read_yaml_file(os.path.join(project_data_directory, PROCESSED_PROJECT_STRUCTURE_FILENAME))
+    project_schema = read_yaml_file(schema_file_name)
+    return validate(project_structure, project_schema)
+
 def validate_project_structure_file_schema(project_data_directory):
     project_structure = read_yaml_file(os.path.join(project_data_directory, PROJECT_STRUCTURE_FILENAME))
     project_schema = read_yaml_file(schema_file_name)

@@ -11,6 +11,7 @@ import os
 import re
 
 from data_manipulation import flat_module_files
+from collections import OrderedDict
 
 def dbgprint(my_object):
     print json.dumps(my_object, indent=4)
@@ -45,32 +46,40 @@ def object_files_to_source_files(graph, object_files):
         source_files.extend(object_file_to_source_file(graph, object_file))
     return source_files
 
-def add_interface_data(graph, project_data):
-    for system_object in project_data:
-        for module_object in system_object['system_modules']:
-            module_object['interface'] = find_interface(graph, source_files_to_object_files(graph, flat_module_files(module_object)))
-            for interface_object in module_object['interface']:
-                interface_object['object'] = object_files_to_source_files(graph, [interface_object['object']])[0]
-                interface_object['used_by'] = object_files_to_source_files(graph, interface_object['used_by'])
+def get_file_executables(graph, source_file):
+    # XXX: I don't know why I have to convert everything back to strings.  It gets output as a
+    # python unicode type in the result map if I don't do this.
+    return [ str(executable) for executable in get_executable_list(graph, source_file) ]
 
-def add_leak_data(graph, project_data):
-    for system_object in project_data:
-        for module_object in system_object['system_modules']:
-            module_object['leaks'] = resolve_leak_info(graph, source_files_to_object_files(graph, flat_module_files(module_object)), 1, None, [])
-            for leak_object in module_object['leaks']:
-                leak_object['object'] = object_files_to_source_files(graph, [leak_object['object']])[0]
-                leak_object['sources'] = list(set(object_files_to_source_files(graph, leak_object['sources'].keys())))
+def get_file_interface(graph, source_file):
+    file_interface = find_interface(graph, source_file_to_object_file(graph, source_file))
+    file_interface_result = []
+    for file_interface_object in file_interface:
+        file_interface_result_object = OrderedDict()
+        file_interface_result_object['symbol_name'] = str(file_interface_object['symbol'])
+        file_interface_result_object['symbol_uses'] = [ str(use_file) for use_file in object_files_to_source_files(graph, file_interface_object['used_by']) ]
+        file_interface_result.append(file_interface_result_object)
+    return file_interface_result
 
-def add_executable_data(graph, project_data):
-    for system_object in project_data:
-        for module_object in system_object['system_modules']:
-            module_object['files_with_exec'] = []
-            for source_file in flat_module_files(module_object):
-                executable_list = []
-                executable_list = get_executable_list(graph, source_file)
-                module_object['files_with_exec'].append({ "name" : source_file, "execs" : executable_list })
+def get_file_dependencies(graph, source_file):
+    file_dependencies = resolve_leak_info(graph, source_file_to_object_file(graph, source_file), 1, None, [])
+    file_dependencies_result = []
+    for file_dependencies_object in file_dependencies:
+        file_dependencies_result_object = OrderedDict()
+        file_dependencies_result_object['symbol_name'] = str(file_dependencies_object['symbol'])
+        file_dependencies_result_object['symbol_sources'] = [ str(source_file) for source_file in list(set(object_files_to_source_files(graph, file_dependencies_object['sources'].keys()))) ]
+        file_dependencies_result.append(file_dependencies_result_object)
+    return file_dependencies_result
 
 def add_willitlink_data(graph, project_data):
-    add_interface_data(graph, project_data)
-    add_leak_data(graph, project_data)
-    add_executable_data(graph, project_data)
+    for system_object in project_data:
+        for module_object in system_object['system_modules']:
+            for group_object in module_object['module_groups']:
+                group_object['group_generated_data'] = []
+                for file_name in group_object['group_files']:
+                    file_object = OrderedDict()
+                    file_object['file_name'] = file_name
+                    file_object['file_executables'] = get_file_executables(graph, file_name)
+                    file_object['file_interface'] = get_file_interface(graph, file_name)
+                    file_object['file_dependencies'] = get_file_dependencies(graph, file_name)
+                    group_object['group_generated_data'].append(file_object)

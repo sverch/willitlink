@@ -51,39 +51,51 @@ def build_file_to_module_map(project_data):
                 file_to_module[module_file] = module_object['module_name']
     return file_to_module
 
-# Builds a map of source files to executables
-def build_file_to_executables_map(project_data):
-    file_to_executables = {}
-    for system_object in project_data:
-        for module_object in system_object['system_modules']:
-            for file_with_exec in module_object['files_with_exec']:
-                if (file_with_exec["name"] is not None):
-                    file_to_executables[file_with_exec['name']] = file_with_exec['execs']
-    return file_to_executables
+def filter_own_module_interface(project_data, file_objects, self_name):
+    file_to_module = build_file_to_module_map(project_data)
+    result_file_objects = []
+    for file_object in file_objects:
+        new_interface_objects = []
+        for interface_object in file_object['file_interface']:
+            new_symbol_sources = []
+            new_interface_object = {}
+            for use_file in interface_object['symbol_uses']:
+                if file_to_module[use_file] != self_name:
+                    new_symbol_sources.append(use_file)
 
-# Builds a map of source files to interface
-def build_file_to_interface_map(project_data):
-    file_to_interface = {}
-    for system_object in project_data:
-        for module_object in system_object['system_modules']:
-            for interface_object in module_object['interface']:
-                file_name = interface_object['object']
-                if file_name not in file_to_interface:
-                    file_to_interface[file_name] = []
-                file_to_interface[file_name].append(interface_object)
-    return file_to_interface
+            if len(new_symbol_sources) > 0:
+                new_interface_object['symbol_name'] = interface_object['symbol_name']
+                new_interface_object['symbol_uses'] = new_symbol_sources
+                new_interface_objects.append(new_interface_object)
 
-# Builds a map of source files to dependencies
-def build_file_to_dependencies_map(project_data):
-    file_to_dependencies = {}
-    for system_object in project_data:
-        for module_object in system_object['system_modules']:
-            for dependencies_object in module_object['leaks']:
-                file_name = dependencies_object['object']
-                if file_name not in file_to_dependencies:
-                    file_to_dependencies[file_name] = []
-                file_to_dependencies[file_name].append(dependencies_object)
-    return file_to_dependencies
+        if len(new_interface_objects) > 0:
+            file_object['file_interface'] = new_interface_objects
+            result_file_objects.append(file_object)
+
+    return result_file_objects
+
+def filter_own_module_dependencies(project_data, file_objects, self_name):
+    file_to_module = build_file_to_module_map(project_data)
+    result_file_objects = []
+    for file_object in file_objects:
+        new_dependency_objects = []
+        for dependency_object in file_object['file_dependencies']:
+            new_symbol_sources = []
+            new_dependency_object = {}
+            for source_file in dependency_object['symbol_sources']:
+                if file_to_module[source_file] != self_name:
+                    new_symbol_sources.append(source_file)
+
+            if len(new_symbol_sources) > 0:
+                new_dependency_object['symbol_name'] = dependency_object['symbol_name']
+                new_dependency_object['symbol_sources'] = new_symbol_sources
+                new_dependency_objects.append(new_dependency_object)
+
+        if len(new_dependency_objects) > 0:
+            file_object['file_dependencies'] = new_dependency_objects
+            result_file_objects.append(file_object)
+
+    return result_file_objects
 
 # Simplifies the list of executables into something more readable.
 #
@@ -116,9 +128,6 @@ def get_exec_digest(exec_list):
 
 # Outputs a README.md file for each module with some useful information
 def output_readme_files_for_modules(project_directory, project_data):
-    file_to_executables = build_file_to_executables_map(project_data)
-    file_to_interface = build_file_to_interface_map(project_data)
-    file_to_dependencies = build_file_to_dependencies_map(project_data)
     file_to_module = build_file_to_module_map(project_data)
 
     for system_object in project_data:
@@ -147,28 +156,25 @@ def output_readme_files_for_modules(project_directory, project_data):
 
                     # Files in this module group
                     f.write("# Files\n")
-                    for file_name in module_group["group_files"]:
-                        f.write("- " + file_name.replace("_", "\\_"))
-                        if file_name in file_to_executables:
-                            file_to_executables[file_name]
-                            f.write("   (" + ", ".join(get_exec_digest(file_to_executables[file_name])) + ")\n")
-                        else:
-                            f.write("\n")
+                    for file_object in module_group["group_generated_data"]:
+                        f.write("- " + file_object['file_name'].replace("_", "\\_"))
+                        f.write("   (" + ", ".join(get_exec_digest(file_object['file_executables'])) + ")\n")
 
                     # Interface for this module group (symbols used from outside this module)
                     f.write("\n# Interface\n")
                     something_in_interface = False
-                    for file_name in module_group["group_files"]:
-                        if file_name in file_to_interface:
+                    file_interface_external = filter_own_module_interface(project_data, module_group["group_generated_data"], module_object['module_name'])
+                    for file_object in file_interface_external:
+                        if len(file_object['file_interface']) > 0:
                             something_in_interface = True
-                            f.write("\n### " + file_name.replace("_", "\\_") + "\n")
-                            for interface_object in file_to_interface[file_name]:
+                            f.write("\n### " + file_object['file_name'].replace("_", "\\_") + "\n")
+                            for interface_object in file_object['file_interface']:
                                 f.write("\n<div></div>\n") # This is a weird markdown idiosyncrasy to
                                                         # make sure the indented block with the symbol
                                                         # is interpreted as a literal block
-                                f.write("\n    " + interface_object['symbol'] + "\n\n")
+                                f.write("\n    " + interface_object['symbol_name'] + "\n\n")
                                 f.write("- Used By:\n\n")
-                                for file_using in interface_object['used_by']:
+                                for file_using in interface_object['symbol_uses']:
                                     if file_using in file_to_module:
                                         f.write("    - [" + file_using.replace("_", "\\_") + "](../" + file_to_module[file_using].replace("_", "\\_") + ")" + "\n")
                                     else:
@@ -179,17 +185,18 @@ def output_readme_files_for_modules(project_directory, project_data):
                     # Dependencies for this module group (symbols used that are defined outside this module)
                     f.write("\n# Dependencies\n")
                     something_in_dependencies = False
-                    for file_name in module_group["group_files"]:
-                        if file_name in file_to_dependencies:
+                    file_dependencies_external = filter_own_module_dependencies(project_data, module_group["group_generated_data"], module_object['module_name'])
+                    for file_object in file_dependencies_external:
+                        if len(file_object['file_dependencies']) > 0:
                             something_in_dependencies = True
-                            f.write("\n### " + file_name.replace("_", "\\_") + "\n")
-                            for dependencies_object in file_to_dependencies[file_name]:
+                            f.write("\n### " + file_object['file_name'].replace("_", "\\_") + "\n")
+                            for dependencies_object in file_object['file_dependencies']:
                                 f.write("\n<div></div>\n") # This is a weird markdown idiosyncrasy to
                                                         # make sure the indented block with the symbol
                                                         # is interpreted as a literal block
-                                f.write("\n    " + dependencies_object['symbol'] + "\n\n")
+                                f.write("\n    " + dependencies_object['symbol_name'] + "\n\n")
                                 f.write("- Provided By:\n\n")
-                                for file_providing in dependencies_object['sources']:
+                                for file_providing in dependencies_object['symbol_sources']:
                                     if file_providing in file_to_module:
                                         f.write("    - [" + file_providing.replace("_", "\\_") + "](../" + file_to_module[file_providing].replace("_", "\\_") + ")" + "\n")
                                     else:
