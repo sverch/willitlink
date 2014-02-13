@@ -51,6 +51,14 @@ def get_file_executables(graph, source_file):
     # python unicode type in the result map if I don't do this.
     return [ str(executable) for executable in get_executable_list(graph, source_file) ]
 
+def get_file_headers(graph, source_file):
+    # XXX: When I figure out how to nicely handle the whole "duplicate object files per source file"
+    # thing, this should not return a list
+    object_files = source_file_to_object_file(graph, source_file)
+    if (len(object_files) < 1):
+        return []
+    return [ str(header_include) for header_include in graph.get('file_to_header_includes', object_files[0]) ]
+
 def get_file_interface(graph, source_file):
     file_interface = find_interface(graph, source_file_to_object_file(graph, source_file))
     file_interface_result = []
@@ -80,6 +88,7 @@ def add_willitlink_data(graph, project_data):
                     file_object = OrderedDict()
                     file_object['file_name'] = file_name
                     file_object['file_executables'] = get_file_executables(graph, file_name)
+                    file_object['file_headers'] = get_file_headers(graph, file_name)
                     file_object['file_interface'] = get_file_interface(graph, file_name)
                     file_object['file_dependencies'] = get_file_dependencies(graph, file_name)
                     group_object['group_generated_data'].append(file_object)

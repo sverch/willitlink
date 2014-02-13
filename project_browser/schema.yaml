@@ -136,6 +136,7 @@ definitions:
         required:
         - file_name
         - file_executables
+        - file_headers
         - file_interface
         - file_dependencies
         additionalProperties: false
@@ -147,6 +148,13 @@ definitions:
 
             # Executables this file gets built into
             file_executables:
+                type: array
+
+                items:
+                    type: string
+
+            # Headers that this file depends on, not just directly included
+            file_headers:
                 type: array
 
                 items:
