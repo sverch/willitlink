@@ -197,7 +197,7 @@ def output_readme_files_for_modules(project_directory, project_data):
                                 group_interface_file.write("- Used By:\n\n")
                                 for file_using in interface_object['symbol_uses']:
                                     if file_using in file_to_module:
-                                        group_interface_file.write("    - [" + file_using.replace("_", "\\_") + "](../" + file_to_module[file_using].replace("_", "\\_") + ")" + "\n")
+                                        group_interface_file.write("    - [" + file_using.replace("_", "\\_") + "](../../../" + file_to_module[file_using].replace("_", "\\_") + ")" + "\n")
                                     else:
                                         group_interface_file.write("    - " + file_using.replace("_", "\\_") + "\n")
                     if not something_in_interface:
@@ -236,7 +236,7 @@ def output_readme_files_for_modules(project_directory, project_data):
                                 group_dependencies_file.write("- Provided By:\n\n")
                                 for file_providing in dependencies_object['symbol_sources']:
                                     if file_providing in file_to_module:
-                                        group_dependencies_file.write("    - [" + file_providing.replace("_", "\\_") + "](../" + file_to_module[file_providing].replace("_", "\\_") + ")" + "\n")
+                                        group_dependencies_file.write("    - [" + file_providing.replace("_", "\\_") + "](../../../" + file_to_module[file_providing].replace("_", "\\_") + ")" + "\n")
                                     else:
                                         group_dependencies_file.write("    - " + file_providing.replace("_", "\\_") + "\n")
                     if not something_in_dependencies:
