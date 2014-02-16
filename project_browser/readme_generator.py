@@ -137,74 +137,112 @@ def output_readme_files_for_modules(project_directory, project_data):
             module_path = os.path.join(modules_directory, module_object['module_name'])
             if os.path.isdir(module_path):
 
-                f = open(os.path.join(module_path, "README.md"), 'w')
-                f.truncate()
+                module_readme = open(os.path.join(module_path, "README.md"), 'w')
+                module_readme.truncate()
                 # First, the title of the module
-                f.write("# " + module_object['module_name'].replace("_", "\\_") + "\n\n")
+                module_readme.write("# " + module_object['module_name'].replace("_", "\\_") + "\n\n")
 
-                f.write("# Module Groups\n")
+                module_readme.write("# Module Groups\n")
+
+                group_number = 0
 
                 # Do the following analysis for each group separately
                 for module_group in module_object['module_groups']:
 
                     # Horizontal rule
-                    f.write("\n-------------\n\n")
+                    module_readme.write("\n-------------\n\n")
 
                     # Comments for this group of files
-                    f.write("# Group Description\n")
-                    f.write(module_group["group_description"].replace("#", " ").replace("_", "\\_").lstrip() + "\n\n")
+                    # TODO: Actually use the group title once everything has one
+                    module_readme.write("# Group Description\n")
+                    module_readme.write(module_group["group_description"].replace("#", " ").replace("_", "\\_").lstrip() + "\n\n")
 
                     # Files in this module group
-                    f.write("# Files\n")
+                    module_readme.write("## Files\n")
                     for file_object in module_group["group_generated_data"]:
-                        f.write("- " + file_object['file_name'].replace("_", "\\_"))
-                        f.write("   (" + ", ".join(get_exec_digest(file_object['file_executables'])) + ")\n")
+                        module_readme.write("- " + file_object['file_name'].replace("_", "\\_"))
+                        module_readme.write("   (" + ", ".join(get_exec_digest(file_object['file_executables'])) + ")\n")
 
                     # Interface for this module group (symbols used from outside this module)
-                    f.write("\n# Interface\n")
+                    # 1.  Make sure the "interface" directory exists
+                    interface_dir = os.path.join(module_path, "interface")
+                    if not os.path.exists(interface_dir):
+                        os.mkdir(interface_dir)
+
+                    # 2.  Make sure the "group interface" directory exists
+                    # NOTE: Since not all groups have a name, we have no choice but to just number
+                    # the groups.
+                    group_interface_dir = os.path.join(interface_dir, str(group_number))
+                    if not os.path.exists(group_interface_dir):
+                        os.mkdir(group_interface_dir)
+
+                    group_interface_file = open(os.path.join(group_interface_dir, "README.md"), "w")
+
+                    # 3.  Link to the group directory which will have the interface README
+                    module_readme.write("\n## [Interface](" + os.path.join("interface", str(group_number)) + ")\n")
+
+                    # 4.  Write out the interface README
+                    group_interface_file.write("\n# Interface\n")
                     something_in_interface = False
                     file_interface_external = filter_own_module_interface(project_data, module_group["group_generated_data"], module_object['module_name'])
                     for file_object in file_interface_external:
                         if len(file_object['file_interface']) > 0:
                             something_in_interface = True
-                            f.write("\n### " + file_object['file_name'].replace("_", "\\_") + "\n")
+                            group_interface_file.write("\n### " + file_object['file_name'].replace("_", "\\_") + "\n")
                             for interface_object in file_object['file_interface']:
-                                f.write("\n<div></div>\n") # This is a weird markdown idiosyncrasy to
+                                group_interface_file.write("\n<div></div>\n") # This is a weird markdown idiosyncrasy to
                                                         # make sure the indented block with the symbol
                                                         # is interpreted as a literal block
-                                f.write("\n    " + interface_object['symbol_name'] + "\n\n")
-                                f.write("- Used By:\n\n")
+                                group_interface_file.write("\n    " + interface_object['symbol_name'] + "\n\n")
+                                group_interface_file.write("- Used By:\n\n")
                                 for file_using in interface_object['symbol_uses']:
                                     if file_using in file_to_module:
-                                        f.write("    - [" + file_using.replace("_", "\\_") + "](../" + file_to_module[file_using].replace("_", "\\_") + ")" + "\n")
+                                        group_interface_file.write("    - [" + file_using.replace("_", "\\_") + "](../" + file_to_module[file_using].replace("_", "\\_") + ")" + "\n")
                                     else:
-                                        f.write("    - " + file_using.replace("_", "\\_") + "\n")
+                                        group_interface_file.write("    - " + file_using.replace("_", "\\_") + "\n")
                     if not something_in_interface:
-                        f.write("(not used outside this module)\n")
+                        group_interface_file.write("(not used outside this module)\n")
 
                     # Dependencies for this module group (symbols used that are defined outside this module)
-                    f.write("\n# Dependencies\n")
+                    # 1.  Make sure the "dependencies" directory exists
+                    dependencies_dir = os.path.join(module_path, "dependencies")
+                    if not os.path.exists(dependencies_dir):
+                        os.mkdir(dependencies_dir)
+
+                    # 2.  Make sure the "group dependencies" directory exists
+                    # NOTE: Since not all groups have a name, we have no choice but to just number
+                    # the groups.
+                    group_dependencies_dir = os.path.join(dependencies_dir, str(group_number))
+                    if not os.path.exists(group_dependencies_dir):
+                        os.mkdir(group_dependencies_dir)
+
+                    group_dependencies_file = open(os.path.join(group_dependencies_dir, "README.md"), "w")
+
+                    # 3.  Link to the group directory which will have the dependencies README
+                    module_readme.write("\n## [Dependencies](" + os.path.join("dependencies", str(group_number)) + ")\n")
+
+                    group_dependencies_file.write("\n# Dependencies\n")
                     something_in_dependencies = False
                     file_dependencies_external = filter_own_module_dependencies(project_data, module_group["group_generated_data"], module_object['module_name'])
                     for file_object in file_dependencies_external:
                         if len(file_object['file_dependencies']) > 0:
                             something_in_dependencies = True
-                            f.write("\n### " + file_object['file_name'].replace("_", "\\_") + "\n")
+                            group_dependencies_file.write("\n### " + file_object['file_name'].replace("_", "\\_") + "\n")
                             for dependencies_object in file_object['file_dependencies']:
-                                f.write("\n<div></div>\n") # This is a weird markdown idiosyncrasy to
+                                group_dependencies_file.write("\n<div></div>\n") # This is a weird markdown idiosyncrasy to
                                                         # make sure the indented block with the symbol
                                                         # is interpreted as a literal block
-                                f.write("\n    " + dependencies_object['symbol_name'] + "\n\n")
-                                f.write("- Provided By:\n\n")
+                                group_dependencies_file.write("\n    " + dependencies_object['symbol_name'] + "\n\n")
+                                group_dependencies_file.write("- Provided By:\n\n")
                                 for file_providing in dependencies_object['symbol_sources']:
                                     if file_providing in file_to_module:
-                                        f.write("    - [" + file_providing.replace("_", "\\_") + "](../" + file_to_module[file_providing].replace("_", "\\_") + ")" + "\n")
+                                        group_dependencies_file.write("    - [" + file_providing.replace("_", "\\_") + "](../" + file_to_module[file_providing].replace("_", "\\_") + ")" + "\n")
                                     else:
-                                        f.write("    - " + file_providing.replace("_", "\\_") + "\n")
+                                        group_dependencies_file.write("    - " + file_providing.replace("_", "\\_") + "\n")
                     if not something_in_dependencies:
-                        f.write("(no dependencies outside this module)\n")
+                        group_dependencies_file.write("(no dependencies outside this module)\n")
 
-
+                    group_number = group_number + 1
 
 def dump_module_files(project_directory, project_data):
 
@@ -223,6 +261,9 @@ def dump_module_files(project_directory, project_data):
 
 
 def generate_readme_tree(dest_directory, project_data):
+
+    if not os.path.exists(dest_directory):
+        os.mkdir(dest_directory)
 
     # This code is all to dump the janky README files
     dump_module_files(dest_directory, project_data)
