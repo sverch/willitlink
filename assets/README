@@ -1,0 +1,8 @@
+These are patches that are applied to SCons to get the libdeps, since the LIBDEPS variable is an extension we added to the build system.
+
+This is a hack and should go away when we have better integration with SCons, or at least a separate file that does this for us.
+
+Files:
+
+- print_scons_libdeps.patch - patch that works on 2.5.5 and beyond (used by the scripts)
+- print_scons_libdeps_24.patch - patch that works on 2.4.9 and beyond

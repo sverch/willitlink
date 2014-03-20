@@ -1,0 +1,48 @@
+diff --git a/site_scons/libdeps.py b/site_scons/libdeps.py
+index 0e51743..36e0b50 100644
+--- a/site_scons/libdeps.py
++++ b/site_scons/libdeps.py
+@@ -51,6 +51,8 @@ import SCons.Errors
+ import SCons.Scanner
+ import SCons.Util
+ 
++import json
++
+ libdeps_env_var = 'LIBDEPS'
+ syslibdeps_env_var = 'SYSLIBDEPS'
+ 
+@@ -94,6 +96,7 @@ def __compute_libdeps(node):
+ 
+     env = node.get_env()
+     deps = set()
++    topleveldeps = set()
+     node.attributes.libdeps_exploring = True
+     try:
+         try:
+@@ -107,9 +110,26 @@ def __compute_libdeps(node):
+             if len(e.cycle_nodes) == 1 or e.cycle_nodes[0] != e.cycle_nodes[-1]:
+                 e.cycle_nodes.append(node)
+                 raise
++
++        try:
++            for child in env.Flatten(getattr(node.attributes, 'libdeps_direct', [])):
++                if not child:
++                    continue
++                topleveldeps.add(child)
++
++        except DependencyCycleError, e:
++            if len(e.cycle_nodes) == 1 or e.cycle_nodes[0] != e.cycle_nodes[-1]:
++                e.cycle_nodes.append(node)
++                raise
+     finally:
+         node.attributes.libdeps_exploring = False
+ 
++    print("\n")
++    print(json.dumps({ '_id': str(node), 'type': 'special', 'libdeps': [ str(dep) for dep in topleveldeps ] }))
++    # This is here to avoid getting the JSON line garbled in other build output
++    # TODO: Actually integrate this all with scons and just output to a file
++    print("\n")
++
+     return deps
+ 
+ def __get_syslibdeps(node):
