@@ -3,6 +3,7 @@ import yaml
 import sys
 from process_project_data import generate_willitlink_data, get_processed_project_data
 from data_manipulation import flat_module_files
+from data_access import validate_project_structure_file_schema
 
 
 # Helpers to generate a tree of github browseable README.md files from our willitlink data and from
@@ -279,13 +280,16 @@ def main():
     base_data_directory = sys.argv[1]
     dest_directory = sys.argv[2]
 
-    # Merge in the willitlink data
+    print("Validating schema of human generated project data file...")
+    validate_project_structure_file_schema(base_data_directory)
+
+    print("Merging in the willitlink data...")
     generate_willitlink_data(base_data_directory)
 
-    # Get and print the merged data
+    print("Reading the processed project data file with willitlink data...")
     project_data = get_processed_project_data(base_data_directory)
 
-    # This code is all to dump the janky README files
+    print("Generating README tree...")
     generate_readme_tree(dest_directory, project_data)
 
 if __name__ == '__main__':
