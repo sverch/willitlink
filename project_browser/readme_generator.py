@@ -19,7 +19,7 @@ def output_readme_files_for_systems(project_directory, project_data):
         top_level_readme.truncate()
 
         # Add the header for this system
-        markdown_sanitized_system_object = system_object["system_name"].replace("_", "\\_")
+        markdown_sanitized_system_object = system_object["system_title"]
         top_level_readme.write("# " + markdown_sanitized_system_object + "\n\n")
 
         # TODO: add the description for this system
@@ -141,7 +141,7 @@ def output_readme_files_for_modules(project_directory, project_data):
                 module_readme = open(os.path.join(module_path, "README.md"), 'w')
                 module_readme.truncate()
                 # First, the title of the module
-                module_readme.write("# " + module_object['module_name'].replace("_", "\\_") + "\n\n")
+                module_readme.write("# " + module_object['module_title'] + "\n\n")
 
                 module_readme.write("# Module Groups\n")
 
@@ -154,7 +154,7 @@ def output_readme_files_for_modules(project_directory, project_data):
                     module_readme.write("\n-------------\n\n")
 
                     # Comments for this group of files
-                    module_readme.write("# " + module_group["group_name"] + "\n")
+                    module_readme.write("# " + module_group["group_title"] + "\n")
                     module_readme.write(module_group["group_description"].replace("#", " ").replace("_", "\\_").lstrip() + "\n\n")
 
                     # Files in this module group
