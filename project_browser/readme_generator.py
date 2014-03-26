@@ -43,7 +43,16 @@ def output_readme_files_for_systems(project_directory, project_data):
 
 
 
-# Builds a map of source files to modules
+# Builds a map of source files to system names
+def build_file_to_system_map(project_data):
+    file_to_system = {}
+    for system_object in project_data:
+        for module_object in system_object['system_modules']:
+            for module_file in flat_module_files(module_object):
+                file_to_system[module_file] = system_object['system_name']
+    return file_to_system
+
+# Builds a map of source files to module names
 def build_file_to_module_map(project_data):
     file_to_module = {}
     for system_object in project_data:
@@ -130,6 +139,7 @@ def get_exec_digest(exec_list):
 # Outputs a README.md file for each module with some useful information
 def output_readme_files_for_modules(project_directory, project_data):
     file_to_module = build_file_to_module_map(project_data)
+    file_to_system = build_file_to_system_map(project_data)
 
     for system_object in project_data:
         modules_directory = os.path.join(project_directory, system_object['system_name'])
@@ -143,8 +153,6 @@ def output_readme_files_for_modules(project_directory, project_data):
                 # First, the title of the module
                 module_readme.write("# " + module_object['module_title'] + "\n\n")
 
-                module_readme.write("# Module Groups\n")
-
                 group_number = 0
 
                 # Do the following analysis for each group separately
@@ -154,11 +162,11 @@ def output_readme_files_for_modules(project_directory, project_data):
                     module_readme.write("\n-------------\n\n")
 
                     # Comments for this group of files
-                    module_readme.write("# " + module_group["group_title"] + "\n")
+                    module_readme.write("## " + module_group["group_title"] + "\n")
                     module_readme.write(module_group["group_description"].replace("#", " ").replace("_", "\\_").lstrip() + "\n\n")
 
                     # Files in this module group
-                    module_readme.write("## Files\n")
+                    module_readme.write("#### Files\n")
                     for file_object in module_group["group_generated_data"]:
                         module_readme.write("- " + file_object['file_name'].replace("_", "\\_"))
                         module_readme.write("   (" + ", ".join(get_exec_digest(file_object['file_executables'])) + ")\n")
@@ -182,7 +190,10 @@ def output_readme_files_for_modules(project_directory, project_data):
                     module_readme.write("\n#### [Interface](" + os.path.join("interface", str(group_number)) + ")\n")
 
                     # 4.  Write out the interface README
-                    group_interface_file.write("\n# Interface\n")
+                    group_interface_file.write("\n# Interface for " + module_group["group_title"] + "\n")
+                    group_interface_file.write("This interface information represents symbols that "
+                        "are defined in this group but used in other modules.  Does not include "
+                        "symbols defined in this group that are used inside this module.\n")
                     something_in_interface = False
                     file_interface_external = filter_own_module_interface(project_data, module_group["group_generated_data"], module_object['module_name'])
                     for file_object in file_interface_external:
@@ -197,7 +208,7 @@ def output_readme_files_for_modules(project_directory, project_data):
                                 group_interface_file.write("- Used By:\n\n")
                                 for file_using in interface_object['symbol_uses']:
                                     if file_using in file_to_module:
-                                        group_interface_file.write("    - [" + file_using.replace("_", "\\_") + "](../../../" + file_to_module[file_using].replace("_", "\\_") + ")" + "\n")
+                                        group_interface_file.write("    - [" + file_using.replace("_", "\\_") + "](../../../../" + file_to_system[file_using].replace("_", "\\_") + "/" + file_to_module[file_using].replace("_", "\\_") + ")" + "\n")
                                     else:
                                         group_interface_file.write("    - " + file_using.replace("_", "\\_") + "\n")
                     if not something_in_interface:
@@ -221,7 +232,10 @@ def output_readme_files_for_modules(project_directory, project_data):
                     # 3.  Link to the group directory which will have the dependencies README
                     module_readme.write("\n#### [Dependencies](" + os.path.join("dependencies", str(group_number)) + ")\n")
 
-                    group_dependencies_file.write("\n# Dependencies\n")
+                    group_dependencies_file.write("\n# Interface for " + module_group["group_title"] + "\n")
+                    group_dependencies_file.write("This dependency information represents symbols "
+                        "that are used in this group but defined in other modules.  Does not include "
+                        "symbols used in this group that are defined inside this module.\n")
                     something_in_dependencies = False
                     file_dependencies_external = filter_own_module_dependencies(project_data, module_group["group_generated_data"], module_object['module_name'])
                     for file_object in file_dependencies_external:
@@ -236,7 +250,7 @@ def output_readme_files_for_modules(project_directory, project_data):
                                 group_dependencies_file.write("- Provided By:\n\n")
                                 for file_providing in dependencies_object['symbol_sources']:
                                     if file_providing in file_to_module:
-                                        group_dependencies_file.write("    - [" + file_providing.replace("_", "\\_") + "](../../../" + file_to_module[file_providing].replace("_", "\\_") + ")" + "\n")
+                                        group_dependencies_file.write("    - [" + file_providing.replace("_", "\\_") + "](../../../../" + file_to_system[file_providing].replace("_", "\\_") + "/" + file_to_module[file_providing].replace("_", "\\_") + ")" + "\n")
                                     else:
                                         group_dependencies_file.write("    - " + file_providing.replace("_", "\\_") + "\n")
                     if not something_in_dependencies:
