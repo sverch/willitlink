@@ -34,15 +34,9 @@ def output_readme_files_for_systems(project_directory, project_data):
                 # Sanitize the module name for this sytem readme
                 markdown_sanitized_module_name = module_object['module_name'].replace("_", "\\_")
 
-                # Heading for this module
-                top_level_readme.write("### " + markdown_sanitized_module_name + "\n\n")
-
-                # Files in this module
-                for source_file in flat_module_files(module_object):
-                    markdown_sanitized_source_file = source_file.replace("_", "\\_")
-                    top_level_readme.write("- [" + markdown_sanitized_source_file + "](" + markdown_sanitized_module_name + ")" + "\n")
-
-
+                # Information for this module
+                top_level_readme.write("### [" + module_object['module_title'] + "](" + markdown_sanitized_module_name + ")" + "\n")
+                top_level_readme.write(module_object["module_description"].replace("#", " ").replace("_", "\\_").lstrip() + "\n\n")
 
 # Builds a map of source files to system names
 def build_file_to_system_map(project_data):
