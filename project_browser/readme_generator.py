@@ -154,8 +154,7 @@ def output_readme_files_for_modules(project_directory, project_data):
                     module_readme.write("\n-------------\n\n")
 
                     # Comments for this group of files
-                    # TODO: Actually use the group title once everything has one
-                    module_readme.write("# Group Description\n")
+                    module_readme.write("# " + module_group["group_name"] + "\n")
                     module_readme.write(module_group["group_description"].replace("#", " ").replace("_", "\\_").lstrip() + "\n\n")
 
                     # Files in this module group
@@ -180,7 +179,7 @@ def output_readme_files_for_modules(project_directory, project_data):
                     group_interface_file = open(os.path.join(group_interface_dir, "README.md"), "w")
 
                     # 3.  Link to the group directory which will have the interface README
-                    module_readme.write("\n## [Interface](" + os.path.join("interface", str(group_number)) + ")\n")
+                    module_readme.write("\n#### [Interface](" + os.path.join("interface", str(group_number)) + ")\n")
 
                     # 4.  Write out the interface README
                     group_interface_file.write("\n# Interface\n")
@@ -220,7 +219,7 @@ def output_readme_files_for_modules(project_directory, project_data):
                     group_dependencies_file = open(os.path.join(group_dependencies_dir, "README.md"), "w")
 
                     # 3.  Link to the group directory which will have the dependencies README
-                    module_readme.write("\n## [Dependencies](" + os.path.join("dependencies", str(group_number)) + ")\n")
+                    module_readme.write("\n#### [Dependencies](" + os.path.join("dependencies", str(group_number)) + ")\n")
 
                     group_dependencies_file.write("\n# Dependencies\n")
                     something_in_dependencies = False
