@@ -7,7 +7,15 @@ import json
 import yaml
 
 from data_access import read_project_structure_file, load_willitlink_graph, write_project_structure_file, validate_project_structure_file_schema, validate_processed_project_structure_file_schema
-from data_manipulation import get_all_project_files
+
+# The project has files in nested categories.  This returns a list of all files for the project.
+def get_all_project_files(project_data):
+    all_files = []
+    for system_object in project_data:
+        for module_object in system_object['system_modules']:
+            for module_group in module_object['module_groups']:
+                all_files.extend(module_group['group_files'])
+    return all_files
 
 def diff_files(graph, project_data):
     # First remove things from our project data that we no longer have

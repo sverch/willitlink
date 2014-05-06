@@ -2,7 +2,6 @@ import os
 import yaml
 import sys
 from process_project_data import generate_willitlink_data, get_processed_project_data
-from data_manipulation import flat_module_files
 from data_access import validate_project_structure_file_schema
 
 
@@ -37,6 +36,13 @@ def output_readme_files_for_systems(project_directory, project_data):
                 # Information for this module
                 top_level_readme.write("### [" + module_object['module_title'] + "](" + markdown_sanitized_module_name + ")" + "\n")
                 top_level_readme.write(module_object["module_description"].replace("#", " ").replace("_", "\\_").lstrip() + "\n\n")
+
+# The modules have files listed in "groups".  This returns a list of all files for the module.
+def flat_module_files(single_module_data):
+    module_files = []
+    for module_group in single_module_data['module_groups']:
+        module_files.extend(module_group['group_files'])
+    return module_files
 
 # Builds a map of source files to system names
 def build_file_to_system_map(project_data):

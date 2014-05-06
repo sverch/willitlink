@@ -10,7 +10,6 @@ import json
 import os
 import re
 
-from data_manipulation import flat_module_files
 from collections import OrderedDict
 
 def dbgprint(my_object):
