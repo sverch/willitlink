@@ -4,7 +4,6 @@ from flask import Flask, Response, request
 from willitlink.base.graph import MultiGraph
 from willitlink.base.dev_tools import Timer
 
-from willitlink.queries.d3.d3_relationship import relationship_info_d3
 from willitlink.queries.extra_archives import find_all_extra_archives
 app = Flask('wil')
 
@@ -28,15 +27,6 @@ def return_files():
         print(e)
 
     return render(ret)
-
-@app.route('/d3/relationship')
-def return_d3_graph():
-    fn = request.args.get('file')
-
-    if fn is None:
-        return render({})
-    else:
-        return render(relationship_info_d3(app.g, fn.split(',')))
 
 def filter_lists(graph, request, kind):
     queries = { 'prefix': request.args.get('prefix'),

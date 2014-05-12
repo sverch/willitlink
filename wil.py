@@ -80,9 +80,7 @@ def main():
     for tree in get_tree_types().keys():
         tree_parser.add_argument('--' + tree, nargs='*', help='render tree of {0} for an object'.format(tree))
 
-    for query_parser in [ 'leaks', 'symbol',
-                          'extra-libdeps', 'd3-file-family',
-                          'd3-file-family-with-leaks']:
+    for query_parser in [ 'leaks', 'symbol', 'extra-libdeps' ]:
         sp = subparsers.add_parser(query_parser, help='query for ' + query_parser)
         sp.add_argument('name')
 
@@ -95,12 +93,6 @@ def main():
 
     sp = subparsers.add_parser('executables', help='query for the executables a file is built into')
     sp.add_argument('name', help="file to check the executable list for")
-
-    for query_parser in [ 'd3-file-relationship' ]:
-        sp = subparsers.add_parser(query_parser, help='query for ' + query_parser)
-        # two arguments are used below to ensure two or more files as arguments
-        sp.add_argument('first_file', help="file to relate")
-        sp.add_argument('files', nargs='+', help="list of other files to relate")
 
     for query_parser in [ 'libs-needed', 'libs-cycle' ]:
         sp = subparsers.add_parser(query_parser, help='query for ' + query_parser)
