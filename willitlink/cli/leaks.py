@@ -12,7 +12,7 @@ def get_leaks(args):
         g = get_graph(args)
 
     with Timer('leaks query', args.timers):
-        leaks = find_direct_leaks(g, args.name)
+        leaks = find_direct_leaks(g, args.name, [])
 
     render({ 'archive': args.name, 'leaks': leaks })
 
@@ -24,12 +24,6 @@ def get_leak_check(args):
 
     with Timer('leaks tree query', args.timers):
         render(resolve_leak_info(g, args.name, args.depth, args.timers, args.source_names))
-
-def get_direct_leaks(args):
-    g = get_graph(args)
-
-    with Timer('direct leak query', args.timers):
-        render(find_direct_leaks(g, args.name))
 
 def get_unneeded_libdeps(args):
     g = get_graph(args)

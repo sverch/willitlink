@@ -9,6 +9,12 @@ from data_access import validate_project_structure_file_schema
 # our project data.
 
 
+
+# The formating we have in the YAML file and the formatting that makes markdown display the
+# description nicely are different
+def cleanup_description_for_markdown(description):
+    return description.replace("#", " ").replace("_", "\\_").replace("\n", "\n\n").lstrip()
+
 # Outputs a README.md file for each system with some useful information
 def output_readme_files_for_systems(project_directory, project_data):
     for system_object in project_data:
@@ -22,7 +28,7 @@ def output_readme_files_for_systems(project_directory, project_data):
         top_level_readme.write("# " + markdown_sanitized_system_object + "\n\n")
 
         # Output the description for this system
-        top_level_readme.write(system_object["system_description"].replace("#", " ").replace("_", "\\_").lstrip() + "\n\n")
+        top_level_readme.write(cleanup_description_for_markdown(system_object["system_description"]) + "\n\n")
 
         # Output module information for this system
         top_level_readme.write("## Modules\n\n")
@@ -35,7 +41,7 @@ def output_readme_files_for_systems(project_directory, project_data):
 
                 # Information for this module
                 top_level_readme.write("### [" + module_object['module_title'] + "](" + markdown_sanitized_module_name + ")" + "\n")
-                top_level_readme.write(module_object["module_description"].replace("#", " ").replace("_", "\\_").lstrip() + "\n\n")
+                top_level_readme.write(cleanup_description_for_markdown(module_object["module_description"]) + "\n\n")
 
 # The modules have files listed in "groups".  This returns a list of all files for the module.
 def flat_module_files(single_module_data):
@@ -154,7 +160,7 @@ def output_readme_files_for_modules(project_directory, project_data):
 
                 # First, the and descriptiontitle of the module
                 module_readme.write("# " + module_object['module_title'] + "\n")
-                module_readme.write(module_object["module_description"].replace("#", " ").replace("_", "\\_").lstrip() + "\n\n")
+                module_readme.write(cleanup_description_for_markdown(module_object["module_description"]) + "\n\n")
 
                 group_number = 0
 
@@ -166,7 +172,7 @@ def output_readme_files_for_modules(project_directory, project_data):
 
                     # Comments for this group of files
                     module_readme.write("## " + module_group["group_title"] + "\n")
-                    module_readme.write(module_group["group_description"].replace("#", " ").replace("_", "\\_").lstrip() + "\n\n")
+                    module_readme.write(cleanup_description_for_markdown(module_group["group_description"]) + "\n\n")
 
                     # Files in this module group
                     module_readme.write("#### Files\n")
