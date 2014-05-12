@@ -10,15 +10,6 @@ from willitlink.queries.extra_archives import find_extra_archives
 def get_leaks(args):
     if args.g is None:
         g = get_graph(args)
-
-    with Timer('leaks query', args.timers):
-        leaks = find_direct_leaks(g, args.name, [])
-
-    render({ 'archive': args.name, 'leaks': leaks })
-
-def get_leak_check(args):
-    if args.g is None:
-        g = get_graph(args)
     else:
         g = args.g
 

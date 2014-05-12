@@ -5,11 +5,8 @@ from willitlink.base.dev_tools import Timer
 
 from willitlink.queries.family_tree import symbol_family_tree, file_family_tree
 
-from willitlink.cli.leaks import get_leak_check
-
 def get_tree_types():
     return {
-        'leak': get_leak_check,
         'symbol': get_symbol_family_tree,
         'file': get_file_family_tree,
     }

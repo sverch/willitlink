@@ -9,7 +9,7 @@ import willitlink.ingestion as ingestion
 from willitlink.ingestion.collector import data_collector
 
 from willitlink.cli.basic import get_relationship_node, get_list, get_symbol_location, get_relationship_types
-from willitlink.cli.leaks import get_leaks, get_unneeded_libdeps, get_leak_check
+from willitlink.cli.leaks import get_leaks, get_unneeded_libdeps
 from willitlink.cli.interface import get_interface
 from willitlink.cli.trees import get_tree, get_tree_types
 from willitlink.cli.d3 import get_file_family_tree_d3, get_file_family_tree_with_leaks_d3, get_file_family_relationship_d3
@@ -80,15 +80,15 @@ def main():
     for tree in get_tree_types().keys():
         tree_parser.add_argument('--' + tree, nargs='*', help='render tree of {0} for an object'.format(tree))
 
-    # XXX: I shouldn't also be adding this to the other trees.  This only makes sense for the
-    # "--leak" option.
-    tree_parser.add_argument('--source_names', '-s', nargs='*', help='names of files to look up symbols in but not check for leaks of', default=[])
-
     for query_parser in [ 'leaks', 'symbol',
                           'extra-libdeps', 'd3-file-family',
                           'd3-file-family-with-leaks']:
         sp = subparsers.add_parser(query_parser, help='query for ' + query_parser)
         sp.add_argument('name')
+
+        if query_parser is 'leaks':
+            sp.add_argument('--source_names', '-s', nargs='*', help='names of files to look up symbols in but not check for leaks of', default=[])
+            sp.add_argument('--depth', type=int, help='how many parents in the build graph to show for the sources of the symbols', default=2)
 
     sp = subparsers.add_parser('interface', help='query for interface')
     sp.add_argument('names', nargs='+', help="list of libraries or objects to get interface of")
