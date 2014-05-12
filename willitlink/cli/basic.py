@@ -3,7 +3,6 @@ from willitlink.cli.tools import get_graph, render
 from willitlink.base.graph import MultiGraph
 from willitlink.base.dev_tools import Timer
 
-from willitlink.queries.symbols import locate_symbol
 from willitlink.queries.fullnames import expand_file_names, expand_symbol_names
 
 def get_relationship_node(args):
@@ -49,9 +48,3 @@ def get_list(args):
     g = get_graph(args)
 
     render([ i for i in getattr(g, args.type) if i.endswith(args.filter)])
-
-def get_symbol_location(args):
-    g = get_graph(args)
-
-    with Timer('find symbol location', args.timers):
-        render(locate_symbol(g, args.name))
