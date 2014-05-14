@@ -81,7 +81,7 @@ def main():
 
     for query_parser in [ 'leaks', 'extra-libdeps' ]:
         sp = subparsers.add_parser(query_parser, help='query for ' + query_parser)
-        sp.add_argument('name')
+        sp.add_argument('names', nargs='+', help="list of libraries or objects to check leaks of")
 
         if query_parser is 'leaks':
             sp.add_argument('--source_names', '-s', nargs='*', help='names of files to look up symbols in but not check for leaks of', default=[])

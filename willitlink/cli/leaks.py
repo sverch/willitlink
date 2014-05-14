@@ -14,7 +14,7 @@ def get_leaks(args):
         g = args.g
 
     with Timer('leaks tree query', args.timers):
-        render(resolve_leak_info(g, args.name, args.depth, args.timers, args.source_names))
+        render(resolve_leak_info(g, args.names, args.depth, args.timers, args.source_names))
 
 def get_unneeded_libdeps(args):
     g = get_graph(args)
