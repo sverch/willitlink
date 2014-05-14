@@ -31,13 +31,13 @@ Get all symbols needed by this archive that are not defined by this archive or a
 
 ::
 
-    python wil.py tree --leak libmongocommon.a
+    python wil.py leaks libmongocommon.a
 
 Get all symbols needed by this archive that are not defined by this archive or anything it depends on (meaning that this archive will not link on its own) AND are also not defined in the files provided after the "-s".  This is a way to get rid of unnecessary noise (symbols that you know are leaking but don't want to look at).
 
 ::
 
-    python wil.py tree --leak libmongocommon.a -s unittest/crutch.o
+    python wil.py leaks libmongocommon.a -s unittest/crutch.o
 
 Get the interface of a set of files
 
