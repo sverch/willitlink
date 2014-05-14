@@ -12,7 +12,6 @@ from willitlink.cli.basic import get_relationship_node, get_list, get_relationsh
 from willitlink.cli.leaks import get_leaks, get_unneeded_libdeps
 from willitlink.cli.interface import get_interface
 from willitlink.cli.trees import get_tree, get_tree_types
-from willitlink.cli.d3 import get_file_family_tree_d3, get_file_family_tree_with_leaks_d3, get_file_family_relationship_d3
 from willitlink.cli.libs_needed import get_required_libs, get_circle_deps
 from willitlink.cli.file_graph import get_file_graph
 from willitlink.cli.executables import get_executables
@@ -31,10 +30,6 @@ operations = {
     'libs-cycle': get_circle_deps,
 
     'leaks': get_leaks,
-
-    'd3-file-family': get_file_family_tree_d3,
-    'd3-file-family-with-leaks': get_file_family_tree_with_leaks_d3,
-    'd3-file-relationship': get_file_family_relationship_d3,
 
     'interface': get_interface,
     'extra-libdeps': get_unneeded_libdeps,
