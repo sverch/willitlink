@@ -1,5 +1,7 @@
 import os.path
 
+import re
+
 from willitlink.base.shell import command
 from willitlink.base.dev_tools import Timer
 
@@ -47,12 +49,14 @@ def data_collector(args):
 
     ct = 0
     tree_data = tree['out'].split('\n')
+    dep_object_regex = re.compile("^({.*}).*")
     with open(libdeps_output, 'w') as f:
         with Timer('filtering out dep info from scons output', args.timers):
             for ln in tree_data:
-                if ln.startswith('{'):
+                m = dep_object_regex.search(ln)
+                if m is not None:
                     ct += 1
-                    f.write(ln)
+                    f.write(m.group(1))
                     f.write('\n')
 
     print('[wil]: collected {0} dependencies.'.format(ct))
