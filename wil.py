@@ -46,12 +46,12 @@ operations = {
 
 def main():
     default_cwd = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
-    default_data_file = os.path.join(default_cwd, 'data', "dep_graph.json")
+    default_data_path = os.path.join(default_cwd, 'data')
 
     parser = argparse.ArgumentParser(prog='wil.py', usage='wil.py [command] [arguments]', add_help='[wil]: a dependency analysis toolkit')
     parser.set_defaults(cwd=default_cwd)
     parser.add_argument('--timers', '-t', default=False, action='store_true')
-    parser.add_argument('--data', '-d', default=default_data_file)
+    parser.add_argument('--data', '-d', default=default_data_path)
     subparsers = parser.add_subparsers(dest='command', title='commands', metavar='')
 
     ingest_parser = subparsers.add_parser('ingest', help='process collected data')
