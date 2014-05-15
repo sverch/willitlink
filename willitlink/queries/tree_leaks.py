@@ -134,6 +134,7 @@ def resolve_leak_info(g, names, depth, timers, source_names):
         direct_leaks = find_direct_leaks(g, names, source_names)
 
     for leak in direct_leaks:
+        del leak['parents']
         del leak['type']
         leak['sources'] = symbol_family_tree(g, leak['symbol'], depth)
 
