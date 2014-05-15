@@ -2,7 +2,7 @@ from unittest import TestCase
 from dict_compare import dict_compare
 from helpers import get_test_graph
 
-from willitlink.queries.libstats import resolve_leak_info
+from willitlink.queries.tree_leaks import resolve_leak_info
 
 class TestLeaksQueries(TestCase):
     @classmethod

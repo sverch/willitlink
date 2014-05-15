@@ -2,7 +2,7 @@ from willitlink.base.graph import MultiGraph
 from willitlink.base.dev_tools import Timer
 
 from willitlink.queries.find_interface import find_interface
-from willitlink.queries.libstats import resolve_leak_info
+from willitlink.queries.tree_leaks import resolve_leak_info
 from willitlink.queries.executables import get_executable_list
 
 import sys

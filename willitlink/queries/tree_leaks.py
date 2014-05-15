@@ -2,6 +2,7 @@ from willitlink.base.graph import MultiGraph, ResultsGraph
 from willitlink.base.dev_tools import Timer
 from willitlink.queries.symbol_diff import get_symbol_info, get_symbol_map
 from willitlink.queries.fullnames import expand_file_names
+from willitlink.queries.family_tree import symbol_family_tree
 
 # archive_names are the files or archives we are checking the leaks of, whereas archive_source_names
 # are files or archives that we want to ignore in the output.
@@ -122,6 +123,21 @@ def get_paths(g, archive_target, archive_sources):
 
             current_level_children = next_level_children
             next_level_children = 0
+
+# names are the files or archives we are checking the leaks of, whereas source_names are files or
+# archives that we want to ignore in the output.
+#
+# For example, if a file "database.o" depeneds on "assert_util.o", we probably don't care about
+# seeing that, but we also don't want to add the dependencies of "assert_util.o" to the output
+def resolve_leak_info(g, names, depth, timers, source_names):
+    with Timer('generating direct leak list', timers):
+        direct_leaks = find_direct_leaks(g, names, source_names)
+
+    for leak in direct_leaks:
+        del leak['type']
+        leak['sources'] = symbol_family_tree(g, leak['symbol'], depth)
+
+    return direct_leaks
 
 def find_libraries_needed(graph, archive_names):
     # Get all symbols needed by this archive
