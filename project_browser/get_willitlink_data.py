@@ -45,11 +45,23 @@ def object_files_to_source_files(graph, object_files):
         source_files.extend(object_file_to_source_file(graph, object_file))
     return source_files
 
+# Args:
+# graph - willitlink graph object
+# source_file - name of source file to query for
+#
+# Returns:
+# List of executable names
 def get_file_executables(graph, source_file):
     # XXX: I don't know why I have to convert everything back to strings.  It gets output as a
     # python unicode type in the result map if I don't do this.
     return [ str(executable) for executable in get_executable_list(graph, source_file) ]
 
+# Args:
+# graph - willitlink graph object
+# source_file - name of source file to query for
+#
+# Returns:
+# List of header names
 def get_file_headers(graph, source_file):
     # XXX: When I figure out how to nicely handle the whole "duplicate object files per source file"
     # thing, this should not return a list
@@ -58,6 +70,16 @@ def get_file_headers(graph, source_file):
         return []
     return [ str(header_include) for header_include in graph.get('file_to_header_includes', object_files[0]) ]
 
+# Args:
+# graph - willitlink graph object
+# source_file - name of source file to query for
+#
+# Returns:
+# List of symbols in the interface and where they are used in an object of the format:
+# {
+#     "symbol_name" : <name>,
+#     "symbol_uses" : [ <files symbol is used in> ]
+# }
 def get_file_interface(graph, source_file):
     file_interface = find_interface(graph, source_file_to_object_file(graph, source_file))
     file_interface_result = []
@@ -68,6 +90,16 @@ def get_file_interface(graph, source_file):
         file_interface_result.append(file_interface_result_object)
     return file_interface_result
 
+# Args:
+# graph - willitlink graph object
+# source_file - name of source file to query for
+#
+# Returns:
+# List of symbols in the interface and where they are used in an object of the format:
+# {
+#     "symbol_name" : <name>,
+#     "symbol_sources" : [ <files symbol is defined in> ]
+# }
 def get_file_dependencies(graph, source_file):
     file_dependencies = resolve_leak_info(graph, source_file_to_object_file(graph, source_file), 1, None, [])
     file_dependencies_result = []
