@@ -15,23 +15,48 @@ from data_access import validate_project_structure_file_schema
 def cleanup_description_for_markdown(description):
     return description.replace("#", " ").replace("_", "\\_").replace("\n", "\n\n").lstrip()
 
+# Outputs a top level README.md file for the project
+def output_readme_file_for_project(project_directory, project_data):
+    project_readme = open(os.path.join(project_directory, "README.md"), 'w')
+    project_readme.truncate()
+
+    project_readme.write("# MongoDB Server Codebase Map\n")
+    project_readme.write("Categorization and documentation of the MongoDB server codebase.  ")
+    project_readme.write("This is a work in progress, and is by no means comprehensive.  ")
+    project_readme.write("Feel free to submit pull requests or suggestions.\n\n")
+    project_readme.write("NOTE:  This README and entire subtree is automatically generated.\n\n")
+
+    # TODO: Output build information when willitlink supports it
+
+    for system_object in project_data:
+
+        # Sanitize the system name for this sytem readme link
+        markdown_sanitized_system_name = system_object['system_name'].replace("_", "\\_")
+
+        # Header for this system with link
+        project_readme.write("## [" + system_object['system_title'] + "](" + markdown_sanitized_system_name + ")" + "\n")
+
+        # Output the description for this system
+        project_readme.write(cleanup_description_for_markdown(system_object["system_description"]) + "\n\n")
+
+
+
 # Outputs a README.md file for each system with some useful information
 def output_readme_files_for_systems(project_directory, project_data):
     for system_object in project_data:
         system_directory = os.path.join(project_directory, system_object['system_name'])
 
-        top_level_readme = open(os.path.join(system_directory, "README.md"), 'w')
-        top_level_readme.truncate()
+        system_readme = open(os.path.join(system_directory, "README.md"), 'w')
+        system_readme.truncate()
 
         # Add the header for this system
-        markdown_sanitized_system_object = system_object["system_title"]
-        top_level_readme.write("# " + markdown_sanitized_system_object + "\n\n")
+        system_readme.write("# " + system_object["system_title"] + "\n\n")
 
         # Output the description for this system
-        top_level_readme.write(cleanup_description_for_markdown(system_object["system_description"]) + "\n\n")
+        system_readme.write(cleanup_description_for_markdown(system_object["system_description"]) + "\n\n")
 
         # Output module information for this system
-        top_level_readme.write("## Modules\n\n")
+        system_readme.write("## Modules\n\n")
         for module_object in system_object['system_modules']:
             module_path = os.path.join(system_directory, module_object['module_name'])
             if os.path.isdir(module_path):
@@ -40,8 +65,8 @@ def output_readme_files_for_systems(project_directory, project_data):
                 markdown_sanitized_module_name = module_object['module_name'].replace("_", "\\_")
 
                 # Information for this module
-                top_level_readme.write("### [" + module_object['module_title'] + "](" + markdown_sanitized_module_name + ")" + "\n")
-                top_level_readme.write(cleanup_description_for_markdown(module_object["module_description"]) + "\n\n")
+                system_readme.write("### [" + module_object['module_title'] + "](" + markdown_sanitized_module_name + ")" + "\n")
+                system_readme.write(cleanup_description_for_markdown(module_object["module_description"]) + "\n\n")
 
 # The modules have files listed in "groups".  This returns a list of all files for the module.
 def flat_module_files(single_module_data):
@@ -290,6 +315,7 @@ def generate_readme_tree(dest_directory, project_data):
 
     # This code is all to dump the janky README files
     dump_module_files(dest_directory, project_data)
+    output_readme_file_for_project(dest_directory, project_data)
     output_readme_files_for_systems(dest_directory, project_data)
     output_readme_files_for_modules(dest_directory, project_data)
 
