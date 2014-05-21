@@ -1,5 +1,6 @@
 import os.path
 import argparse
+import json
 
 from willitlink.ingestion.build_graph import generate_edges
 from willitlink.ingestion.parse_scons_dependency_tree import parse_tree
@@ -9,7 +10,7 @@ from willitlink.base.dev_tools import Timer
 
 output_formats = ['json', 'pickle', 'pkl', 'jsn']
 
-def worker(input_tree, dep_info, output_dep_file, mongo_path, timer=False, client_build=False):
+def worker(input_tree, dep_info, build_info_file, output_dep_file, mongo_path, timer=False, client_build=False):
     with Timer('parsing', timer):
         results = parse_tree(input_tree, mongo_path)
 
@@ -19,8 +20,12 @@ def worker(input_tree, dep_info, output_dep_file, mongo_path, timer=False, clien
     with Timer('generating graph', timer):
         g = generate_edges(results, client_build)
 
-    with Timer('adding version info', timer):
-        g.set_extra_info(get_version_info(mongo_path))
+    with Timer('adding version and build info', timer):
+        version_and_build_info = {}
+        version_and_build_info['version_info'] = get_version_info(mongo_path)
+        with open(build_info_file) as build_info:
+            version_and_build_info['build_info'] = json.loads(build_info.read())
+        g.set_extra_info(version_and_build_info)
 
     with Timer('writing output file', timer):
         g.export(output_dep_file)
@@ -38,6 +43,9 @@ def command(args):
     # Output of scons dependency tree
     input_tree = os.path.join(args.data, 'dependency_tree.txt')
 
+    # Scons flags we used to build
+    build_info_file = os.path.join(args.data, 'build_info.json')
+
     # Output from our libdeps patch
     dep_info = os.path.join(args.data, 'deps.json')
 
@@ -53,7 +61,7 @@ def command(args):
     else:
         output_fn = output_dep_file + '.' + args.format
 
-    worker(input_tree, dep_info, output_fn, args.mongo, args.timers, args.client)
+    worker(input_tree, dep_info, build_info_file, output_fn, args.mongo, args.timers, args.client)
 
 def main():
     parser = argparser(argparse.ArgumentParser("[wil]: willitlink ingestion"))

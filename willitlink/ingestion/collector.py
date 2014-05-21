@@ -1,6 +1,10 @@
 import os.path
 
+import json
+
 import re
+
+from distutils import util
 
 from willitlink.base.shell import command
 from willitlink.base.dev_tools import Timer
@@ -12,7 +16,12 @@ def data_collector(args):
     # Output from our libdeps patch
     libdeps_output = os.path.join(args.data, 'deps.json')
 
+    # Output for our scons build flags
+    build_info = os.path.join(args.data, 'build_info.json')
+
+    # TODO: Just remove the whole data directory
     for fn in [ libdeps_output,
+                build_info,
                 os.path.join(args.data, 'dep_graph.json'),
                 tree_output ]:
         if os.path.exists(fn):
@@ -58,6 +67,11 @@ def data_collector(args):
                     ct += 1
                     f.write(m.group(1))
                     f.write('\n')
+
+    with open(build_info, 'w') as f:
+        with Timer('writing data to ' + build_info, args.timers):
+            f.write(json.dumps({ 'flags' : args.scons,
+                                 'platform' : util.get_platform() }))
 
     print('[wil]: collected {0} dependencies.'.format(ct))
     print('[wil]: data collection complete!')
