@@ -142,6 +142,15 @@ class MultiGraph(object):
         self.has_lists = False
         self.lists = []
         self.timer = timers
+        self.extra_info = None
+
+    # Extra user specified information about the data.  This could be information about where this
+    # data came from.  For example, for MongoDB build information this would be at least a githash.
+    def set_extra_info(self, extra_info):
+        self.extra_info = extra_info
+
+    def get_extra_info(self):
+        return self.extra_info
 
     def make_lists(self, lists):
         self.lists.extend(lists)
@@ -288,6 +297,9 @@ class MultiGraph(object):
             for name, lst in data['lists'].items():
                 c.extend_list(name, lst)
 
+            if 'extra_info' in data:
+                c.set_extra_info(data['extra_info'])
+
         return c
 
     @staticmethod
@@ -323,7 +335,8 @@ class MultiGraph(object):
                       'relationships': self.relationships,
                       'subset': self.subset,
                       'list_names': [],
-                      'v': 2
+                      'v': 2,
+                      'extra_info': self.extra_info
                      }
         }
 
