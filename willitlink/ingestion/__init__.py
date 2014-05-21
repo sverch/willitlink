@@ -4,6 +4,7 @@ import argparse
 from willitlink.ingestion.build_graph import generate_edges
 from willitlink.ingestion.parse_scons_dependency_tree import parse_tree
 from willitlink.ingestion.import_dep_info import ingest_deps
+from willitlink.ingestion.version_info import get_version_info
 from willitlink.base.dev_tools import Timer
 
 output_formats = ['json', 'pickle', 'pkl', 'jsn']
@@ -17,6 +18,9 @@ def worker(input_tree, dep_info, output_dep_file, mongo_path, timer=False, clien
 
     with Timer('generating graph', timer):
         g = generate_edges(results, client_build)
+
+    with Timer('adding version info', timer):
+        g.set_extra_info(get_version_info(mongo_path))
 
     with Timer('writing output file', timer):
         g.export(output_dep_file)
