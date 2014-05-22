@@ -10,6 +10,28 @@ from data_access import validate_project_structure_file_schema
 
 
 
+# Link into the MongoDB source tree on github
+base_github_url = "https://github.com/mongodb/mongo/tree/"
+def get_github_url(version_info, resource = ""):
+
+    # Get the base link to the project tree
+    full_github_url = base_github_url
+
+    # For the actual version reference, first try tag
+    if version_info['tag'] != "(no tag)":
+        full_github_url = full_github_url + version_info['tag']
+    # Then try branch
+    elif version_info['branch'] != "(no branch)":
+        full_github_url = full_github_url + version_info['branch']
+    # Finally, fall back to the exact git hash
+    else:
+        full_github_url = full_github_url + version_info['hash']
+
+    # Now, link to the actual resource
+    full_github_url = full_github_url + "/" + resource
+
+    return full_github_url
+
 # The formating we have in the YAML file and the formatting that makes markdown display the
 # description nicely are different
 def cleanup_description_for_markdown(description):
@@ -30,7 +52,8 @@ def output_readme_file_for_project(project_directory, project_data, version_and_
     project_readme.write("* Build platform: " + version_and_build_info['build_info']['platform'] + "\n")
     project_readme.write("* Version hash: " + version_and_build_info['version_info']['hash'] + "\n")
     project_readme.write("* Version branch: " + version_and_build_info['version_info']['branch'] + "\n")
-    project_readme.write("* Version tag: " + version_and_build_info['version_info']['tag'] + "\n\n")
+    project_readme.write("* Version tag: " + version_and_build_info['version_info']['tag'] + "\n")
+    project_readme.write("* Github URL: " + get_github_url(version_and_build_info['version_info']) + "\n\n")
 
     for system_object in project_data:
 
@@ -173,7 +196,7 @@ def get_exec_digest(exec_list):
     return list(exec_digest)
 
 # Outputs a README.md file for each module with some useful information
-def output_readme_files_for_modules(project_directory, project_data):
+def output_readme_files_for_modules(project_directory, project_data, version_info):
     file_to_module = build_file_to_module_map(project_data)
     file_to_system = build_file_to_system_map(project_data)
 
@@ -206,7 +229,13 @@ def output_readme_files_for_modules(project_directory, project_data):
                     # Files in this module group
                     module_readme.write("#### Files\n")
                     for file_object in module_group["group_generated_data"]:
-                        module_readme.write("- " + file_object['file_name'].replace("_", "\\_"))
+                        # Actual displayed file name
+                        module_readme.write("- [" + file_object['file_name'].replace("_", "\\_") + "]")
+
+                        # Link to github project
+                        module_readme.write("(" + get_github_url(version_info, file_object['file_name']) + ")")
+
+                        # List of executables file is built into
                         module_readme.write("   (" + ", ".join(get_exec_digest(file_object['file_executables'])) + ")\n")
 
                     # Interface for this module group (symbols used from outside this module)
@@ -321,7 +350,7 @@ def generate_readme_tree(dest_directory, project_data, version_and_build_info):
     dump_module_files(dest_directory, project_data)
     output_readme_file_for_project(dest_directory, project_data, version_and_build_info)
     output_readme_files_for_systems(dest_directory, project_data)
-    output_readme_files_for_modules(dest_directory, project_data)
+    output_readme_files_for_modules(dest_directory, project_data, version_and_build_info['version_info'])
 
 def main():
 
