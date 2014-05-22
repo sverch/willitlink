@@ -29,6 +29,11 @@ def generate_willitlink_data(base_directory):
 def get_processed_project_data(base_directory):
     return read_processed_project_structure_file(base_directory)
 
+def get_version_and_build_info(base_directory):
+    # Get version and build info from willitlink
+    graph = load_willitlink_graph(base_directory)
+    return graph.get_extra_info()
+
 def main():
 
     if len(sys.argv) != 2:

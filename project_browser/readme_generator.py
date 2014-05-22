@@ -1,7 +1,7 @@
 import os
 import yaml
 import sys
-from process_project_data import generate_willitlink_data, get_processed_project_data
+from process_project_data import generate_willitlink_data, get_processed_project_data, get_version_and_build_info
 from data_access import validate_project_structure_file_schema
 
 
@@ -16,7 +16,7 @@ def cleanup_description_for_markdown(description):
     return description.replace("#", " ").replace("_", "\\_").replace("\n", "\n\n").lstrip()
 
 # Outputs a top level README.md file for the project
-def output_readme_file_for_project(project_directory, project_data):
+def output_readme_file_for_project(project_directory, project_data, version_and_build_info):
     project_readme = open(os.path.join(project_directory, "README.md"), 'w')
     project_readme.truncate()
 
@@ -26,7 +26,11 @@ def output_readme_file_for_project(project_directory, project_data):
     project_readme.write("Feel free to submit pull requests or suggestions.\n\n")
     project_readme.write("NOTE:  This README and entire subtree is automatically generated.\n\n")
 
-    # TODO: Output build information when willitlink supports it
+    project_readme.write("* Build flags: " + ' '.join(version_and_build_info['build_info']['flags']) + "\n")
+    project_readme.write("* Build platform: " + version_and_build_info['build_info']['platform'] + "\n")
+    project_readme.write("* Version hash: " + version_and_build_info['version_info']['hash'] + "\n")
+    project_readme.write("* Version branch: " + version_and_build_info['version_info']['branch'] + "\n")
+    project_readme.write("* Version tag: " + version_and_build_info['version_info']['tag'] + "\n\n")
 
     for system_object in project_data:
 
@@ -308,14 +312,14 @@ def dump_module_files(project_directory, project_data):
     return project_data
 
 
-def generate_readme_tree(dest_directory, project_data):
+def generate_readme_tree(dest_directory, project_data, version_and_build_info):
 
     if not os.path.exists(dest_directory):
         os.mkdir(dest_directory)
 
     # This code is all to dump the janky README files
     dump_module_files(dest_directory, project_data)
-    output_readme_file_for_project(dest_directory, project_data)
+    output_readme_file_for_project(dest_directory, project_data, version_and_build_info)
     output_readme_files_for_systems(dest_directory, project_data)
     output_readme_files_for_modules(dest_directory, project_data)
 
@@ -337,8 +341,11 @@ def main():
     print("Reading the processed project data file with willitlink data...")
     project_data = get_processed_project_data(base_data_directory)
 
+    print("Getting version and build info from willitlink data...")
+    version_and_build_info = get_version_and_build_info(base_data_directory)
+
     print("Generating README tree...")
-    generate_readme_tree(dest_directory, project_data)
+    generate_readme_tree(dest_directory, project_data, version_and_build_info)
 
 if __name__ == '__main__':
     main()
