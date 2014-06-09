@@ -38,7 +38,7 @@ def cleanup_description_for_markdown(description):
     return description.replace("#", " ").replace("_", "\\_").replace("\n", "\n\n").lstrip()
 
 # Outputs a top level README.md file for the project
-def output_readme_file_for_project(graph, project_directory, project_data, file_to_system, file_to_module, version_and_build_info):
+def output_readme_files_for_project(graph, project_directory, project_data, file_to_system, file_to_module, version_and_build_info):
     project_readme = open(os.path.join(project_directory, "README.md"), 'w')
     project_readme.truncate()
 
@@ -66,13 +66,13 @@ def output_readme_file_for_project(graph, project_directory, project_data, file_
         # Output the description for this system
         project_readme.write(cleanup_description_for_markdown(system_object["system_description"]) + "\n\n")
 
-        # Actually output the readme for the system itself
-        output_readme_file_for_system(graph, project_directory, file_to_system, file_to_module, version_and_build_info['version_info'], system_object)
+        # Actually output the readme for the system itself and all modules
+        output_readme_files_for_system(graph, project_directory, file_to_system, file_to_module, version_and_build_info['version_info'], system_object)
 
 
 
 # Outputs a README.md file for each system with some useful information
-def output_readme_file_for_system(graph, project_directory, file_to_system, file_to_module, version_info, system_object):
+def output_readme_files_for_system(graph, project_directory, file_to_system, file_to_module, version_info, system_object):
     system_directory = os.path.join(project_directory, system_object['system_name'])
     if not os.path.exists(system_directory):
         os.mkdir(system_directory)
@@ -102,7 +102,7 @@ def output_readme_file_for_system(graph, project_directory, file_to_system, file
             system_readme.write("### [" + module_object['module_title'] + "](" + markdown_sanitized_module_name + ")" + "\n")
             system_readme.write(cleanup_description_for_markdown(module_object["module_description"]) + "\n\n")
 
-        output_readme_file_for_module(graph, version_info, system_object, file_to_module, file_to_system, module_directory, module_object)
+        output_readme_files_for_module(graph, version_info, system_object, file_to_module, file_to_system, module_directory, module_object)
 
 
 
@@ -260,7 +260,7 @@ def output_readme_file_for_group_dependencies(graph, group_dependencies_file, mo
     if not something_in_dependencies:
         group_dependencies_file.write("(no dependencies outside this module)\n")
 
-def output_readme_file_for_module(graph, version_info, system_object, file_to_module, file_to_system, module_directory, module_object):
+def output_readme_files_for_module(graph, version_info, system_object, file_to_module, file_to_system, module_directory, module_object):
 
         module_readme = open(os.path.join(module_directory, "README.md"), 'w')
         module_readme.truncate()
@@ -342,11 +342,12 @@ def generate_readme_tree(graph, dest_directory, project_data, version_and_build_
     if not os.path.exists(dest_directory):
         os.mkdir(dest_directory)
 
+    # TODO: Handle this in a better way.  Perhaps just make it part of "project_data" or make a
+    # ProjectData object.
     file_to_system = build_file_to_system_map(project_data)
     file_to_module = build_file_to_module_map(project_data)
 
-    # This code is all to dump the janky README files
-    output_readme_file_for_project(graph, dest_directory, project_data, file_to_system, file_to_module, version_and_build_info)
+    output_readme_files_for_project(graph, dest_directory, project_data, file_to_system, file_to_module, version_and_build_info)
 
 def main():
 
