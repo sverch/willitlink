@@ -67,12 +67,12 @@ def output_readme_file_for_project(graph, project_directory, project_data, file_
         project_readme.write(cleanup_description_for_markdown(system_object["system_description"]) + "\n\n")
 
         # Actually output the readme for the system itself
-        output_readme_file_for_system(graph, project_directory, project_data, file_to_system, file_to_module, version_and_build_info['version_info'])
+        output_readme_file_for_system(graph, project_directory, file_to_system, file_to_module, version_and_build_info['version_info'], system_object)
 
 
 
 # Outputs a README.md file for each system with some useful information
-def output_readme_file_for_system(graph, project_directory, project_data, file_to_system, file_to_module, version_info, system_object):
+def output_readme_file_for_system(graph, project_directory, file_to_system, file_to_module, version_info, system_object):
     system_directory = os.path.join(project_directory, system_object['system_name'])
     if not os.path.exists(system_directory):
         os.mkdir(system_directory)
@@ -102,7 +102,7 @@ def output_readme_file_for_system(graph, project_directory, project_data, file_t
             system_readme.write("### [" + module_object['module_title'] + "](" + markdown_sanitized_module_name + ")" + "\n")
             system_readme.write(cleanup_description_for_markdown(module_object["module_description"]) + "\n\n")
 
-        output_readme_file_for_module(graph, project_data, version_info, system_object, file_to_module, file_to_system, module_directory, module_object)
+        output_readme_file_for_module(graph, version_info, system_object, file_to_module, file_to_system, module_directory, module_object)
 
 
 
@@ -131,7 +131,7 @@ def build_file_to_module_map(project_data):
                 file_to_module[module_file] = module_object['module_name']
     return file_to_module
 
-def filter_own_module_interface(project_data, file_interface, module_name, file_to_module):
+def filter_own_module_interface(file_interface, module_name, file_to_module):
     new_interface_objects = []
     for interface_object in file_interface:
         new_symbol_sources = []
@@ -147,7 +147,7 @@ def filter_own_module_interface(project_data, file_interface, module_name, file_
 
     return new_interface_objects
 
-def filter_own_module_dependencies(project_data, file_dependencies, module_name, file_to_module):
+def filter_own_module_dependencies(file_dependencies, module_name, file_to_module):
     new_dependency_objects = []
     for dependency_object in file_dependencies:
         new_symbol_sources = []
@@ -192,27 +192,9 @@ def get_exec_digest(exec_list):
 
     return list(exec_digest)
 
-def output_readme_file_for_group_interface(graph, module_path, group_number, module_group, project_data, module_object, file_to_module, file_to_system, module_readme):
+def output_readme_file_for_group_interface(graph, group_interface_file, module_group, module_object, file_to_module, file_to_system):
 
-    # Interface for this module group (symbols used from outside this module)
-    # 1.  Make sure the "interface" directory exists
-    interface_dir = os.path.join(module_path, "interface")
-    if not os.path.exists(interface_dir):
-        os.mkdir(interface_dir)
-
-    # 2.  Make sure the "group interface" directory exists
-    # NOTE: Since not all groups have a name, we have no choice but to just number
-    # the groups.
-    group_interface_dir = os.path.join(interface_dir, str(group_number))
-    if not os.path.exists(group_interface_dir):
-        os.mkdir(group_interface_dir)
-
-    group_interface_file = open(os.path.join(group_interface_dir, "README.md"), "w")
-
-    # 3.  Link to the group directory which will have the interface README
-    module_readme.write("\n#### [Interface](" + os.path.join("interface", str(group_number)) + ")\n")
-
-    # 4.  Write out the interface README
+    # Write out the interface README
     group_interface_file.write("\n# Interface for " + module_group["group_title"] + "\n")
     group_interface_file.write("This interface information represents symbols that "
         "are defined in this group but used in other modules.  Does not include "
@@ -225,7 +207,7 @@ def output_readme_file_for_group_interface(graph, module_path, group_number, mod
         file_interface = get_file_interface(graph, file_name)
 
         # Filter out file interface objects that don't have any edges to outside this module
-        file_interface = filter_own_module_interface(project_data, file_interface, module_object['module_name'], file_to_module)
+        file_interface = filter_own_module_interface(file_interface, module_object['module_name'], file_to_module)
 
         if len(file_interface) > 0:
             something_in_interface = True
@@ -244,27 +226,10 @@ def output_readme_file_for_group_interface(graph, module_path, group_number, mod
     if not something_in_interface:
         group_interface_file.write("(not used outside this module)\n")
 
-def output_readme_file_for_group_dependencies(graph, module_path, group_number, module_group, project_data, module_object, file_to_module, file_to_system, module_readme):
+def output_readme_file_for_group_dependencies(graph, group_dependencies_file, module_group, module_object, file_to_module, file_to_system):
 
-    # Dependencies for this module group (symbols used that are defined outside this module)
-    # 1.  Make sure the "dependencies" directory exists
-    dependencies_dir = os.path.join(module_path, "dependencies")
-    if not os.path.exists(dependencies_dir):
-        os.mkdir(dependencies_dir)
-
-    # 2.  Make sure the "group dependencies" directory exists
-    # NOTE: Since not all groups have a name, we have no choice but to just number
-    # the groups.
-    group_dependencies_dir = os.path.join(dependencies_dir, str(group_number))
-    if not os.path.exists(group_dependencies_dir):
-        os.mkdir(group_dependencies_dir)
-
-    group_dependencies_file = open(os.path.join(group_dependencies_dir, "README.md"), "w")
-
-    # 3.  Link to the group directory which will have the dependencies README
-    module_readme.write("\n#### [Dependencies](" + os.path.join("dependencies", str(group_number)) + ")\n")
-
-    group_dependencies_file.write("\n# Interface for " + module_group["group_title"] + "\n")
+    # Write out the dependencies README
+    group_dependencies_file.write("\n# Dependencies for " + module_group["group_title"] + "\n")
     group_dependencies_file.write("This dependency information represents symbols "
         "that are used in this group but defined in other modules.  Does not include "
         "symbols used in this group that are defined inside this module.\n")
@@ -276,7 +241,7 @@ def output_readme_file_for_group_dependencies(graph, module_path, group_number, 
         file_dependencies = get_file_dependencies(graph, file_name)
 
         # Filter out file dependency objects that don't have any edges to outside this module
-        file_dependencies = filter_own_module_dependencies(project_data, file_dependencies, module_object['module_name'], file_to_module)
+        file_dependencies = filter_own_module_dependencies(file_dependencies, module_object['module_name'], file_to_module)
 
         if len(file_dependencies) > 0:
             something_in_dependencies = True
@@ -295,7 +260,7 @@ def output_readme_file_for_group_dependencies(graph, module_path, group_number, 
     if not something_in_dependencies:
         group_dependencies_file.write("(no dependencies outside this module)\n")
 
-def output_readme_file_for_module(graph, project_data, version_info, system_object, file_to_module, file_to_system, module_directory, module_object):
+def output_readme_file_for_module(graph, version_info, system_object, file_to_module, file_to_system, module_directory, module_object):
 
         module_readme = open(os.path.join(module_directory, "README.md"), 'w')
         module_readme.truncate()
@@ -329,9 +294,46 @@ def output_readme_file_for_module(graph, project_data, version_info, system_obje
                 # List of executables file is built into
                 module_readme.write("   (" + ", ".join(get_exec_digest(get_file_executables(graph, file_name))) + ")\n")
 
-            output_readme_file_for_group_interface(graph, module_directory, group_number, module_group, project_data, module_object, file_to_module, file_to_system, module_readme)
+            # Interface for this module group (symbols used from outside this module)
+            # 1.  Make sure the "interface" directory exists
+            interface_dir = os.path.join(module_directory, "interface")
+            if not os.path.exists(interface_dir):
+                os.mkdir(interface_dir)
 
-            output_readme_file_for_group_dependencies(graph, module_directory, group_number, module_group, project_data, module_object, file_to_module, file_to_system, module_readme)
+            # 2.  Make sure the "group interface" directory exists
+            # NOTE: Since not all groups have a name, we have no choice but to just number
+            # the groups.
+            group_interface_dir = os.path.join(interface_dir, str(group_number))
+            if not os.path.exists(group_interface_dir):
+                os.mkdir(group_interface_dir)
+
+            group_interface_file = open(os.path.join(group_interface_dir, "README.md"), "w")
+
+            # 3.  Link to the group directory which will have the interface README
+            module_readme.write("\n#### [Interface](" + "interface/" + str(group_number) + ")\n")
+
+            # 4.  Actually emit the README.md file for the interface
+            output_readme_file_for_group_interface(graph, group_interface_file, module_group, module_object, file_to_module, file_to_system)
+
+            # Dependencies for this module group (symbols used that are defined outside this module)
+            # 1.  Make sure the "dependencies" directory exists
+            dependencies_dir = os.path.join(module_directory, "dependencies")
+            if not os.path.exists(dependencies_dir):
+                os.mkdir(dependencies_dir)
+
+            # 2.  Make sure the "group dependencies" directory exists
+            # NOTE: Since not all groups have a name, we have no choice but to just number
+            # the groups.
+            group_dependencies_dir = os.path.join(dependencies_dir, str(group_number))
+            if not os.path.exists(group_dependencies_dir):
+                os.mkdir(group_dependencies_dir)
+
+            group_dependencies_file = open(os.path.join(group_dependencies_dir, "README.md"), "w")
+
+            # 3.  Link to the group directory which will have the dependencies README
+            module_readme.write("\n#### [Dependencies](" + "dependencies/" + str(group_number) + ")\n")
+
+            output_readme_file_for_group_dependencies(graph, group_dependencies_file, module_group, module_object, file_to_module, file_to_system)
 
             group_number = group_number + 1
 
