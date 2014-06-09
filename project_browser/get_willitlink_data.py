@@ -110,16 +110,16 @@ def get_file_dependencies(graph, source_file):
         file_dependencies_result.append(file_dependencies_result_object)
     return file_dependencies_result
 
-def add_willitlink_data(graph, project_data):
-    for system_object in project_data:
-        for module_object in system_object['system_modules']:
-            for group_object in module_object['module_groups']:
-                group_object['group_generated_data'] = []
-                for file_name in group_object['group_files']:
-                    file_object = OrderedDict()
-                    file_object['file_name'] = file_name
-                    file_object['file_executables'] = get_file_executables(graph, file_name)
-                    file_object['file_headers'] = get_file_headers(graph, file_name)
-                    file_object['file_interface'] = get_file_interface(graph, file_name)
-                    file_object['file_dependencies'] = get_file_dependencies(graph, file_name)
-                    group_object['group_generated_data'].append(file_object)
+
+
+# Args:
+# graph - willitlink graph object
+#
+# Returns:
+# Object that contains build and version information.  Currently this is stored in the willitoink
+# graph as "extra info".  This should eventually be in part of a "project data" datastructure, that
+# contains both metadata about the project, as well as the graph with all the dependency
+# information.
+def get_version_and_build_info(graph):
+    # Get version and build info from willitlink
+    return graph.get_extra_info()

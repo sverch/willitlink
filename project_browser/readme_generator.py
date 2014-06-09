@@ -1,9 +1,8 @@
 import os
 import yaml
 import sys
-from process_project_data import get_version_and_build_info
 from data_access import validate_project_structure_file_schema, read_project_structure_file, load_willitlink_graph
-from get_willitlink_data import get_file_interface, get_file_headers, get_file_dependencies, get_file_executables
+from get_willitlink_data import get_version_and_build_info, get_file_interface, get_file_headers, get_file_dependencies, get_file_executables
 
 
 # Helpers to generate a tree of github browseable README.md files from our willitlink data and from
@@ -374,7 +373,7 @@ def main():
     project_data = read_project_structure_file(base_data_directory)
 
     print("Getting version and build info from willitlink data...")
-    version_and_build_info = get_version_and_build_info(base_data_directory)
+    version_and_build_info = get_version_and_build_info(graph)
 
     print("Generating README tree...")
     generate_readme_tree(graph, dest_directory, project_data, version_and_build_info)
