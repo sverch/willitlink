@@ -8,6 +8,26 @@ import yaml
 
 from data_access import read_project_structure_file, load_willitlink_graph, write_project_structure_file, validate_project_structure_file_schema
 
+
+# Args:
+# from_version, to_version - Versions that we are comparing.  Assuming "from_version" is before
+#     "to_version" in the git history
+# git_repo - Git repository of the project
+# filename - Name of file we are getting the change information for
+#
+# Returns:
+# Object with information about how the file changed, of the format:
+#
+# {
+#     "raw_diff" : <output of `git diff`>,
+#     "lines_added" : <output of `git diff --numstat`>,
+#     "lines_removed" : <output of `git diff --numstat`>,
+#     "commits" : <output of `git log`>,
+#     "live_commits" : <output of `git log` intersected with `git blame`>
+# }
+def get_git_changes(from_version, to_version, git_repo, filename):
+    return {}
+
 # The project has files in nested categories.  This returns a list of all files for the project.
 def get_all_project_files(project_data):
     all_files = []
