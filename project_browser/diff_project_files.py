@@ -6,7 +6,7 @@ import re
 import json
 import yaml
 
-from data_access import read_project_structure_file, load_willitlink_graph, write_project_structure_file, validate_project_structure_file_schema, validate_processed_project_structure_file_schema
+from data_access import read_project_structure_file, load_willitlink_graph, write_project_structure_file, validate_project_structure_file_schema
 
 # The project has files in nested categories.  This returns a list of all files for the project.
 def get_all_project_files(project_data):
@@ -62,6 +62,11 @@ def diff_files(graph, project_data):
     return project_data
 
 def main():
+
+    # TODO: Use actual git repository information to do the diff, now that the willitlink data has
+    # the version associated with it.  Then include the git diff of the files that are still in the
+    # repo to give stats on how many lines changed and the git log to show the changes that affected
+    # the file.
 
     if len(sys.argv) != 2:
         print "Usage: <base_directory>"
