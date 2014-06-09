@@ -38,7 +38,7 @@ def cleanup_description_for_markdown(description):
     return description.replace("#", " ").replace("_", "\\_").replace("\n", "\n\n").lstrip()
 
 # Outputs a top level README.md file for the project
-def output_readme_file_for_project(project_directory, project_data, version_and_build_info):
+def output_readme_file_for_project(graph, project_directory, project_data, file_to_system, file_to_module, version_and_build_info):
     project_readme = open(os.path.join(project_directory, "README.md"), 'w')
     project_readme.truncate()
 
@@ -66,41 +66,43 @@ def output_readme_file_for_project(project_directory, project_data, version_and_
         # Output the description for this system
         project_readme.write(cleanup_description_for_markdown(system_object["system_description"]) + "\n\n")
 
+        # Actually output the readme for the system itself
+        output_readme_file_for_system(graph, project_directory, project_data, file_to_system, file_to_module, version_and_build_info['version_info'])
+
 
 
 # Outputs a README.md file for each system with some useful information
-def output_readme_files_for_systems(graph, project_directory, project_data, file_to_system, file_to_module, version_info):
-    for system_object in project_data:
-        system_directory = os.path.join(project_directory, system_object['system_name'])
-        if not os.path.exists(system_directory):
-            os.mkdir(system_directory)
+def output_readme_file_for_system(graph, project_directory, project_data, file_to_system, file_to_module, version_info, system_object):
+    system_directory = os.path.join(project_directory, system_object['system_name'])
+    if not os.path.exists(system_directory):
+        os.mkdir(system_directory)
 
-        system_readme = open(os.path.join(system_directory, "README.md"), 'w')
-        system_readme.truncate()
+    system_readme = open(os.path.join(system_directory, "README.md"), 'w')
+    system_readme.truncate()
 
-        # Add the header for this system
-        system_readme.write("# " + system_object["system_title"] + "\n\n")
+    # Add the header for this system
+    system_readme.write("# " + system_object["system_title"] + "\n\n")
 
-        # Output the description for this system
-        system_readme.write(cleanup_description_for_markdown(system_object["system_description"]) + "\n\n")
+    # Output the description for this system
+    system_readme.write(cleanup_description_for_markdown(system_object["system_description"]) + "\n\n")
 
-        # Output module information for this system
-        system_readme.write("## Modules\n\n")
-        for module_object in system_object['system_modules']:
-            module_directory = os.path.join(system_directory, module_object['module_name'])
-            if not os.path.exists(module_directory):
-                os.mkdir(module_directory)
+    # Output module information for this system
+    system_readme.write("## Modules\n\n")
+    for module_object in system_object['system_modules']:
+        module_directory = os.path.join(system_directory, module_object['module_name'])
+        if not os.path.exists(module_directory):
+            os.mkdir(module_directory)
 
-            if os.path.isdir(module_directory):
+        if os.path.isdir(module_directory):
 
-                # Sanitize the module name for this sytem readme
-                markdown_sanitized_module_name = module_object['module_name'].replace("_", "\\_")
+            # Sanitize the module name for this sytem readme
+            markdown_sanitized_module_name = module_object['module_name'].replace("_", "\\_")
 
-                # Information for this module
-                system_readme.write("### [" + module_object['module_title'] + "](" + markdown_sanitized_module_name + ")" + "\n")
-                system_readme.write(cleanup_description_for_markdown(module_object["module_description"]) + "\n\n")
+            # Information for this module
+            system_readme.write("### [" + module_object['module_title'] + "](" + markdown_sanitized_module_name + ")" + "\n")
+            system_readme.write(cleanup_description_for_markdown(module_object["module_description"]) + "\n\n")
 
-            output_readme_file_for_module(graph, project_data, version_info, system_object, file_to_module, file_to_system, module_directory, module_object)
+        output_readme_file_for_module(graph, project_data, version_info, system_object, file_to_module, file_to_system, module_directory, module_object)
 
 
 
@@ -342,8 +344,7 @@ def generate_readme_tree(graph, dest_directory, project_data, version_and_build_
     file_to_module = build_file_to_module_map(project_data)
 
     # This code is all to dump the janky README files
-    output_readme_file_for_project(dest_directory, project_data, version_and_build_info)
-    output_readme_files_for_systems(graph, dest_directory, project_data, file_to_system, file_to_module, version_and_build_info['version_info'])
+    output_readme_file_for_project(graph, dest_directory, project_data, file_to_system, file_to_module, version_and_build_info)
 
 def main():
 
