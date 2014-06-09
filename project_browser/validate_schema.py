@@ -13,10 +13,6 @@ def main():
 
     print("Schema of human generated file validated successfully!")
 
-    validate_processed_project_structure_file_schema(base_directory)
-
-    print("Schema of processed file validated successfully!")
-
 if __name__ == '__main__':
     main()
 
