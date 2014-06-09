@@ -195,6 +195,95 @@ def get_exec_digest(exec_list):
 
     return list(exec_digest)
 
+def output_readme_file_for_group_interface(module_path, group_number, module_group, project_data, module_object, file_to_module, file_to_system, module_readme):
+
+    # Interface for this module group (symbols used from outside this module)
+    # 1.  Make sure the "interface" directory exists
+    interface_dir = os.path.join(module_path, "interface")
+    if not os.path.exists(interface_dir):
+        os.mkdir(interface_dir)
+
+    # 2.  Make sure the "group interface" directory exists
+    # NOTE: Since not all groups have a name, we have no choice but to just number
+    # the groups.
+    group_interface_dir = os.path.join(interface_dir, str(group_number))
+    if not os.path.exists(group_interface_dir):
+        os.mkdir(group_interface_dir)
+
+    group_interface_file = open(os.path.join(group_interface_dir, "README.md"), "w")
+
+    # 3.  Link to the group directory which will have the interface README
+    module_readme.write("\n#### [Interface](" + os.path.join("interface", str(group_number)) + ")\n")
+
+    # 4.  Write out the interface README
+    group_interface_file.write("\n# Interface for " + module_group["group_title"] + "\n")
+    group_interface_file.write("This interface information represents symbols that "
+        "are defined in this group but used in other modules.  Does not include "
+        "symbols defined in this group that are used inside this module.\n")
+    something_in_interface = False
+    file_interface_external = filter_own_module_interface(project_data, module_group["group_generated_data"], module_object['module_name'])
+    for file_object in file_interface_external:
+        if len(file_object['file_interface']) > 0:
+            something_in_interface = True
+            group_interface_file.write("\n### " + file_object['file_name'].replace("_", "\\_") + "\n")
+            for interface_object in file_object['file_interface']:
+                group_interface_file.write("\n<div></div>\n") # This is a weird markdown idiosyncrasy to
+                                        # make sure the indented block with the symbol
+                                        # is interpreted as a literal block
+                group_interface_file.write("\n    " + interface_object['symbol_name'] + "\n\n")
+                group_interface_file.write("- Used By:\n\n")
+                for file_using in interface_object['symbol_uses']:
+                    if file_using in file_to_module:
+                        group_interface_file.write("    - [" + file_using.replace("_", "\\_") + "](../../../../" + file_to_system[file_using].replace("_", "\\_") + "/" + file_to_module[file_using].replace("_", "\\_") + ")" + "\n")
+                    else:
+                        group_interface_file.write("    - " + file_using.replace("_", "\\_") + "\n")
+    if not something_in_interface:
+        group_interface_file.write("(not used outside this module)\n")
+
+def output_readme_file_for_group_dependencies(module_path, group_number, module_group, project_data, module_object, file_to_module, file_to_system, module_readme):
+
+    # Dependencies for this module group (symbols used that are defined outside this module)
+    # 1.  Make sure the "dependencies" directory exists
+    dependencies_dir = os.path.join(module_path, "dependencies")
+    if not os.path.exists(dependencies_dir):
+        os.mkdir(dependencies_dir)
+
+    # 2.  Make sure the "group dependencies" directory exists
+    # NOTE: Since not all groups have a name, we have no choice but to just number
+    # the groups.
+    group_dependencies_dir = os.path.join(dependencies_dir, str(group_number))
+    if not os.path.exists(group_dependencies_dir):
+        os.mkdir(group_dependencies_dir)
+
+    group_dependencies_file = open(os.path.join(group_dependencies_dir, "README.md"), "w")
+
+    # 3.  Link to the group directory which will have the dependencies README
+    module_readme.write("\n#### [Dependencies](" + os.path.join("dependencies", str(group_number)) + ")\n")
+
+    group_dependencies_file.write("\n# Interface for " + module_group["group_title"] + "\n")
+    group_dependencies_file.write("This dependency information represents symbols "
+        "that are used in this group but defined in other modules.  Does not include "
+        "symbols used in this group that are defined inside this module.\n")
+    something_in_dependencies = False
+    file_dependencies_external = filter_own_module_dependencies(project_data, module_group["group_generated_data"], module_object['module_name'])
+    for file_object in file_dependencies_external:
+        if len(file_object['file_dependencies']) > 0:
+            something_in_dependencies = True
+            group_dependencies_file.write("\n### " + file_object['file_name'].replace("_", "\\_") + "\n")
+            for dependencies_object in file_object['file_dependencies']:
+                group_dependencies_file.write("\n<div></div>\n") # This is a weird markdown idiosyncrasy to
+                                        # make sure the indented block with the symbol
+                                        # is interpreted as a literal block
+                group_dependencies_file.write("\n    " + dependencies_object['symbol_name'] + "\n\n")
+                group_dependencies_file.write("- Provided By:\n\n")
+                for file_providing in dependencies_object['symbol_sources']:
+                    if file_providing in file_to_module:
+                        group_dependencies_file.write("    - [" + file_providing.replace("_", "\\_") + "](../../../../" + file_to_system[file_providing].replace("_", "\\_") + "/" + file_to_module[file_providing].replace("_", "\\_") + ")" + "\n")
+                    else:
+                        group_dependencies_file.write("    - " + file_providing.replace("_", "\\_") + "\n")
+    if not something_in_dependencies:
+        group_dependencies_file.write("(no dependencies outside this module)\n")
+
 # Outputs a README.md file for each module with some useful information
 def output_readme_files_for_modules(project_directory, project_data, version_info):
     file_to_module = build_file_to_module_map(project_data)
@@ -238,90 +327,9 @@ def output_readme_files_for_modules(project_directory, project_data, version_inf
                         # List of executables file is built into
                         module_readme.write("   (" + ", ".join(get_exec_digest(file_object['file_executables'])) + ")\n")
 
-                    # Interface for this module group (symbols used from outside this module)
-                    # 1.  Make sure the "interface" directory exists
-                    interface_dir = os.path.join(module_path, "interface")
-                    if not os.path.exists(interface_dir):
-                        os.mkdir(interface_dir)
+                    output_readme_file_for_group_interface(module_path, group_number, module_group, project_data, module_object, file_to_module, file_to_system, module_readme)
 
-                    # 2.  Make sure the "group interface" directory exists
-                    # NOTE: Since not all groups have a name, we have no choice but to just number
-                    # the groups.
-                    group_interface_dir = os.path.join(interface_dir, str(group_number))
-                    if not os.path.exists(group_interface_dir):
-                        os.mkdir(group_interface_dir)
-
-                    group_interface_file = open(os.path.join(group_interface_dir, "README.md"), "w")
-
-                    # 3.  Link to the group directory which will have the interface README
-                    module_readme.write("\n#### [Interface](" + os.path.join("interface", str(group_number)) + ")\n")
-
-                    # 4.  Write out the interface README
-                    group_interface_file.write("\n# Interface for " + module_group["group_title"] + "\n")
-                    group_interface_file.write("This interface information represents symbols that "
-                        "are defined in this group but used in other modules.  Does not include "
-                        "symbols defined in this group that are used inside this module.\n")
-                    something_in_interface = False
-                    file_interface_external = filter_own_module_interface(project_data, module_group["group_generated_data"], module_object['module_name'])
-                    for file_object in file_interface_external:
-                        if len(file_object['file_interface']) > 0:
-                            something_in_interface = True
-                            group_interface_file.write("\n### " + file_object['file_name'].replace("_", "\\_") + "\n")
-                            for interface_object in file_object['file_interface']:
-                                group_interface_file.write("\n<div></div>\n") # This is a weird markdown idiosyncrasy to
-                                                        # make sure the indented block with the symbol
-                                                        # is interpreted as a literal block
-                                group_interface_file.write("\n    " + interface_object['symbol_name'] + "\n\n")
-                                group_interface_file.write("- Used By:\n\n")
-                                for file_using in interface_object['symbol_uses']:
-                                    if file_using in file_to_module:
-                                        group_interface_file.write("    - [" + file_using.replace("_", "\\_") + "](../../../../" + file_to_system[file_using].replace("_", "\\_") + "/" + file_to_module[file_using].replace("_", "\\_") + ")" + "\n")
-                                    else:
-                                        group_interface_file.write("    - " + file_using.replace("_", "\\_") + "\n")
-                    if not something_in_interface:
-                        group_interface_file.write("(not used outside this module)\n")
-
-                    # Dependencies for this module group (symbols used that are defined outside this module)
-                    # 1.  Make sure the "dependencies" directory exists
-                    dependencies_dir = os.path.join(module_path, "dependencies")
-                    if not os.path.exists(dependencies_dir):
-                        os.mkdir(dependencies_dir)
-
-                    # 2.  Make sure the "group dependencies" directory exists
-                    # NOTE: Since not all groups have a name, we have no choice but to just number
-                    # the groups.
-                    group_dependencies_dir = os.path.join(dependencies_dir, str(group_number))
-                    if not os.path.exists(group_dependencies_dir):
-                        os.mkdir(group_dependencies_dir)
-
-                    group_dependencies_file = open(os.path.join(group_dependencies_dir, "README.md"), "w")
-
-                    # 3.  Link to the group directory which will have the dependencies README
-                    module_readme.write("\n#### [Dependencies](" + os.path.join("dependencies", str(group_number)) + ")\n")
-
-                    group_dependencies_file.write("\n# Interface for " + module_group["group_title"] + "\n")
-                    group_dependencies_file.write("This dependency information represents symbols "
-                        "that are used in this group but defined in other modules.  Does not include "
-                        "symbols used in this group that are defined inside this module.\n")
-                    something_in_dependencies = False
-                    file_dependencies_external = filter_own_module_dependencies(project_data, module_group["group_generated_data"], module_object['module_name'])
-                    for file_object in file_dependencies_external:
-                        if len(file_object['file_dependencies']) > 0:
-                            something_in_dependencies = True
-                            group_dependencies_file.write("\n### " + file_object['file_name'].replace("_", "\\_") + "\n")
-                            for dependencies_object in file_object['file_dependencies']:
-                                group_dependencies_file.write("\n<div></div>\n") # This is a weird markdown idiosyncrasy to
-                                                        # make sure the indented block with the symbol
-                                                        # is interpreted as a literal block
-                                group_dependencies_file.write("\n    " + dependencies_object['symbol_name'] + "\n\n")
-                                group_dependencies_file.write("- Provided By:\n\n")
-                                for file_providing in dependencies_object['symbol_sources']:
-                                    if file_providing in file_to_module:
-                                        group_dependencies_file.write("    - [" + file_providing.replace("_", "\\_") + "](../../../../" + file_to_system[file_providing].replace("_", "\\_") + "/" + file_to_module[file_providing].replace("_", "\\_") + ")" + "\n")
-                                    else:
-                                        group_dependencies_file.write("    - " + file_providing.replace("_", "\\_") + "\n")
-                    if not something_in_dependencies:
-                        group_dependencies_file.write("(no dependencies outside this module)\n")
+                    output_readme_file_for_group_dependencies(module_path, group_number, module_group, project_data, module_object, file_to_module, file_to_system, module_readme)
 
                     group_number = group_number + 1
 
