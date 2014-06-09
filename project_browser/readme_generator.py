@@ -89,20 +89,15 @@ def output_readme_files_for_system(graph, project_directory, file_to_system, fil
     # Output module information for this system
     system_readme.write("## Modules\n\n")
     for module_object in system_object['system_modules']:
-        module_directory = os.path.join(system_directory, module_object['module_name'])
-        if not os.path.exists(module_directory):
-            os.mkdir(module_directory)
 
-        if os.path.isdir(module_directory):
+        # Sanitize the module name for this sytem readme
+        markdown_sanitized_module_name = module_object['module_name'].replace("_", "\\_")
 
-            # Sanitize the module name for this sytem readme
-            markdown_sanitized_module_name = module_object['module_name'].replace("_", "\\_")
+        # Information for this module
+        system_readme.write("### [" + module_object['module_title'] + "](" + markdown_sanitized_module_name + ")" + "\n")
+        system_readme.write(cleanup_description_for_markdown(module_object["module_description"]) + "\n\n")
 
-            # Information for this module
-            system_readme.write("### [" + module_object['module_title'] + "](" + markdown_sanitized_module_name + ")" + "\n")
-            system_readme.write(cleanup_description_for_markdown(module_object["module_description"]) + "\n\n")
-
-        output_readme_files_for_module(graph, version_info, system_object, file_to_module, file_to_system, module_directory, module_object)
+        output_readme_files_for_module(graph, system_directory, version_info, file_to_module, file_to_system, module_object)
 
 
 
@@ -260,7 +255,11 @@ def output_readme_file_for_group_dependencies(graph, group_dependencies_file, mo
     if not something_in_dependencies:
         group_dependencies_file.write("(no dependencies outside this module)\n")
 
-def output_readme_files_for_module(graph, version_info, system_object, file_to_module, file_to_system, module_directory, module_object):
+def output_readme_files_for_module(graph, system_directory, version_info, file_to_module, file_to_system, module_object):
+
+        module_directory = os.path.join(system_directory, module_object['module_name'])
+        if not os.path.exists(module_directory):
+            os.mkdir(module_directory)
 
         module_readme = open(os.path.join(module_directory, "README.md"), 'w')
         module_readme.truncate()
@@ -270,6 +269,14 @@ def output_readme_files_for_module(graph, version_info, system_object, file_to_m
         module_readme.write(cleanup_description_for_markdown(module_object["module_description"]) + "\n\n")
 
         group_number = 0
+
+        # Create directories for automatically generated information
+        interface_dir = os.path.join(module_directory, "interface")
+        if not os.path.exists(interface_dir):
+            os.mkdir(interface_dir)
+        dependencies_dir = os.path.join(module_directory, "dependencies")
+        if not os.path.exists(dependencies_dir):
+            os.mkdir(dependencies_dir)
 
         # Do the following analysis for each group separately
         for module_group in module_object['module_groups']:
@@ -295,12 +302,7 @@ def output_readme_files_for_module(graph, version_info, system_object, file_to_m
                 module_readme.write("   (" + ", ".join(get_exec_digest(get_file_executables(graph, file_name))) + ")\n")
 
             # Interface for this module group (symbols used from outside this module)
-            # 1.  Make sure the "interface" directory exists
-            interface_dir = os.path.join(module_directory, "interface")
-            if not os.path.exists(interface_dir):
-                os.mkdir(interface_dir)
-
-            # 2.  Make sure the "group interface" directory exists
+            # Make sure the "group interface" directory exists
             # NOTE: Since not all groups have a name, we have no choice but to just number
             # the groups.
             group_interface_dir = os.path.join(interface_dir, str(group_number))
@@ -309,19 +311,14 @@ def output_readme_files_for_module(graph, version_info, system_object, file_to_m
 
             group_interface_file = open(os.path.join(group_interface_dir, "README.md"), "w")
 
-            # 3.  Link to the group directory which will have the interface README
+            # Link to the group directory which will have the interface README
             module_readme.write("\n#### [Interface](" + "interface/" + str(group_number) + ")\n")
 
-            # 4.  Actually emit the README.md file for the interface
+            # Actually emit the README.md file for the interface
             output_readme_file_for_group_interface(graph, group_interface_file, module_group, module_object, file_to_module, file_to_system)
 
             # Dependencies for this module group (symbols used that are defined outside this module)
-            # 1.  Make sure the "dependencies" directory exists
-            dependencies_dir = os.path.join(module_directory, "dependencies")
-            if not os.path.exists(dependencies_dir):
-                os.mkdir(dependencies_dir)
-
-            # 2.  Make sure the "group dependencies" directory exists
+            # Make sure the "group dependencies" directory exists
             # NOTE: Since not all groups have a name, we have no choice but to just number
             # the groups.
             group_dependencies_dir = os.path.join(dependencies_dir, str(group_number))
@@ -330,9 +327,10 @@ def output_readme_files_for_module(graph, version_info, system_object, file_to_m
 
             group_dependencies_file = open(os.path.join(group_dependencies_dir, "README.md"), "w")
 
-            # 3.  Link to the group directory which will have the dependencies README
+            # Link to the group directory which will have the dependencies README
             module_readme.write("\n#### [Dependencies](" + "dependencies/" + str(group_number) + ")\n")
 
+            # Actually emit the README.md file for the dependencies
             output_readme_file_for_group_dependencies(graph, group_dependencies_file, module_group, module_object, file_to_module, file_to_system)
 
             group_number = group_number + 1
