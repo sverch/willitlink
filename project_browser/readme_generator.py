@@ -73,6 +73,8 @@ def output_readme_file_for_project(project_directory, project_data, version_and_
 def output_readme_files_for_systems(project_directory, project_data):
     for system_object in project_data:
         system_directory = os.path.join(project_directory, system_object['system_name'])
+        if not os.path.exists(system_directory):
+            os.mkdir(system_directory)
 
         system_readme = open(os.path.join(system_directory, "README.md"), 'w')
         system_readme.truncate()
@@ -86,8 +88,11 @@ def output_readme_files_for_systems(project_directory, project_data):
         # Output module information for this system
         system_readme.write("## Modules\n\n")
         for module_object in system_object['system_modules']:
-            module_path = os.path.join(system_directory, module_object['module_name'])
-            if os.path.isdir(module_path):
+            module_directory = os.path.join(system_directory, module_object['module_name'])
+            if not os.path.exists(module_directory):
+                os.mkdir(module_directory)
+
+            if os.path.isdir(module_directory):
 
                 # Sanitize the module name for this sytem readme
                 markdown_sanitized_module_name = module_object['module_name'].replace("_", "\\_")
@@ -291,13 +296,18 @@ def output_readme_files_for_modules(graph, project_directory, project_data, vers
     file_to_system = build_file_to_system_map(project_data)
 
     for system_object in project_data:
-        modules_directory = os.path.join(project_directory, system_object['system_name'])
+        system_directory = os.path.join(project_directory, system_object['system_name'])
+        if not os.path.exists(system_directory):
+            os.mkdir(system_directory)
 
         for module_object in system_object['system_modules']:
-            module_path = os.path.join(modules_directory, module_object['module_name'])
-            if os.path.isdir(module_path):
+            module_directory = os.path.join(system_directory, module_object['module_name'])
+            if not os.path.exists(module_directory):
+                os.mkdir(module_directory)
 
-                module_readme = open(os.path.join(module_path, "README.md"), 'w')
+            if os.path.isdir(module_directory):
+
+                module_readme = open(os.path.join(module_directory, "README.md"), 'w')
                 module_readme.truncate()
 
                 # First, the and descriptiontitle of the module
@@ -329,27 +339,11 @@ def output_readme_files_for_modules(graph, project_directory, project_data, vers
                         # List of executables file is built into
                         module_readme.write("   (" + ", ".join(get_exec_digest(get_file_executables(graph, file_name))) + ")\n")
 
-                    output_readme_file_for_group_interface(graph, module_path, group_number, module_group, project_data, module_object, file_to_module, file_to_system, module_readme)
+                    output_readme_file_for_group_interface(graph, module_directory, group_number, module_group, project_data, module_object, file_to_module, file_to_system, module_readme)
 
-                    output_readme_file_for_group_dependencies(graph, module_path, group_number, module_group, project_data, module_object, file_to_module, file_to_system, module_readme)
+                    output_readme_file_for_group_dependencies(graph, module_directory, group_number, module_group, project_data, module_object, file_to_module, file_to_system, module_readme)
 
                     group_number = group_number + 1
-
-def dump_module_files(project_directory, project_data):
-
-    for system_object in project_data:
-        system_directory = os.path.join(project_directory, system_object['system_name'])
-        if not os.path.exists(system_directory):
-            os.mkdir(system_directory)
-        for module_object in system_object['system_modules']:
-            module_directory = os.path.join(system_directory, module_object['module_name'])
-            if not os.path.exists(module_directory):
-                os.mkdir(module_directory)
-            module_file = open(os.path.join(module_directory, 'module.yaml'), 'w')
-            module_file.write(yaml.dump(module_object, indent=4, default_flow_style=False))
-
-    return project_data
-
 
 def generate_readme_tree(graph, dest_directory, project_data, version_and_build_info):
 
@@ -357,7 +351,6 @@ def generate_readme_tree(graph, dest_directory, project_data, version_and_build_
         os.mkdir(dest_directory)
 
     # This code is all to dump the janky README files
-    dump_module_files(dest_directory, project_data)
     output_readme_file_for_project(dest_directory, project_data, version_and_build_info)
     output_readme_files_for_systems(dest_directory, project_data)
     output_readme_files_for_modules(graph, dest_directory, project_data, version_and_build_info['version_info'])
