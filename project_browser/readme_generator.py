@@ -1,8 +1,9 @@
 import os
 import yaml
 import sys
-from process_project_data import generate_willitlink_data, get_processed_project_data, get_version_and_build_info
-from data_access import validate_project_structure_file_schema
+from process_project_data import get_version_and_build_info
+from data_access import validate_project_structure_file_schema, read_project_structure_file, load_willitlink_graph
+from get_willitlink_data import get_file_interface, get_file_headers, get_file_dependencies, get_file_executables
 
 
 # Helpers to generate a tree of github browseable README.md files from our willitlink data and from
@@ -120,51 +121,37 @@ def build_file_to_module_map(project_data):
                 file_to_module[module_file] = module_object['module_name']
     return file_to_module
 
-def filter_own_module_interface(project_data, file_objects, self_name):
-    file_to_module = build_file_to_module_map(project_data)
-    result_file_objects = []
-    for file_object in file_objects:
-        new_interface_objects = []
-        for interface_object in file_object['file_interface']:
-            new_symbol_sources = []
-            new_interface_object = {}
-            for use_file in interface_object['symbol_uses']:
-                if file_to_module[use_file] != self_name:
-                    new_symbol_sources.append(use_file)
+def filter_own_module_interface(project_data, file_interface, module_name, file_to_module):
+    new_interface_objects = []
+    for interface_object in file_interface:
+        new_symbol_sources = []
+        new_interface_object = {}
+        for use_file in interface_object['symbol_uses']:
+            if file_to_module[use_file] != module_name:
+                new_symbol_sources.append(use_file)
 
-            if len(new_symbol_sources) > 0:
-                new_interface_object['symbol_name'] = interface_object['symbol_name']
-                new_interface_object['symbol_uses'] = new_symbol_sources
-                new_interface_objects.append(new_interface_object)
+        if len(new_symbol_sources) > 0:
+            new_interface_object['symbol_name'] = interface_object['symbol_name']
+            new_interface_object['symbol_uses'] = new_symbol_sources
+            new_interface_objects.append(new_interface_object)
 
-        if len(new_interface_objects) > 0:
-            file_object['file_interface'] = new_interface_objects
-            result_file_objects.append(file_object)
+    return new_interface_objects
 
-    return result_file_objects
+def filter_own_module_dependencies(project_data, file_dependencies, module_name, file_to_module):
+    new_dependency_objects = []
+    for dependency_object in file_dependencies:
+        new_symbol_sources = []
+        new_dependency_object = {}
+        for source_file in dependency_object['symbol_sources']:
+            if file_to_module[source_file] != module_name:
+                new_symbol_sources.append(source_file)
 
-def filter_own_module_dependencies(project_data, file_objects, self_name):
-    file_to_module = build_file_to_module_map(project_data)
-    result_file_objects = []
-    for file_object in file_objects:
-        new_dependency_objects = []
-        for dependency_object in file_object['file_dependencies']:
-            new_symbol_sources = []
-            new_dependency_object = {}
-            for source_file in dependency_object['symbol_sources']:
-                if file_to_module[source_file] != self_name:
-                    new_symbol_sources.append(source_file)
+        if len(new_symbol_sources) > 0:
+            new_dependency_object['symbol_name'] = dependency_object['symbol_name']
+            new_dependency_object['symbol_sources'] = new_symbol_sources
+            new_dependency_objects.append(new_dependency_object)
 
-            if len(new_symbol_sources) > 0:
-                new_dependency_object['symbol_name'] = dependency_object['symbol_name']
-                new_dependency_object['symbol_sources'] = new_symbol_sources
-                new_dependency_objects.append(new_dependency_object)
-
-        if len(new_dependency_objects) > 0:
-            file_object['file_dependencies'] = new_dependency_objects
-            result_file_objects.append(file_object)
-
-    return result_file_objects
+    return new_dependency_objects
 
 # Simplifies the list of executables into something more readable.
 #
@@ -195,7 +182,7 @@ def get_exec_digest(exec_list):
 
     return list(exec_digest)
 
-def output_readme_file_for_group_interface(module_path, group_number, module_group, project_data, module_object, file_to_module, file_to_system, module_readme):
+def output_readme_file_for_group_interface(graph, module_path, group_number, module_group, project_data, module_object, file_to_module, file_to_system, module_readme):
 
     # Interface for this module group (symbols used from outside this module)
     # 1.  Make sure the "interface" directory exists
@@ -221,12 +208,19 @@ def output_readme_file_for_group_interface(module_path, group_number, module_gro
         "are defined in this group but used in other modules.  Does not include "
         "symbols defined in this group that are used inside this module.\n")
     something_in_interface = False
-    file_interface_external = filter_own_module_interface(project_data, module_group["group_generated_data"], module_object['module_name'])
-    for file_object in file_interface_external:
-        if len(file_object['file_interface']) > 0:
+    # Iterate over all the files in this group
+    for file_name in module_group['group_files']:
+
+        # Get interface for this file
+        file_interface = get_file_interface(graph, file_name)
+
+        # Filter out file interface objects that don't have any edges to outside this module
+        file_interface = filter_own_module_interface(project_data, file_interface, module_object['module_name'], file_to_module)
+
+        if len(file_interface) > 0:
             something_in_interface = True
-            group_interface_file.write("\n### " + file_object['file_name'].replace("_", "\\_") + "\n")
-            for interface_object in file_object['file_interface']:
+            group_interface_file.write("\n### " + file_name.replace("_", "\\_") + "\n")
+            for interface_object in file_interface:
                 group_interface_file.write("\n<div></div>\n") # This is a weird markdown idiosyncrasy to
                                         # make sure the indented block with the symbol
                                         # is interpreted as a literal block
@@ -240,7 +234,7 @@ def output_readme_file_for_group_interface(module_path, group_number, module_gro
     if not something_in_interface:
         group_interface_file.write("(not used outside this module)\n")
 
-def output_readme_file_for_group_dependencies(module_path, group_number, module_group, project_data, module_object, file_to_module, file_to_system, module_readme):
+def output_readme_file_for_group_dependencies(graph, module_path, group_number, module_group, project_data, module_object, file_to_module, file_to_system, module_readme):
 
     # Dependencies for this module group (symbols used that are defined outside this module)
     # 1.  Make sure the "dependencies" directory exists
@@ -265,12 +259,19 @@ def output_readme_file_for_group_dependencies(module_path, group_number, module_
         "that are used in this group but defined in other modules.  Does not include "
         "symbols used in this group that are defined inside this module.\n")
     something_in_dependencies = False
-    file_dependencies_external = filter_own_module_dependencies(project_data, module_group["group_generated_data"], module_object['module_name'])
-    for file_object in file_dependencies_external:
-        if len(file_object['file_dependencies']) > 0:
+    # Iterate over all the files in this group
+    for file_name in module_group['group_files']:
+
+        # Get dependencies for this file
+        file_dependencies = get_file_dependencies(graph, file_name)
+
+        # Filter out file dependency objects that don't have any edges to outside this module
+        file_dependencies = filter_own_module_dependencies(project_data, file_dependencies, module_object['module_name'], file_to_module)
+
+        if len(file_dependencies) > 0:
             something_in_dependencies = True
-            group_dependencies_file.write("\n### " + file_object['file_name'].replace("_", "\\_") + "\n")
-            for dependencies_object in file_object['file_dependencies']:
+            group_dependencies_file.write("\n### " + file_name.replace("_", "\\_") + "\n")
+            for dependencies_object in file_dependencies:
                 group_dependencies_file.write("\n<div></div>\n") # This is a weird markdown idiosyncrasy to
                                         # make sure the indented block with the symbol
                                         # is interpreted as a literal block
@@ -285,7 +286,7 @@ def output_readme_file_for_group_dependencies(module_path, group_number, module_
         group_dependencies_file.write("(no dependencies outside this module)\n")
 
 # Outputs a README.md file for each module with some useful information
-def output_readme_files_for_modules(project_directory, project_data, version_info):
+def output_readme_files_for_modules(graph, project_directory, project_data, version_info):
     file_to_module = build_file_to_module_map(project_data)
     file_to_system = build_file_to_system_map(project_data)
 
@@ -317,19 +318,20 @@ def output_readme_files_for_modules(project_directory, project_data, version_inf
 
                     # Files in this module group
                     module_readme.write("#### Files\n")
-                    for file_object in module_group["group_generated_data"]:
+                    for file_name in module_group['group_files']:
+
                         # Actual displayed file name
-                        module_readme.write("- [" + file_object['file_name'].replace("_", "\\_") + "]")
+                        module_readme.write("- [" + file_name.replace("_", "\\_") + "]")
 
                         # Link to github project
-                        module_readme.write("(" + get_github_url(version_info, file_object['file_name']) + ")")
+                        module_readme.write("(" + get_github_url(version_info, file_name) + ")")
 
                         # List of executables file is built into
-                        module_readme.write("   (" + ", ".join(get_exec_digest(file_object['file_executables'])) + ")\n")
+                        module_readme.write("   (" + ", ".join(get_exec_digest(get_file_executables(graph, file_name))) + ")\n")
 
-                    output_readme_file_for_group_interface(module_path, group_number, module_group, project_data, module_object, file_to_module, file_to_system, module_readme)
+                    output_readme_file_for_group_interface(graph, module_path, group_number, module_group, project_data, module_object, file_to_module, file_to_system, module_readme)
 
-                    output_readme_file_for_group_dependencies(module_path, group_number, module_group, project_data, module_object, file_to_module, file_to_system, module_readme)
+                    output_readme_file_for_group_dependencies(graph, module_path, group_number, module_group, project_data, module_object, file_to_module, file_to_system, module_readme)
 
                     group_number = group_number + 1
 
@@ -349,7 +351,7 @@ def dump_module_files(project_directory, project_data):
     return project_data
 
 
-def generate_readme_tree(dest_directory, project_data, version_and_build_info):
+def generate_readme_tree(graph, dest_directory, project_data, version_and_build_info):
 
     if not os.path.exists(dest_directory):
         os.mkdir(dest_directory)
@@ -358,7 +360,7 @@ def generate_readme_tree(dest_directory, project_data, version_and_build_info):
     dump_module_files(dest_directory, project_data)
     output_readme_file_for_project(dest_directory, project_data, version_and_build_info)
     output_readme_files_for_systems(dest_directory, project_data)
-    output_readme_files_for_modules(dest_directory, project_data, version_and_build_info['version_info'])
+    output_readme_files_for_modules(graph, dest_directory, project_data, version_and_build_info['version_info'])
 
 def main():
 
@@ -372,17 +374,17 @@ def main():
     print("Validating schema of human generated project data file...")
     validate_project_structure_file_schema(base_data_directory)
 
-    print("Merging in the willitlink data...")
-    generate_willitlink_data(base_data_directory)
+    print("Loading willitlink data...")
+    graph = load_willitlink_graph(base_data_directory)
 
     print("Reading the processed project data file with willitlink data...")
-    project_data = get_processed_project_data(base_data_directory)
+    project_data = read_project_structure_file(base_data_directory)
 
     print("Getting version and build info from willitlink data...")
     version_and_build_info = get_version_and_build_info(base_data_directory)
 
     print("Generating README tree...")
-    generate_readme_tree(dest_directory, project_data, version_and_build_info)
+    generate_readme_tree(graph, dest_directory, project_data, version_and_build_info)
 
 if __name__ == '__main__':
     main()
