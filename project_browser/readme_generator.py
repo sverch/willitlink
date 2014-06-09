@@ -69,7 +69,7 @@ def output_readme_file_for_project(project_directory, project_data, version_and_
 
 
 # Outputs a README.md file for each system with some useful information
-def output_readme_files_for_systems(project_directory, project_data):
+def output_readme_files_for_systems(graph, project_directory, project_data, file_to_system, file_to_module, version_info):
     for system_object in project_data:
         system_directory = os.path.join(project_directory, system_object['system_name'])
         if not os.path.exists(system_directory):
@@ -99,6 +99,10 @@ def output_readme_files_for_systems(project_directory, project_data):
                 # Information for this module
                 system_readme.write("### [" + module_object['module_title'] + "](" + markdown_sanitized_module_name + ")" + "\n")
                 system_readme.write(cleanup_description_for_markdown(module_object["module_description"]) + "\n\n")
+
+            output_readme_file_for_module(graph, project_data, version_info, system_object, file_to_module, file_to_system, module_directory, module_object)
+
+
 
 # The modules have files listed in "groups".  This returns a list of all files for the module.
 def flat_module_files(single_module_data):
@@ -289,70 +293,57 @@ def output_readme_file_for_group_dependencies(graph, module_path, group_number, 
     if not something_in_dependencies:
         group_dependencies_file.write("(no dependencies outside this module)\n")
 
-# Outputs a README.md file for each module with some useful information
-def output_readme_files_for_modules(graph, project_directory, project_data, version_info):
-    file_to_module = build_file_to_module_map(project_data)
-    file_to_system = build_file_to_system_map(project_data)
+def output_readme_file_for_module(graph, project_data, version_info, system_object, file_to_module, file_to_system, module_directory, module_object):
 
-    for system_object in project_data:
-        system_directory = os.path.join(project_directory, system_object['system_name'])
-        if not os.path.exists(system_directory):
-            os.mkdir(system_directory)
+        module_readme = open(os.path.join(module_directory, "README.md"), 'w')
+        module_readme.truncate()
 
-        for module_object in system_object['system_modules']:
-            module_directory = os.path.join(system_directory, module_object['module_name'])
-            if not os.path.exists(module_directory):
-                os.mkdir(module_directory)
+        # First, the and descriptiontitle of the module
+        module_readme.write("# " + module_object['module_title'] + "\n")
+        module_readme.write(cleanup_description_for_markdown(module_object["module_description"]) + "\n\n")
 
-            if os.path.isdir(module_directory):
+        group_number = 0
 
-                module_readme = open(os.path.join(module_directory, "README.md"), 'w')
-                module_readme.truncate()
+        # Do the following analysis for each group separately
+        for module_group in module_object['module_groups']:
 
-                # First, the and descriptiontitle of the module
-                module_readme.write("# " + module_object['module_title'] + "\n")
-                module_readme.write(cleanup_description_for_markdown(module_object["module_description"]) + "\n\n")
+            # Horizontal rule
+            module_readme.write("\n-------------\n\n")
 
-                group_number = 0
+            # Comments for this group of files
+            module_readme.write("## " + module_group["group_title"] + "\n")
+            module_readme.write(cleanup_description_for_markdown(module_group["group_description"]) + "\n\n")
 
-                # Do the following analysis for each group separately
-                for module_group in module_object['module_groups']:
+            # Files in this module group
+            module_readme.write("#### Files\n")
+            for file_name in module_group['group_files']:
 
-                    # Horizontal rule
-                    module_readme.write("\n-------------\n\n")
+                # Actual displayed file name
+                module_readme.write("- [" + file_name.replace("_", "\\_") + "]")
 
-                    # Comments for this group of files
-                    module_readme.write("## " + module_group["group_title"] + "\n")
-                    module_readme.write(cleanup_description_for_markdown(module_group["group_description"]) + "\n\n")
+                # Link to github project
+                module_readme.write("(" + get_github_url(version_info, file_name) + ")")
 
-                    # Files in this module group
-                    module_readme.write("#### Files\n")
-                    for file_name in module_group['group_files']:
+                # List of executables file is built into
+                module_readme.write("   (" + ", ".join(get_exec_digest(get_file_executables(graph, file_name))) + ")\n")
 
-                        # Actual displayed file name
-                        module_readme.write("- [" + file_name.replace("_", "\\_") + "]")
+            output_readme_file_for_group_interface(graph, module_directory, group_number, module_group, project_data, module_object, file_to_module, file_to_system, module_readme)
 
-                        # Link to github project
-                        module_readme.write("(" + get_github_url(version_info, file_name) + ")")
+            output_readme_file_for_group_dependencies(graph, module_directory, group_number, module_group, project_data, module_object, file_to_module, file_to_system, module_readme)
 
-                        # List of executables file is built into
-                        module_readme.write("   (" + ", ".join(get_exec_digest(get_file_executables(graph, file_name))) + ")\n")
-
-                    output_readme_file_for_group_interface(graph, module_directory, group_number, module_group, project_data, module_object, file_to_module, file_to_system, module_readme)
-
-                    output_readme_file_for_group_dependencies(graph, module_directory, group_number, module_group, project_data, module_object, file_to_module, file_to_system, module_readme)
-
-                    group_number = group_number + 1
+            group_number = group_number + 1
 
 def generate_readme_tree(graph, dest_directory, project_data, version_and_build_info):
 
     if not os.path.exists(dest_directory):
         os.mkdir(dest_directory)
 
+    file_to_system = build_file_to_system_map(project_data)
+    file_to_module = build_file_to_module_map(project_data)
+
     # This code is all to dump the janky README files
     output_readme_file_for_project(dest_directory, project_data, version_and_build_info)
-    output_readme_files_for_systems(dest_directory, project_data)
-    output_readme_files_for_modules(graph, dest_directory, project_data, version_and_build_info['version_info'])
+    output_readme_files_for_systems(graph, dest_directory, project_data, file_to_system, file_to_module, version_and_build_info['version_info'])
 
 def main():
 
