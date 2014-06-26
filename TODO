@@ -19,3 +19,35 @@ Ingestion:
   - The "Node" object has more granularity about the dependency type (implicit, explicit, source)
   - A willitlink plugin can be added to site_scons that handles both LIBDEPS and the other kind of
     dependencies.  Currently they are separate
+
+
+
+-- Notes On Overall Docs Project --
+
+Current Components:
+
+module_data - Documentation on MongoDB modules + Symbol information
+willitlink - Helpers to extract and view symbol information + a cli to access it
+mongowtf - Helper to read documentation from module_data for a given file
+project_browser - Helper that generates a README tree from the project data
+
+Plan to reorganize:
+
+1. Think about differences between willitlink cli and mongowtf cli.
+
+2. Add githashes to version everything.
+    - mongo version to willitlink data.
+    - mongo version and data version to readme generator.
+    - Other necessary version info?
+
+3. Finish the docs and generate them for 2.6.1.
+
+4. Reorganize project:
+
+* willitlink - Data extractor, api, and cli
+* mongo_source_docs - Utilities and documentation for browsing MongoDB source
+* mongo_source_docs/data - module_data
+* mongo_source_docs/mongowtf - CLI docs viewer
+* mongo_source_docs/readme_viewer - project_browser.  Tell people about the offline github markdown viewer so they can view the README tree that they generate.
+* mongo_source_docs/docs_infrastructure - docs generator
+* mongo_source_docs/utilities - schema utilities
