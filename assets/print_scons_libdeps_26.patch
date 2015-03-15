@@ -1,5 +1,5 @@
 diff --git a/site_scons/libdeps.py b/site_scons/libdeps.py
-index 971bd0d..43a55b4 100644
+index e17a4fa..7cff371 100644
 --- a/site_scons/libdeps.py
 +++ b/site_scons/libdeps.py
 @@ -56,6 +56,8 @@ import SCons.Errors
@@ -19,15 +19,21 @@ index 971bd0d..43a55b4 100644
      node.attributes.libdeps_exploring = True
      try:
          try:
-@@ -108,6 +111,7 @@ def __compute_libdeps(node):
-                     continue
-                 deps.add(child)
-                 deps.update(__get_libdeps(child))
-+                topleveldeps.add(child)
- 
-         except DependencyCycleError, e:
+@@ -113,9 +116,26 @@ def __compute_libdeps(node):
              if len(e.cycle_nodes) == 1 or e.cycle_nodes[0] != e.cycle_nodes[-1]:
-@@ -116,6 +120,12 @@ def __compute_libdeps(node):
+                 e.cycle_nodes.append(node)
+                 raise
++
++        try:
++            for child in env.Flatten(getattr(node.attributes, 'libdeps_direct', [])):
++                if not child:
++                    continue
++                topleveldeps.add(child)
++
++        except DependencyCycleError, e:
++            if len(e.cycle_nodes) == 1 or e.cycle_nodes[0] != e.cycle_nodes[-1]:
++                e.cycle_nodes.append(node)
++                raise
      finally:
          node.attributes.libdeps_exploring = False
  

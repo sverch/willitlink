@@ -4,5 +4,6 @@ This is a hack and should go away when we have better integration with SCons, or
 
 Files:
 
-- print_scons_libdeps.patch - patch that works on 2.5.5 and beyond (used by the scripts)
+- print_scons_libdeps.patch - patch that works on 3.0.0 and beyond (used by the scripts)
+- print_scons_libdeps_26.patch - patch that works on 2.5.5 and beyond
 - print_scons_libdeps_24.patch - patch that works on 2.4.9 and beyond
